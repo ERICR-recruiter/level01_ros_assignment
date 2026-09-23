@@ -29,6 +29,7 @@ install(
   DIRECTORY
     launch
     worlds
+    models #bug4 models missing
   DESTINATION
     share/${PROJECT_NAME}/
 )

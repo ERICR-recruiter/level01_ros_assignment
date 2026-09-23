@@ -27,6 +27,7 @@ endif()
 install(
   DIRECTORY
     launch
+    maps #bug3 no maps folder added
   DESTINATION
     share/${PROJECT_NAME}/
 )

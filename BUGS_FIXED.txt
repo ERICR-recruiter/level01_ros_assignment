@@ -1,0 +1,67 @@
+Bug #1 - testbed_description/CMakeLists.txt 
+    Problem:
+    The ament_package command was written without parentheses.
+
+    Original:
+    ament_package
+
+    Fix:
+    Changed it to:
+    ament_package()
+
+    Result:
+    The testbed_description package builds successfully with colcon.
+
+Bug #2 - testbed_bringup/maps/testbed_world.yaml
+
+    Problem:
+    The map YAML referenced a non-existent image file.
+
+    Original:
+    image: wrong_path_testbed_world.pgm
+
+    Fix:
+    Changed it to:
+    image: testbed_world.pgm
+
+    Result:
+    The Nav2 map_server could successfully locate and load the supplied map image.
+
+Bug #3 - testbed_bringup/CMakeLists.txt
+
+    Problem:
+    The maps directory was not included in the package installation rules.
+
+    Fix:
+    Updated the install() directive to install both launch and maps directories.
+
+    Result:
+    The map files are now available under the installed testbed_bringup package share directory.
+
+Bug #4 - testbed_gazebo/CMakeLists.txt
+
+    Problem:
+    The models directory was not included in the package installation rules.
+
+    The Gazebo launch file expects:
+    <installed testbed_gazebo share directory>/models
+
+    but the directory was absent after installation.
+
+    Fix:
+    Added models to the install() directive.
+
+    Result:
+    The Gazebo models directory is installed with the testbed_gazebo package,
+    matching the path used by the Gazebo launch configuration.
+
+Bug #5 - Caster Wheel Friction
+   
+   Problem: 
+   The caster wheel friction coefficient was set to 0.2, which introduced unnecessary resistance while the robot was moving and affected smooth differential-drive          motion.
+
+   Fix: 
+   Changed the caster wheel friction coefficient from 0.2 to 0.0.
+
+   Result: 
+   Reduced unwanted caster resistance and improved the robot's motion during navigation.

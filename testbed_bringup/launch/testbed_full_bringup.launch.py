@@ -34,7 +34,7 @@ def generate_launch_description():
   
   rviz_config_dir = os.path.join(
     launch_ros.substitutions.FindPackageShare(package='testbed_description').find('testbed_description'),
-    'rviz/full_bringup.rviz')
+    'rviz/testbedrvizconfig.rviz')
   
   rviz_node = Node(
     package='rviz2',
