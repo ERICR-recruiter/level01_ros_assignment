@@ -1,0 +1,120 @@
+ERIC Robotics - Level 1 ROS2 Assignment
+Bugs Found and Fixes
+
+While setting up and testing the given testbed, I found the following issues and fixed them one by one.
+
+
+1. Error in testbed_description/CMakeLists.txt
+
+Problem:
+The ament_package command was written without brackets.
+
+It was:
+ament_package
+
+Changed to:
+ament_package()
+
+Because of this issue the package was giving CMake parsing/build error.
+After correcting it, the package was building properly.
+
+
+2. Wrong map image path
+
+File:
+testbed_bringup/maps/testbed_world.yaml
+
+Problem:
+The yaml file was pointing towards wrong pgm map file.
+
+It was:
+image: wrong_path_testbed_world.pgm
+
+Changed to:
+image: testbed_world.pgm
+
+After this change map_server was able to load the testbed map properly.
+
+
+3. Maps folder was not getting installed
+
+File:
+testbed_bringup/CMakeLists.txt
+
+Problem:
+The maps directory was present in source package, but it was not included
+in the install directories.
+
+Fix:
+Added maps directory in install(DIRECTORY ...).
+
+After rebuilding the workspace, map files were available inside the
+installed package share directory.
+
+
+4. Gazebo models folder was not installed
+
+File:
+testbed_gazebo/CMakeLists.txt
+
+Problem:
+The models directory was not included in package installation.
+
+Fix:
+Added models directory to the install section.
+
+After clean build, Gazebo model folders were also available in installed
+package.
+
+
+5. Old gazebo_ros_control plugin entry
+
+File:
+testbed_description/urdf/testbed.gazebo
+
+Problem:
+There was an old gazebo_ros_control plugin entry in the gazebo file.
+The robot is already using gazebo_ros_diff_drive for differential drive
+control, so this control plugin entry was not required.
+
+Fix:
+Removed the unused gazebo_ros_control plugin entry.
+
+I also verified that robot was spawning and differential drive plugin
+was loading and subscribing to /cmd_vel.
+
+
+6. IMU XML syntax issue
+
+File:
+testbed_description/urdf/testbed.gazebo
+
+Problem:
+There was an extra ">" character near the
+initial_orientation_as_reference tag in IMU configuration.
+
+Fix:
+Removed the extra character and corrected the XML.
+
+After this, xacro/URDF was checked and robot was able to spawn properly
+in Gazebo.
+
+
+Additional work done:
+
+- Created a new ROS2 package named testbed_navigation.
+- Added separate launch file for map loading.
+- Added separate launch file for AMCL localization.
+- Added separate launch file for Nav2 navigation.
+- Configured NavFn planner manually.
+- Configured DWB local controller.
+- Configured global and local costmaps.
+- Added behavior server and BT Navigator.
+- Added lifecycle managers for required Nav2 nodes.
+- Used /scan as LaserScan input and /odom for robot odometry.
+- Tested map server, AMCL, odometry, laser scan and Nav2 nodes.
+- Global path generation was also tested using ComputePathToPose.
+
+Note:
+All Nav2 components are launched manually from testbed_navigation package
+instead of directly using nav2_bringup launch files.
