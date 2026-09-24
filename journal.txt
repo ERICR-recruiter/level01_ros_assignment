@@ -1,0 +1,100 @@
+Video submission (commit 73cb211)/first commit : https://youtu.be/A8xwoXhPBoU
+Video submission final commit: https://www.youtube.com/watch?v=bDGM2fTdJdQ
+
+Journal Logs
+Sep 21 2026:
+
+Setup:
+I usually use Jazzy and Isaac Sim, so I didn't have Humble and Gazebo installed locally. I wrote a Dockerfile for a basic Humble + Gazebo environment, built the container, made it persistent, and set up a bash alias for it. Forked the assignment repo, ran colcon build, and hit the first bug.
+
+Error 1 (Deliberate):
+The build failed on testbed_description due to a syntax error.
+Fix: Opened testbed_description/CMakeLists.txt and changed ament_package to ament_package(). Rebuilt successfully.
+
+Error 2 (Deliberate):
+Tried running the simulation with ros2 launch testbed_bringup testbed_full_bringup.launch.py and it threw an "executable not found on PATH" error.
+Fix: This was a missing dependency. Fixed it by installing ros-humble-xacro.
+
+Navigation Package Setup:
+Created the new package: ros2 pkg create testbed_navigation --build-type ament_cmake.
+Set up the config, launch, and maps directories.
+Updated testbed_navigation/CMakeLists.txt to include the install(DIRECTORY ...) rules for those folders.
+Wrote the map_loader.launch.py file.
+
+Error 3 (Deliberate):
+Launched the map loader and the map_server crashed, complaining about a bad file path in the install directory.
+Fix: The maps folder wasn't being copied during the build. Added maps to the install(DIRECTORY ...) block in testbed_bringup/CMakeLists.txt.
+
+Error 4 (Deliberate):
+Ran the map loader again and got a Magick error about failing to load the image file.
+Fix: The testbed_world.yaml file had a dummy path. Changed image: wrong_path_testbed_world.pgm to image: testbed_world.pgm.
+
+Localization:
+Wrote the AMCL parameter config and the localization launch file.
+Ran the sim, map server, and AMCL nodes. AMCL was waiting for an initial pose. Changed the RViz fixed frame to "map" to set it.
+
+Error 5 (Environment/Hardware):
+RViz completely froze/crashed when I gave it the 2D initial pose. Realized it was a Docker hardware limitation since it was running on CPU rendering.
+Fix: Killed the container and spun up a new one using the --gpus all flag and NVIDIA runtime arguments. Once it had access to the RTX 4060, RViz handled the particle cloud rendering without crashing and localization worked perfectly.
+
+Navigation:
+Copied the default Nav2 parameters (/opt/ros/humble/share/nav2_bringup/params/nav2_params.yaml) into my config directory and set use_sim_time to true.
+Wrote the main navigation.launch.py file to bring up the controller, planner, behaviors, and bt_navigator.
+Launched the full stack, set a 2D Goal Pose in RViz, and the rover successfully drove to the target area in Gazebo.
+
+Basic evaluation criteria met. Next steps: tune the Nav2 parameters to improve pathing and obstacle avoidance.
+
+Sept 22 2026:
+
+Master Launch Setup:
+Tried to set up a master launch file (master.launch.py) in testbed_bringup to launch the entire setup automatically, avoiding the need to type four separate launch commands in four different windows.
+
+Error 6 (Synchronization):
+The master file ran, but the nodes weren't launching correctly. RViz was crashing and freezing without outputting any standard error messages.
+Fix: Wrote a separate function to sequentially launch each node using event triggers. It now waits for Gazebo to fully load before starting the Nav2 stack, ensuring it boots safely without crashing on both fast and slow systems.
+
+Localization:
+Launched the updated master file. It booted smoothly, but I noticed I still needed to set up the initial pose manually in RViz.
+
+Sept 23 2026:
+
+Error 7 (Build / Installation):
+colcon build failed on testbed_navigation, stating it couldn't find the maps directory to install.
+Fix: Simply created an empty maps directory in the source tree so CMake could find it and proceed with the build.
+
+RViz & Launch Automation:
+Created a custom RViz config (nav.rviz) to automatically load the map frame and global costmap, and updated CMakeLists.txt to install it. 
+To fully automate the boot process, I hardcoded the initial_pose coordinates directly into nav2_params.yaml under the AMCL node parameters.
+
+Error 8 (Race Condition & TF Frames):
+Using the new nav.rviz file exposed a timing gap. RViz booted instantly and crashed with queue errors trying to find the map frame, which AMCL hadn't broadcasted yet due to the intentional timers in master.launch.py.
+Fix: Completely removed RViz from the initial bringup file. Moved the RViz launch execution directly into master.launch.py and placed it on a 6-second timer at the very end of the sequence, allowing AMCL to initialize the map frame first. The entire stack now boots automatically with zero manual intervention and zero terminal errors.
+
+Error 9 (Docker GUI / Clean Build):
+When simulating a clean workspace build, RViz and Gazebo crashed with GLXContext and OpenGL errors. The container lacked the necessary X11 display bridges.
+Fix: Updated the Docker container start arguments to mount the host X11 socket (-v /tmp/.X11-unix:/tmp/.X11-unix:rw) and disable shared memory (-e QT_X11_NO_MITSHM=1).
+
+Costmap Tuning (Narrow Spaces):
+Observed that the local costmap was aggressively inflating the walls around the small door, causing the laser scan to mistakenly block the opening. Adjusted nav2_params.yaml to thin the inflation gradient:
+- Global Costmap: inflation_radius to 0.4, cost_scaling_factor to 10.
+- Local Costmap: inflation_radius to 0.2, cost_scaling_factor to 10.
+This reduced the severity of the local costmap blocking the door, making the pathing much better, though it isn't completely perfect yet. Committing this stable version before pushing further Nav2 edits for the ERIC Robotics project.
+
+Navigation & Costmap Troubleshooting:
+To resolve the navigation problem through the small door, I considered omitting the local costmap entirely and relying solely on the global costmap or predetermined object positioning. However, assuming the scope of the assignment requires a functioning local costmap, I decided to troubleshoot and fix the root cause instead.
+
+Error 10 (Sensor Configuration / Deliberate):
+When comparing the Gazebo and RViz environments, the laser scan was detecting an obstacle (red line) in empty space before reaching the actual wall, creating a phantom barrier that the rover couldn't pass. I hypothesized this was due to either manipulated scaling values on the laser scan, an invisible collision object in Gazebo, or a fundamental Nav2 issue.
+Fix: I first checked the view collisions in Gazebo, which appeared normal. I then verified the transform tree using ros2 run tf2_tools view_frames, which was also normal. Finally, I checked the lidar mounting angle and the Gazebo lidar plugin parameters. The root cause was an artificially low max range in the lidar plugin configuration.
+
+<range>
+  <min>0.10</min>
+  <max>1.5</max> ...changed to 12.0
+  <resolution>0.01</resolution>
+</range>
+
+Because it was capped at 1.5m, the sensor was registering a solid object at that exact distance even in empty space. This wasn't an issue for the large door, but it completely blocked the small door. I changed the <max> value to 12.0 meters to reflect real-world lidars. The local costmap now maps correctly, and the rover can navigate properly through the small doors. 
+
+Engineering Justification: While it is technically possible to write custom ROS 2 filter nodes to process the laser scan and ignore these artificial max-range "phantom" readings, developing robust workarounds for this specific simulator quirk would demand significant development time and pull focus from the core Nav2 implementation. Because physical lidars do not typically return solid obstacles at their maximum threshold in open space, updating the Gazebo plugin configuration to mirror realistic hardware constraints was determined to be the most practical and realistic engineering solution.
+
+Assignment complete.

@@ -32,23 +32,23 @@ def generate_launch_description():
     )
   )
   
-  rviz_config_dir = os.path.join(
-    launch_ros.substitutions.FindPackageShare(package='testbed_description').find('testbed_description'),
-    'rviz/full_bringup.rviz')
+  #rviz_config_dir = os.path.join(
+   # launch_ros.substitutions.FindPackageShare(package='testbed_navigation').find('testbed_navigation'),
+    #'rviz/nav.rviz')
   
-  rviz_node = Node(
-    package='rviz2',
-    executable='rviz2',
-    name='rviz_node',
-    parameters=[{'use_sim_time': True}],
-    arguments=['-d', LaunchConfiguration('rvizconfig')]
-  )
+  #rviz_node = Node(
+    #package='rviz2',
+    #executable='rviz2',
+    #name='rviz_node',
+    #parameters=[{'use_sim_time': True}],
+    #arguments=['-d', LaunchConfiguration('rvizconfig')]
+  #)
 
   return LaunchDescription([
-    launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=rviz_config_dir,
-                                            description='Absolute path to rviz config file'),
+    #launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=rviz_config_dir,
+                                            #description='Absolute path to rviz config file'),
     state_pub,
     gazebo,
     spawn,
-    rviz_node,
+    #rviz_node,
   ])
