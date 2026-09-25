@@ -7,8 +7,21 @@
   <maintainer email="rohit.panikar@ericrobotics.com">rohit</maintainer>
   <license>TODO: License declaration</license>
 
+  # Added the needed dependencies for the package
+
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>testbed_description</exec_depend>
+  <exec_depend>testbed_gazebo</exec_depend>
+  <exec_depend>testbed_navigation</exec_depend>
+  <exec_depend>nav2_bringup</exec_depend>
+  
+# the below are the dependencies for the test cases
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

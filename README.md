@@ -72,7 +72,7 @@ To get started, you’ll need:
 ### 2. Launching the Simulation Environment
 1. Start the full simulation using:
    ```bash
-   ros2 launch testbed_bringup testbed_full_bringup.launch.py
+   ros2 launch testbed_bringup testbed_full_AMCL.py
    ```
    This brings up the testbed environment in Gazebo and Rviz.
 
