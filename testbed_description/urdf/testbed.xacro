@@ -2,7 +2,7 @@
 <robot name="testbed" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <xacro:include filename="$(find testbed_description)/urdf/materials.xacro" />
-<xacro:include filename="$(find testbed_description)/urdf/testbed.trans" />
+<!-- <xacro:include filename="$(find testbed_description)/urdf/testbed.trans" /> -->
 <xacro:include filename="$(find testbed_description)/urdf/testbed.gazebo" />
 
 

@@ -30,10 +30,8 @@ def generate_launch_description():
     joint_state_controller_node = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
-        name='joint_state_publisher'
-            # parameters=[
-            #     {'use_sim_time': LaunchConfiguration('use_sim_time')}
-            # ] #since galactic use_sim_time gets passed somewhere and rejects this when defined from launch file
+        name='joint_state_publisher',
+        parameters=[{'use_sim_time': True}]
     )
     
     #RVIZ CONFIGURATION
@@ -54,5 +52,5 @@ def generate_launch_description():
     return LaunchDescription([            
             robot_state_publisher_node,
             joint_state_controller_node,
-            rviz_node,
+            # rviz_node,
     ])
