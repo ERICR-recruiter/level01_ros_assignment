@@ -5,6 +5,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch.actions import IncludeLaunchDescription
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_prefix
 from launch_ros.actions import Node
@@ -23,7 +24,8 @@ def generate_launch_description():
   state_pub = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(
       os.path.join(pkg_testbed_description, 'launch', 'robot_description.launch.py'),
-    )
+    ),
+    launch_arguments={'use_sim_time': 'true'}.items()
   )
 
   spawn = IncludeLaunchDescription(
@@ -40,6 +42,7 @@ def generate_launch_description():
     package='rviz2',
     executable='rviz2',
     name='rviz_node',
+    condition=IfCondition(LaunchConfiguration('rviz')),
     parameters=[{'use_sim_time': True}],
     arguments=['-d', LaunchConfiguration('rvizconfig')]
   )
@@ -47,6 +50,8 @@ def generate_launch_description():
   return LaunchDescription([
     launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=rviz_config_dir,
                                             description='Absolute path to rviz config file'),
+    launch.actions.DeclareLaunchArgument(name='rviz', default_value='true',
+                                            description='Start rviz alongside the simulation'),
     state_pub,
     gazebo,
     spawn,
