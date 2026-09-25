@@ -1,0 +1,50 @@
+amcl:
+  ros__parameters:
+
+    use_sim_time: true  # Use Gazebo's simulated clock
+
+    # Coordinate frames
+    global_frame_id: map  # Global reference frame used for localization
+    odom_frame_id: odom  # Odometry frame
+    base_frame_id: base_footprint  # Robot base frame to localize
+
+    # Laser sensor
+    scan_topic: /scan  # LiDAR topic used by AMCL
+    laser_model_type: likelihood_field  # Laser sensor model used to compare scans with the map
+
+    # Particle filter
+    min_particles: 500  # Minimum number of particles used for localization
+    max_particles: 2000  # Maximum number of particles used for localization
+
+    # Odometry motion model
+    alpha1: 0.2  # Rotational noise caused by rotational motion
+    alpha2: 0.2  # Rotational noise caused by translational motion
+    alpha3: 0.2  # Translational noise caused by translational motion
+    alpha4: 0.2  # Translational noise caused by rotational motion
+    alpha5: 0.2  # Additional translational noise parameter for the motion model
+
+    # Laser sensor model
+    z_hit: 0.5  # Weight for measurements that match the expected map obstacle
+    z_short: 0.05  # Weight for unexpectedly short laser measurements
+    z_max: 0.05  # Weight for measurements at the maximum sensor range
+    z_rand: 0.5  # Weight for random/unexpected laser measurements
+    sigma_hit: 0.2  # Standard deviation for the expected laser measurement
+    lambda_short: 0.1  # Parameter controlling the distribution of short measurements
+    laser_max_range: 1.5  # Maximum laser range considered by AMCL
+    laser_min_range: 0.1  # Minimum laser range considered by AMCL
+
+    # Laser sensor model
+    max_beams: 60
+    laser_likelihood_max_dist: 2.0
+
+    # AMCL update thresholds
+    update_min_d: 0.25  # Minimum translation (m) before updating localization
+    update_min_a: 0.2  # Minimum rotation (rad) before updating localization
+    resample_interval: 1  # Number of updates between particle resampling
+
+    # TF
+    tf_broadcast: true  # Broadcast the map -> odom transform
+    transform_tolerance: 1.0  # TF timestamp tolerance in seconds
+
+    # Initial pose
+    set_initial_pose: false  # Whether to set an initial pose for the robot
