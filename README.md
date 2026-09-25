@@ -1,130 +1,137 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Amin Ahmed G
 
-## Overview
-At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
+I fixed the bugs in the starter code and wrote the `testbed_navigation` package. It brings up map_server, AMCL and the Nav2 servers from separate launch files, without nav2_bringup.
 
-**Here’s what to do:**
-1. We have shared some starter code for the 'Testbed-T1.0.0', a simple open-source robot developed by the team here at ERIC Robotics. **Please note that there are some bugs intentionally left in the starter code that you will need to identify and fix. You also need to make a text file listing the bugs you were able to identify and how did you fix them and add that file in the root directory outside the navigation package** Your task is to develop a new ROS2 package called `testbed_navigation` to manage the navigation workflow for this robot.
-2. However, rather than simply calling `nav2_bringup`, in this assignment you will manually build the required action components (i.e., using the `map_server`, `amcl`, `planner` plugins, and `bt_` plugins) to run ros2 navigation, by working directly with the respective `nav2` plugins.
-3. i.e., In the `testbed_navigation` package, write individual launch files to load a map, perform localization, and navigate using the plugins provided by `nav2`.
-4. Document your process so we can see how you tackled the task.
+## Demo
 
-This assignment gives you hands-on experience with ROS2’s navigation plugins, while showcasing your ability to design modular and effective robotics solutions.
+[![Demo video](https://img.youtube.com/vi/YqaQvPbJf5Q/0.jpg)](https://youtu.be/YqaQvPbJf5Q)
 
-### Deadline & submissions
-1. Four days (96 hrs) from the moment you accept the assignment.
-2. All applicants should fork the repository for the assignment. To submit your code, after completion create a Pull Request (PR) back to the `main` branch. You can commit any number of times to your fork before your deadline.
+| Localization (wrong initial pose) | AMCL correcting | Navigation |
+|---|---|---|
+| ![](docs/images/localization_start.png) | ![](docs/images/localization_converging.png) | ![](docs/images/navigation.png) |
 
-## Repository Structure
+## Environment
 
-```
-ros_nav2_assignment/
-├── testbed_description/
-│   ├── launch/            # Launch the full base simulation
-│   ├── meshes/
-│   ├── rviz/            # RVIZ configuration files
-│   └── urdf/            # URDF files for Testbed-T1.0.0
-├── testbed_gazebo/
-│   ├── worlds/            # Simulation world files
-│   ├── launch/            # Launch files for Gazebo
-│   └── models/            # Misc. Gazebo model files
-├── testbed_bringup/
-│   ├── launch/            # Launch file for bringing up the robot
-│   └── maps/              # Predefined map of the test environment
-├── help.md                # Guidelines and FAQs
-└── README.md              # Instructions for the assignment
+- ROS 2 Humble, Gazebo 11 (classic), RViz2
+- My laptop runs Ubuntu 24.04 (Jazzy), so everything ran in an `osrf/ros:humble-desktop` Docker container
+- I used CycloneDDS as the FAQ suggested. Also tested with the default FastDDS on a fresh clone, works fine
+
+## Setup
+
+```bash
+mkdir -p ~/assignment_ws/src && cd ~/assignment_ws/src
+git clone -b testbed-navigation https://github.com/Amin-Ahmed-G/level01_ros_assignment.git
+cd ~/assignment_ws
+sudo apt update
+rosdep install --from-paths src --ignore-src -y
+colcon build --symlink-install
+source install/setup.bash
 ```
 
-## Assignment Objective
-Your goals are to:
-1. Learn how to configure and use ROS2 `nav2` plugins in independent files.
-2. Set up manual map loading and localization for the given simulation environment.
-3. Implement the required navigation plugins to handle robot navigation in the `testbed_navigation` package. Only basic navigational functionality is expected in this assignment, so choose your plugins accordingly.
+## How to run
 
-## Requirements
+Separate terminal for each, in this order:
 
-To get started, you’ll need:
-- ROS2 Humble installed. (Install from [Humble Installation](https://docs.ros.org/en/humble/Installation.html)) (You will need Ubuntu 22.04/Windows 10 for this. More in the help section.)
-- Gazebo simulator (version 11.10.2 is compatible with ROS2 Humble) (Install from [Gazebo Installation](https://classic.gazebosim.org/tutorials?tut=install_ubuntu)) and Rviz simulator.
-- Basic to intermediate knowledge of ROS2 navigation concepts.
-- Familiarity with creating and managing ROS2 packages, actions, and parameter files.
-- The reference documentation for the `nav2` stack is going to be your best friend for this assignment: [Nav2 Documentation](https://navigation.ros.org/).
+```bash
+# terminal 1 - simulation (gui:=false runs gazebo headless)
+ros2 launch testbed_bringup testbed_full_bringup.launch.py \
+  rvizconfig:=$(ros2 pkg prefix testbed_navigation)/share/testbed_navigation/rviz/nav.rviz
+# terminal 2 - map
+ros2 launch testbed_navigation map_loader.launch.py
+# terminal 3 - localization
+ros2 launch testbed_navigation localization.launch.py
+# terminal 4 - navigation
+ros2 launch testbed_navigation navigation.launch.py
+```
 
-## Instructions
+Then give a goal with 2D Goal Pose in RViz. The initial pose is already set to the spawn point (0, 5, 0), if the particles look off just use 2D Pose Estimate. If you restart the sim, restart all four (see Challenges).
 
-### 1. Setting Up the Repository
-1. Create your workspace:
-    ```bash
-    mkdir -p ~/assignment_ws/src
-    ```
-2. Fork this repository to your GitHub account, then clone your fork:
-   ```bash
-   cd ~/assignment_ws/src
-   git clone <your-fork-url>
-   ```
-2. Build the workspace:
-   ```bash
-   cd ~/assignment_ws/
-   colcon build
-   source install/setup.bash
-   ```
+## Package layout
 
-### 2. Launching the Simulation Environment
-1. Start the full simulation using:
-   ```bash
-   ros2 launch testbed_bringup testbed_full_bringup.launch.py
-   ```
-   This brings up the testbed environment in Gazebo and Rviz.
+```
+testbed_navigation/
+├── config/
+│   ├── amcl_params.yaml
+│   └── nav2_params.yaml
+├── launch/
+│   ├── map_loader.launch.py
+│   ├── localization.launch.py
+│   └── navigation.launch.py
+└── rviz/
+    └── nav.rviz
+```
 
-### 3. Creating the `testbed_navigation` Package
-1. In your workspace, create a new package:
-   ```bash
-   ros2 pkg create testbed_navigation --build-type ament_cmake
-   ```
-2. Set up the necessary directories for parameters, launch files, and scripts.
-3. Write proper build commands in CMakeLists.txt for your navigation package.
+## Approach
 
-### 4. Map Loading
-1. Use the map provided in `testbed_bringup/maps/testbed_world.yaml`.
-2. Write actions in the launch file `testbed_navigation/launch/map_loader.launch.py` to load the map using the `map_server` plugin.
-3. Test and confirm that the map is loaded correctly in Rviz.
+I split it into three launch files, each with its own lifecycle manager, so I could bring up one stage at a time: map first, check it in RViz, then AMCL, then Nav2. When something broke it was easy to tell which part.
 
-### 5. Localization
-1. Implement localization with the AMCL plugin:
-   - Write a parameter file for AMCL in `testbed_navigation/config/amcl_params.yaml`.
-   - Create actions in the launch file `testbed_navigation/launch/localization.launch.py` to run AMCL.
-   - Verify that the robot can localize itself in the simulated environment using Rviz.
+### Map loader
 
-### 6. Navigation
-1. Set up navigation using `nav2` plugins:
-   - Configure parameter files for the global and local planners, behaviour tree plugins and any other nav2 plugin you want to use, like 'collision_monitor' or 'velocity_smoother', in `testbed_navigation/config/nav2_params.yaml`.
-   - Write actions in the launch file `testbed_navigation/launch/navigation.launch.py` to bring up the navigation workflow.
-2. Test the navigation setup by sending goals to the robot and observing its behavior.
+`nav2_map_server` + `lifecycle_manager_map`. The map is loaded from the installed testbed_bringup share folder, so it works from any workspace. Another map can be passed with `map:=<path>`.
 
-### 7. Deliverables
-1. Submit your completed `testbed_navigation` package with:
-   - Parameter files for map loading, localization, and navigation.
-   - Launch files for each component.
-   - A `README.md` describing your approach and any challenges you faced.
-2. Provide a short video or screenshots showing your robot performing localization and navigation.
+### Localization
 
-### 8. Evaluation Criteria
-We’ll be looking for:
-- A functional manual navigation setup.
-- Clear, well-structured parameter files and launch files.
-- A modular, well-documented implementation.
-- Successful localization and navigation in the simulation.
+AMCL with `nav2_amcl::DifferentialMotionModel` (diff drive robot) and the default `likelihood_field` laser model. Base frame is `base_footprint`.
 
-## Notes
-- You’re welcome to modify the robot description or simulation setup to better suit your implementation.
-- Thorough testing is encouraged to ensure everything works as expected.
-- If you have questions, check out the help section and don’t hesitate to reach out to us.
-- Lastly, we encourage you to share your code for review—even if it’s still a work in progress.
----
+- `laser_max_range` 12 m, same as the lidar
+- `max_beams` 60 out of 300, enough for AMCL and cheaper
+- 500 to 2000 particles
+- initial pose at the spawn point (0, 5, 0)
 
-We’re excited to see how you approach this task. Good luck, and happy coding! :)
+Compared against the robot pose from Gazebo, the error was about 7 cm.
 
-## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+### Navigation
+
+- Planner: NavFn (Dijkstra). Small map, point to point goals, didn't need anything more.
+- Controller: Regulated Pure Pursuit, max 0.3 m/s. It suits diff drive and slows down in tight turns and near walls. I looked at DWB but it has a lot more to tune.
+- velocity_smoother between the controller and the robot so speed changes aren't sudden (controller -> `cmd_vel_nav` -> smoother -> `cmd_vel`).
+- behavior_server with spin, backup and wait for recoveries.
+- bt_navigator with the default tree. Humble needs `plugin_lib_names`, I listed only the 13 BT nodes the default trees use.
+
+### Costmaps
+
+- `robot_radius` 0.25 m. The farthest point of the base mesh from base_footprint is 0.245 m, rounded up
+- inflation 0.45 m to keep paths off the walls
+- obstacle / raytrace range 11.5 / 12 m, based on the lidar range
+- local costmap: 4x4 m rolling window in `odom`, since `odom` doesn't jump when AMCL corrects
+- global costmap: static layer + obstacle layer, in `map`
+
+## Bugs found
+
+6 bugs and 5 smaller fixes, each in its own commit. Details (file, problem, fix, how I checked) are in [BUGS.txt](BUGS.txt).
+
+1. `ament_package` without `()` in testbed_description's CMakeLists.txt. Nothing built.
+2. LiDAR max range was 1.5 m. The nearest wall is ~3.4 m from spawn so the scan was empty. Changed to 12 m.
+3. Map yaml pointed to `wrong_path_testbed_world.pgm` instead of `testbed_world.pgm`.
+4. testbed_bringup didn't install `maps/`, so the map wasn't in the share folder.
+5. `base_footprint` was ~6 cm off the rotation centre. Moved it to the middle of the wheel axle.
+6. Missing `exec_depend`s (xacro, gazebo_ros, gazebo_plugins, joint_state_publisher...), so rosdep didn't install them on a clean setup. I only caught gazebo_plugins when I tested a fresh clone in a new container.
+
+Smaller fixes: removed the ROS1 `libgazebo_ros_control.so` plugin and a stray `>` in the IMU block, `use_sim_time` for robot_state_publisher, installed the gazebo `models/` folder, `Gazebo/Silver` -> `Gazebo/Grey` (Silver doesn't exist in Gazebo 11).
+
+## Challenges
+
+### Particle cloud not showing in RViz
+
+AMCL was running but no particles showed up. It was a QoS mismatch: AMCL publishes `/particle_cloud` as best effort and the RViz display was set to reliable. Setting the display to Best Effort fixed it.
+
+### bt_navigator wouldn't activate
+
+I only needed navigate_to_pose, but bt_navigator loads the navigate_through_poses tree as well, and that one needs `compute_path_through_poses` and `remove_passed_goals`. It stayed inactive until I added those two to `plugin_lib_names`.
+
+### base_footprint in the wrong place
+
+Turning the robot in place with teleop, base_footprint moved in a ~6 cm circle in RViz instead of staying on the spot, so it wasn't on the rotation axis. I moved the joint to the midpoint of the two wheels and the drift went from ~5 cm to ~0.1 cm.
+
+### Restarting only Gazebo breaks Nav2
+
+Restarting just the sim made the clock jump back, AMCL kept the old pose and the controller failed with "patience exceeded". Now I restart all four launches in order.
+
+### Docker
+
+Humble had to run in Docker, and early on I mixed up host and container paths a few times. I also tried passing the GPU into the container. It rendered, but the windows were black under Wayland, so I went back to software rendering and mostly ran Gazebo with `gui:=false`.
+
+## Contact Info
+ - Name: Amin Ahmed G
+ - Contact number: +91 8122241705
+ - Email Address: aminahmedg2005@gmail.com

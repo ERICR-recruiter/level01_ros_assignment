@@ -1,0 +1,60 @@
+Bugs identified and fixed
+=========================
+
+1. testbed_description fails to build
+   File: testbed_description/CMakeLists.txt
+   Problem: colcon build fails with
+            CMake Error at CMakeLists.txt:24: Parse error. Expected "("
+            Last line was "ament_package" instead of "ament_package()".
+            testbed_gazebo depends on it, so the whole build stops.
+   Fix: ament_package -> ament_package()
+
+2. LiDAR range too short
+   File: testbed_description/urdf/testbed.gazebo
+   Problem: /scan range_max was 1.5 m. Nearest wall from spawn is ~3.4 m,
+            so all beams came back out of range and nothing showed up
+            in RViz. Not usable for AMCL or costmaps in a 20x20 m world.
+   Fix: <max> 1.5 -> 12.0 (RPLIDAR A1/A2 range)
+
+3. Wrong image name in map yaml
+   File: testbed_bringup/maps/testbed_world.yaml
+   Problem: map_server failed on configure with
+            "Failed to load image file .../wrong_path_testbed_world.pgm".
+            The actual file in maps/ is testbed_world.pgm.
+   Fix: changed image to testbed_world.pgm
+
+4. maps folder not installed
+   File: testbed_bringup/CMakeLists.txt
+   Problem: install() only had launch, so there was no maps folder in
+            install/testbed_bringup/share/testbed_bringup/. A launch
+            file using the package path can't find the map.
+   Fix: added maps to install(DIRECTORY ...)
+
+5. base_footprint not at centre of rotation
+   File: testbed_description/urdf/testbed.xacro
+   Problem: turning in place (j/l only) made base_footprint move in a
+            circle of about 6 cm radius in RViz. It was at the base_link
+            origin, not between the wheels.
+   Fix: fixed_base_joint origin 0 0 0 -> 0.0505 0.0378 0 (midpoint of
+        the two wheel joints). Now it stays in place when turning.
+
+6. Missing dependencies in package.xml
+   Files: testbed_description/, testbed_gazebo/, testbed_bringup/ package.xml
+   Problem: launch files use xacro, gazebo_ros, joint_state_publisher etc.
+            but none of them were in package.xml, so rosdep install on a
+            clean Humble setup doesn't install them.
+            gazebo_plugins was also missing (found on a fresh clone), so
+            there was no /odom or /scan.
+   Fix: added exec_depend for the missing packages
+
+Other changes
+-------------
+- testbed.gazebo: removed libgazebo_ros_control.so plugin (ROS1 only,
+  gazebo logged "Failed to load plugin"). diff_drive plugin does the driving.
+- testbed.gazebo: removed extra ">" after initial_orientation_as_reference
+- robot_description.launch.py: set use_sim_time for robot_state_publisher,
+  it was the only node not on sim time
+- testbed_gazebo/CMakeLists.txt: install models folder, the launch file
+  adds it to GAZEBO_MODEL_PATH but it was never installed
+- testbed.gazebo: Gazebo/Silver isn't a Gazebo 11 material (gzclient logs
+  "Unable to get Material", robot shows white). Changed to Gazebo/Grey.
