@@ -1,0 +1,182 @@
+-----------------------------------------------------------------------------------------------------
+Bug #1 — Invalid ament_package() Call
+
+File: testbed_description/CMakeLists.txt
+Line: 23
+
+How the bug was identified:
+The bug was identified during the initial workspace build using:
+
+colcon build
+
+The build failed while processing the testbed_description package and reported:
+
+CMake Error at CMakeLists.txt:24: Parse error. Expected "(", got newline
+
+The CMakeLists.txt file was then inspected, revealing that ament_package had been written without the required parentheses.
+
+Issue:
+The ament_package command was written as:
+
+ament_package
+
+CMake expects a function invocation with parentheses.
+
+Fix:
+Changed:
+
+ament_package
+
+to:
+
+ament_package()
+
+Verification:
+Ran colcon build again after applying the fix. The testbed_description package proceeded successfully through the build.
+-----------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------
+Bug #2 — Missing Whitespace in Xacro Command Substitution
+
+File: testbed_description/launch/robot_description.launch.py
+Line: 11
+
+Issue:
+The xacro executable and the testbed.xacro path were provided as adjacent substitutions without a whitespace separator.
+
+Fix:
+Added " " at line 11 between the Xacro executable substitution and the Xacro file path.
+
+The relevant section is:
+
+PathJoinSubstitution([FindExecutable(name="xacro")]),
+" ",
+PathJoinSubstitution([...]),
+
+Result:
+The generated command is correctly formed as:
+
+xacro <path>/testbed.xacro
+
+instead of concatenating the executable and file path.
+-----------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------
+Bug #3 — Incorrect Map Image Path
+
+File: testbed_bringup/maps/testbed_world.yaml
+Line: 1
+
+How the bug was identified:
+While inspecting the provided map configuration, the image filename specified in the YAML file was compared with the files present in the testbed_bringup/maps directory.
+
+The YAML referenced:
+
+wrong_path_testbed_world.pgm
+
+However, the directory contains:
+
+testbed_world.pgm
+
+and no file named wrong_path_testbed_world.pgm exists.
+
+Issue:
+The image field referenced a non-existent PGM map file.
+
+Fix:
+Changed:
+
+image: wrong_path_testbed_world.pgm
+
+to:
+
+image: testbed_world.pgm
+
+Verification:
+The map configuration can now correctly resolve the provided PGM map image.
+-----------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------
+Bug #4 — Map Resources Not Installed by CMake
+
+File: testbed_bringup/CMakeLists.txt
+Location: install() block
+
+How the bug was identified:
+While launching the newly created map_loader.launch.py, map_server failed to load the map YAML file. The error indicated that the YAML file could not be found in the installed package.
+
+The source package contained:
+
+testbed_bringup/maps/
+├── testbed_world.pgm
+└── testbed_world.yaml
+
+However, the corresponding maps directory was missing from the installed package:
+
+install/testbed_bringup/share/testbed_bringup/maps/
+
+Inspection of CMakeLists.txt showed that only the launch directory was being installed:
+
+install(
+  DIRECTORY
+    launch
+  DESTINATION
+    share/${PROJECT_NAME}/
+)
+
+Issue:
+The CMake install rule installed the launch directory but did not install the maps directory. Therefore, map_server could not access testbed_world.yaml or the associated PGM file through the installed ROS package.
+
+Fix:
+Changed:
+
+install(
+  DIRECTORY
+    launch
+  DESTINATION
+    share/${PROJECT_NAME}/
+)
+
+to:
+
+install(
+  DIRECTORY
+    launch
+    maps
+  DESTINATION
+    share/${PROJECT_NAME}/
+)
+Verification:
+Rebuilt the testbed_bringup package and verified that both testbed_world.yaml and testbed_world.pgm were present under the installed package's maps directory. map_server can now access the map resources through the installed package.
+-----------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------
+Bug #5 — Inconsistent Simulation Time Configuration
+
+File: testbed_description/launch/robot_description.launch.py
+
+How the issue was identified:
+While investigating RViz LiDAR message-filter warnings, the `use_sim_time` parameter was checked across the ROS 2 nodes.
+
+It was observed that `robot_state_publisher` was using:
+
+use_sim_time: false
+
+while other simulation-related nodes were configured to use simulation time.
+
+Issue:
+The `robot_state_publisher` node was using the system clock instead of the Gazebo simulation clock, resulting in inconsistent time sources across the simulation.
+
+Fix:
+Changed the `use_sim_time` parameter of `robot_state_publisher` to:
+
+use_sim_time: true
+
+Result:
+The simulation-time configuration was made consistent across the relevant nodes.
+
+The RViz LiDAR message-filter warnings persisted after this change. Therefore, this modification did not resolve the LiDAR warning issue, but it helped address the timing inconsistency during debugging.
+-----------------------------------------------------------------------------------------------------
