@@ -41,7 +41,7 @@ def generate_launch_description():
     executable='rviz2',
     name='rviz_node',
     parameters=[{'use_sim_time': True}],
-    arguments=['-d', LaunchConfiguration('rvizconfig')]
+    arguments=['-d', LaunchConfiguration('rvizconfig'), '--ros-args', '-p', 'use_sim_time:=true']
   )
 
   return LaunchDescription([

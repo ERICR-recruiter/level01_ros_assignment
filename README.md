@@ -1,130 +1,40 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Karv Amin
 
-## Overview
-At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
+### 1. Solving the Bugs
+1. To first identify the bugs in the files. I made an empty directory and added the src directory. The forked github repo was cloned inside the src.
+2. Afterwards I colcon build it, while doing this I encountered a missing parenthesis error in cmakelists.txt of testbed_description package in the last line.
+3. Then while trying to run the robot bringup I found one ros1 control plugin being used in testbed.gazebo in urdf and one more indentation error in the same file in the imu_link_1 's orientation reference.
+4. The name in the yaml file of the map mismatched with the name of the pgm image, I couldn't find any more bugs after this.
 
-**Here’s what to do:**
-1. We have shared some starter code for the 'Testbed-T1.0.0', a simple open-source robot developed by the team here at ERIC Robotics. **Please note that there are some bugs intentionally left in the starter code that you will need to identify and fix. You also need to make a text file listing the bugs you were able to identify and how did you fix them and add that file in the root directory outside the navigation package** Your task is to develop a new ROS2 package called `testbed_navigation` to manage the navigation workflow for this robot.
-2. However, rather than simply calling `nav2_bringup`, in this assignment you will manually build the required action components (i.e., using the `map_server`, `amcl`, `planner` plugins, and `bt_` plugins) to run ros2 navigation, by working directly with the respective `nav2` plugins.
-3. i.e., In the `testbed_navigation` package, write individual launch files to load a map, perform localization, and navigate using the plugins provided by `nav2`.
-4. Document your process so we can see how you tackled the task.
 
-This assignment gives you hands-on experience with ROS2’s navigation plugins, while showcasing your ability to design modular and effective robotics solutions.
+### 2. Setting up the map loader launch file
+1. As I couldn't use the nav2_bringup, I made a launch file that uses the nav2 map_server node to launch the testbed_world map. I followed the instructions and named it map_loader.launch.py.
+2. In rviz , I would have to change it settings to transient_local and type map into fixed frame to visualize it because without amcl the odom to map tf connection isn't developed yet. Then map would be visible in rviz.
 
-### Deadline & submissions
-1. Four days (96 hrs) from the moment you accept the assignment.
-2. All applicants should fork the repository for the assignment. To submit your code, after completion create a Pull Request (PR) back to the `main` branch. You can commit any number of times to your fork before your deadline.
+![My Screenshot](screenshots%20and%20video/Screenshot%20from%202026-09-25%2011-21-27.png)
 
-## Repository Structure
+### 3. Launching Amcl
+1. For this I made an amcl_params.yaml to define the parameters of the amcl. I increased the range of lidar in testbed.gazebo as its inital range was too small for any localization operation.
+2. Then after reading  the nav2 official github that defined the amcl launch file, I use that as reference to make a localization.launch.py that would launch the amcl nodes and initialize it.
+3. Initially after launching amcl, In rviz I would try to give 2d pose manually after setting fixed frame as map. As the transform between odom and map gets established, rviz crashes and then after reopening it I can see the robot at the pose I had given before.
+4. But to keep things consistent I set inital_pose to true in yaml to immediately set up the tf connection between map and odom . This would stop rviz from crashing suddenly and map would be visible in rviz and without the need of manually typing map in fixed frame.
+5. After launching localization, the robot would be at the pose mentioned in the yaml but I correct it again manually if actual pose is different. Then I moved the robot around with teleop and amcl seemed to be working properly.
 
-```
-ros_nav2_assignment/
-├── testbed_description/
-│   ├── launch/            # Launch the full base simulation
-│   ├── meshes/
-│   ├── rviz/            # RVIZ configuration files
-│   └── urdf/            # URDF files for Testbed-T1.0.0
-├── testbed_gazebo/
-│   ├── worlds/            # Simulation world files
-│   ├── launch/            # Launch files for Gazebo
-│   └── models/            # Misc. Gazebo model files
-├── testbed_bringup/
-│   ├── launch/            # Launch file for bringing up the robot
-│   └── maps/              # Predefined map of the test environment
-├── help.md                # Guidelines and FAQs
-└── README.md              # Instructions for the assignment
-```
+![My Screenshot](screenshots%20and%20video/Screenshot%20from%202026-09-25%2011-24-08.png)
 
-## Assignment Objective
-Your goals are to:
-1. Learn how to configure and use ROS2 `nav2` plugins in independent files.
-2. Set up manual map loading and localization for the given simulation environment.
-3. Implement the required navigation plugins to handle robot navigation in the `testbed_navigation` package. Only basic navigational functionality is expected in this assignment, so choose your plugins accordingly.
+### 4. Navigation
+1. For navigation I made a nav2_prarams.yaml file describing the robot's parameters properly. I only kept those servers in the yaml that i felt were absolutely necessary to make the robot navigate properly.
+2. Then I made a navigation.launch.py launch file launching those exact same nodes and a lifecycle manager node to manage them. On launching the nav2 seemed to work properly.
+3. Then I gave the 2d goal pose, the robot seemed to operate normally. In the navigation panel both localization and navigation seemed to be working properly.
 
-## Requirements
+![My Screenshot](screenshots%20and%20video/Screenshot%20from%202026-09-25%2011-26-17.png)
 
-To get started, you’ll need:
-- ROS2 Humble installed. (Install from [Humble Installation](https://docs.ros.org/en/humble/Installation.html)) (You will need Ubuntu 22.04/Windows 10 for this. More in the help section.)
-- Gazebo simulator (version 11.10.2 is compatible with ROS2 Humble) (Install from [Gazebo Installation](https://classic.gazebosim.org/tutorials?tut=install_ubuntu)) and Rviz simulator.
-- Basic to intermediate knowledge of ROS2 navigation concepts.
-- Familiarity with creating and managing ROS2 packages, actions, and parameter files.
-- The reference documentation for the `nav2` stack is going to be your best friend for this assignment: [Nav2 Documentation](https://navigation.ros.org/).
+![My Screenshot](screenshots%20and%20video/Screenshot%20from%202026-09-25%2011-26-34.png)
 
-## Instructions
-
-### 1. Setting Up the Repository
-1. Create your workspace:
-    ```bash
-    mkdir -p ~/assignment_ws/src
-    ```
-2. Fork this repository to your GitHub account, then clone your fork:
-   ```bash
-   cd ~/assignment_ws/src
-   git clone <your-fork-url>
-   ```
-2. Build the workspace:
-   ```bash
-   cd ~/assignment_ws/
-   colcon build
-   source install/setup.bash
-   ```
-
-### 2. Launching the Simulation Environment
-1. Start the full simulation using:
-   ```bash
-   ros2 launch testbed_bringup testbed_full_bringup.launch.py
-   ```
-   This brings up the testbed environment in Gazebo and Rviz.
-
-### 3. Creating the `testbed_navigation` Package
-1. In your workspace, create a new package:
-   ```bash
-   ros2 pkg create testbed_navigation --build-type ament_cmake
-   ```
-2. Set up the necessary directories for parameters, launch files, and scripts.
-3. Write proper build commands in CMakeLists.txt for your navigation package.
-
-### 4. Map Loading
-1. Use the map provided in `testbed_bringup/maps/testbed_world.yaml`.
-2. Write actions in the launch file `testbed_navigation/launch/map_loader.launch.py` to load the map using the `map_server` plugin.
-3. Test and confirm that the map is loaded correctly in Rviz.
-
-### 5. Localization
-1. Implement localization with the AMCL plugin:
-   - Write a parameter file for AMCL in `testbed_navigation/config/amcl_params.yaml`.
-   - Create actions in the launch file `testbed_navigation/launch/localization.launch.py` to run AMCL.
-   - Verify that the robot can localize itself in the simulated environment using Rviz.
-
-### 6. Navigation
-1. Set up navigation using `nav2` plugins:
-   - Configure parameter files for the global and local planners, behaviour tree plugins and any other nav2 plugin you want to use, like 'collision_monitor' or 'velocity_smoother', in `testbed_navigation/config/nav2_params.yaml`.
-   - Write actions in the launch file `testbed_navigation/launch/navigation.launch.py` to bring up the navigation workflow.
-2. Test the navigation setup by sending goals to the robot and observing its behavior.
-
-### 7. Deliverables
-1. Submit your completed `testbed_navigation` package with:
-   - Parameter files for map loading, localization, and navigation.
-   - Launch files for each component.
-   - A `README.md` describing your approach and any challenges you faced.
-2. Provide a short video or screenshots showing your robot performing localization and navigation.
-
-### 8. Evaluation Criteria
-We’ll be looking for:
-- A functional manual navigation setup.
-- Clear, well-structured parameter files and launch files.
-- A modular, well-documented implementation.
-- Successful localization and navigation in the simulation.
-
-## Notes
-- You’re welcome to modify the robot description or simulation setup to better suit your implementation.
-- Thorough testing is encouraged to ensure everything works as expected.
-- If you have questions, check out the help section and don’t hesitate to reach out to us.
-- Lastly, we encourage you to share your code for review—even if it’s still a work in progress.
----
-
-We’re excited to see how you approach this task. Good luck, and happy coding! :)
+### Video
+[![Watch the navigation demo video](screenshots%20and%20video/Screenshot%20from%202026-09-25%2011-26-34.png)](screenshots%20and%20videos/Screencast%20from%2009-25-2026%2010_18_53%20AM.mp4)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Karv Amin
+ - Contact number: 9586866647
+ - Email Address: karvamin@gmail.com

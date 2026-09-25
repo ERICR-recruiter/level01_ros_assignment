@@ -1,0 +1,8 @@
+1) To first identify the bugs in the files. I made an empty directory and added the src directory. The forked github repo was cloned inside the src.
+
+2) Afterwards I colcon build it, while doing this I encountered a missing parenthesis error in cmakelists.txt of testbed_description package in the last line like "ament_package", I changes it to "ament_package()".
+
+3) Then while trying to run the robot bringup I found one ros1 control plugin being used in testbed.gazebo in urdf and one more indentation error of ">>" kind in the same file in the imu_link_1 's orientation reference. I commented out the plugin lines and removed the extra indentation to fix it.
+
+4) The name in the yaml file of the map mismatched with the name of the pgm image. I fixed it by correcting the image name. I couldn't find any issues after this so i started with the tasks.
+
