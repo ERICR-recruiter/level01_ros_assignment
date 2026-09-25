@@ -1,26 +1,3 @@
-# Level 1: ROS2 Navigation Assignment - Gurvesh Singh
-
-> ## Submission notes
->
-> - **The navigation package is [`testbed_navigation/`](testbed_navigation/).**
->   Its [README](testbed_navigation/README.md) covers the design, the plugin
->   choices and the problems I ran into.
-> - **The bug list the brief asks for is [`BUGS.md`](BUGS.md)** — seven defects
->   in the starter code, with the symptom and the fix for each.
-> - **I ran this on Ubuntu 24.04 / ROS 2 Jazzy / Gazebo Harmonic**, not
->   22.04 / Humble / Gazebo Classic. Gazebo Classic is end-of-life and is not
->   available on 24.04. The port is written up in
->   [`MIGRATION.md`](MIGRATION.md).
->
-> Quick start, two terminals:
->
-> ```bash
-> ros2 launch testbed_bringup testbed_full_bringup.launch.py rviz:=false
-> ros2 launch testbed_navigation navigation.launch.py
-> ```
->
-> Then use **2D Goal Pose** in RViz, or
-> `ros2 run testbed_navigation send_goal.py -5.0 -5.0`.
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -53,14 +30,6 @@ ros_nav2_assignment/
 ├── testbed_bringup/
 │   ├── launch/            # Launch file for bringing up the robot
 │   └── maps/              # Predefined map of the test environment
-├── testbed_navigation/    # ── submitted ──
-│   ├── config/            # map_server, AMCL and nav2 parameter files
-│   ├── launch/            # map_loader, localization, navigation
-│   ├── rviz/              # Navigation view, map-framed
-│   ├── scripts/           # send_goal.py, NavigateToPose from the CLI
-│   └── README.md          # Approach, design decisions, challenges
-├── BUGS.md                # ── submitted ── bugs found in the starter code
-├── MIGRATION.md           # ── submitted ── Humble/Classic -> Jazzy/Harmonic port
 ├── help.md                # Guidelines and FAQs
 └── README.md              # Instructions for the assignment
 ```
@@ -79,10 +48,6 @@ To get started, you’ll need:
 - Basic to intermediate knowledge of ROS2 navigation concepts.
 - Familiarity with creating and managing ROS2 packages, actions, and parameter files.
 - The reference documentation for the `nav2` stack is going to be your best friend for this assignment: [Nav2 Documentation](https://navigation.ros.org/).
-
-> **What this submission was built and tested against:** Ubuntu 24.04, ROS 2
-> Jazzy, Gazebo Harmonic 8.11 (`ros_gz`), Nav2 1.3.12. See
-> [MIGRATION.md](MIGRATION.md) for what had to change and why.
 
 ## Instructions
 
@@ -160,5 +125,5 @@ We’re excited to see how you approach this task. Good luck, and happy coding! 
 
 ## Contact Info 
  - Name: Gurvesh Singh
- - Contact number: <add before submitting>
+ - Contact number: 7042444195
  - Email Address: gurveshsingh14@gmail.com

@@ -2,6 +2,8 @@
 
 ROS2 Nav2 navigation package for the Testbed-T1.0.0 robot.
 
+Google Drive link for video- https://drive.google.com/drive/folders/1DdR4rSrFDEaN1qjQev7IGk_yojx8B_1c?usp=sharing
+
 The navigation stack is split into three launch files so each part can be tested independently:
 
 ```text
@@ -25,8 +27,7 @@ navigation.launch.py
 
 The assignment was provided for ROS2 Humble/Ubuntu 22.04, while I was working on Ubuntu 24.04 with ROS2 Jazzy. I decided to port the project instead of using a Docker environment.
 
-The changes are documented in [`MIGRATION.md`](../MIGRATION.md).
-
+The changes are documented in [`MIGRATIOa
 ### 2. Checked the robot before Nav2
 
 Before debugging navigation, I checked the basic things Nav2 depends on:
