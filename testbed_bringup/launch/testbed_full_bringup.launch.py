@@ -44,6 +44,34 @@ def generate_launch_description():
     arguments=['-d', LaunchConfiguration('rvizconfig')]
   )
 
+  static_transform_map_to_odom = Node(
+      package='tf2_ros',
+      executable='static_transform_publisher',
+      name='map_to_odom_tf',
+      arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom']
+  )
+
+  static_transform_odom_to_base_link = Node(
+      package='tf2_ros',
+      executable='static_transform_publisher',
+      name='odom_to_base_link_tf',
+      arguments=['0', '0', '0', '0', '0', '0', 'odom', 'base_link']
+  )
+
+  static_transform_odom_to_base_footprint = Node(
+      package='tf2_ros',
+      executable='static_transform_publisher',
+      name='odom_to_base_footprint_tf',
+      arguments=['0', '0', '0', '0', '0', '0', 'odom', 'base_footprint']
+  )
+
+  static_transform_base_footprint_to_base_link = Node(
+      package='tf2_ros',
+      executable='static_transform_publisher',
+      name='base_footprint_to_base_link_tf',
+      arguments=['0', '0', '0', '0', '0', '0', 'base_footprint', 'base_link']
+  )
+
   return LaunchDescription([
     launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=rviz_config_dir,
                                             description='Absolute path to rviz config file'),
@@ -51,4 +79,8 @@ def generate_launch_description():
     gazebo,
     spawn,
     rviz_node,
+    static_transform_map_to_odom,
+    static_transform_odom_to_base_link,
+    static_transform_odom_to_base_footprint,
+    static_transform_base_footprint_to_base_link 
   ])
