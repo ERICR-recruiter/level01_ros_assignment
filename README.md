@@ -1,10 +1,10 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Ayushman Behera
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
 
 **Here’s what to do:**
-1. We have shared some starter code for the 'Testbed-T1.0.0', a simple open-source robot developed by the team here at ERIC Robotics. **Please note that there are some bugs intentionally left in the starter code that you will need to identify and fix. You also need to make a text file listing the bugs you were able to identify and how did you fix them and add that file in the root directory outside the navigation package** Your task is to develop a new ROS2 package called `testbed_navigation` to manage the navigation workflow for this robot.
+1. We have shared some starter code for the 'Testbed-T1.0.0', a simple open-source robot developed by the team here at ERIC Robotics. Your task is to develop a new ROS2 package called `testbed_navigation` to manage the navigation workflow for this robot.
 2. However, rather than simply calling `nav2_bringup`, in this assignment you will manually build the required action components (i.e., using the `map_server`, `amcl`, `planner` plugins, and `bt_` plugins) to run ros2 navigation, by working directly with the respective `nav2` plugins.
 3. i.e., In the `testbed_navigation` package, write individual launch files to load a map, perform localization, and navigate using the plugins provided by `nav2`.
 4. Document your process so we can see how you tackled the task.
@@ -13,7 +13,7 @@ This assignment gives you hands-on experience with ROS2’s navigation plugins, 
 
 ### Deadline & submissions
 1. Four days (96 hrs) from the moment you accept the assignment.
-2. All applicants should fork the repository for the assignment. To submit your code, after completion create a Pull Request (PR) back to the `main` branch. You can commit any number of times to your fork before your deadline.
+2. To submit your code, simply commit and push to your GitHub repository online. You can commit any number of times before your deadline.
 
 ## Repository Structure
 
@@ -22,8 +22,8 @@ ros_nav2_assignment/
 ├── testbed_description/
 │   ├── launch/            # Launch the full base simulation
 │   ├── meshes/
-│   ├── rviz/            # RVIZ configuration files
-│   └── urdf/            # URDF files for Testbed-T1.0.0
+│   ├── rviz/              # RVIZ configuration files
+│   └── urdf/              # URDF files for Testbed-T1.0.0
 ├── testbed_gazebo/
 │   ├── worlds/            # Simulation world files
 │   ├── launch/            # Launch files for Gazebo
@@ -31,6 +31,11 @@ ros_nav2_assignment/
 ├── testbed_bringup/
 │   ├── launch/            # Launch file for bringing up the robot
 │   └── maps/              # Predefined map of the test environment
+├── testbed_navigation/
+│   ├── config/            # AMCL and Nav2 parameter files
+│   ├── launch/            # Modular launch files (map_loader, localization, navigation)
+│   ├── rviz/              # Pre-configured RViz display for Nav2
+│   └── README.md          # Implementation details and guide
 ├── help.md                # Guidelines and FAQs
 └── README.md              # Instructions for the assignment
 ```
@@ -57,10 +62,10 @@ To get started, you’ll need:
     ```bash
     mkdir -p ~/assignment_ws/src
     ```
-2. Fork this repository to your GitHub account, then clone your fork:
+2. Clone this repository:
    ```bash
    cd ~/assignment_ws/src
-   git clone <your-fork-url>
+   git clone <repository-url>
    ```
 2. Build the workspace:
    ```bash
@@ -88,6 +93,17 @@ To get started, you’ll need:
 1. Use the map provided in `testbed_bringup/maps/testbed_world.yaml`.
 2. Write actions in the launch file `testbed_navigation/launch/map_loader.launch.py` to load the map using the `map_server` plugin.
 3. Test and confirm that the map is loaded correctly in Rviz.
+
+
+>
+> The original starter code in [`testbed_bringup/maps/testbed_world.yaml`](testbed_bringup/maps/testbed_world.yaml) had an incorrect `image` field:
+> ```yaml
+> image: wrong_path_testbed_world.pgm
+> ```
+> This caused `map_server` to fail because the `.pgm` file could not be found. The fix is to use the correct filename that matches the actual map image:
+> ```yaml
+> image: testbed_world.pgm
+> ```
 
 ### 5. Localization
 1. Implement localization with the AMCL plugin:
@@ -125,6 +141,6 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Ayushman Behera
+ - Contact number: +91 9438007482
+ - Email Address: ayushmanaka@gmail.com
