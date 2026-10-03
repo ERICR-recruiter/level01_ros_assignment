@@ -1,0 +1,68 @@
+amcl:
+  ros__parameters:
+    use_sim_time: True
+
+    # Motion model noise (how much the robot drifts)
+    alpha1: 0.1   # rot->rot noise
+    alpha2: 0.1   # trans->rot noise
+    alpha3: 0.05  # trans->trans noise
+    alpha4: 0.05  # rot->trans noise
+    alpha5: 0.1   # for holonomic models
+
+    # Frame IDs
+    base_frame_id: "base_footprint"
+    global_frame_id: "map"
+    odom_frame_id: "odom"
+
+    # Particle filter
+    min_particles: 500
+    max_particles: 3000
+    pf_err: 0.05
+    pf_z: 0.99
+    resample_interval: 1
+
+    # Laser model
+    laser_model_type: "likelihood_field"
+    laser_max_beams: 60
+    laser_max_range: 8.0
+    laser_min_range: -1.0
+    laser_likelihood_max_dist: 2.0
+    laser_z_hit: 0.5
+    laser_z_max: 0.05
+    laser_z_rand: 0.5
+    laser_z_short: 0.05
+    sigma_hit: 0.2
+    lambda_short: 0.1
+
+    # Beam skip (helps performance in cluttered environments)
+    do_beamskip: false
+    beam_skip_distance: 0.5
+    beam_skip_error_threshold: 0.9
+    beam_skip_threshold: 0.3
+
+    # Update triggers
+    update_min_d: 0.15     # move 15cm before updating
+    update_min_a: 0.1      # rotate 0.1 rad before updating
+
+    # Recovery
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
+    save_pose_rate: 0.5
+
+    # TF
+    tf_broadcast: true
+    transform_tolerance: 0.5
+
+    # Robot model
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+
+    # Scan topic
+    scan_topic: scan
+
+    # Preloaded initial pose at robot spawn location
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0

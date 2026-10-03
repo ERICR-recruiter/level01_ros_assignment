@@ -1,0 +1,21 @@
+# Intentional Bugs Identified and Fixed in Starter Code
+
+1. `testbed_description/CMakeLists.txt`:
+   - **Bug**: Missing parentheses in `ament_package`.
+   - **Fix**: Changed `ament_package` to `ament_package()`.
+
+2. `testbed_bringup/CMakeLists.txt`:
+   - **Bug**: The `maps` directory was missing from the `install` instructions.
+   - **Fix**: Added `maps` to the `DIRECTORY` section of the `install` target.
+
+3. `testbed_gazebo/CMakeLists.txt`:
+   - **Bug**: The `models` directory was missing from the `install` instructions.
+   - **Fix**: Added `models` to the `DIRECTORY` section of the `install` target.
+
+4. `testbed_description/urdf/testbed.gazebo`:
+   - **Bug**: Extra `>` character at the end of the `<initial_orientation_as_reference>` XML tag.
+   - **Fix**: Removed the extra `>` to fix the malformed XML.
+
+5. `testbed_bringup/maps/testbed_world.yaml`:
+   - **Bug**: The `image` property was pointing to `wrong_path_testbed_world.pgm`.
+   - **Fix**: Corrected the image path to `testbed_world.pgm`.
