@@ -13,6 +13,8 @@ def generate_launch_description():
 
   pkg_testbed_gazebo = get_package_share_directory('testbed_gazebo')
   pkg_testbed_description = get_package_share_directory('testbed_description')
+  rviz_config_dir = os.path.join(
+      pkg_testbed_description, 'rviz', 'full_bringup.rviz')
 
   gazebo = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(
@@ -32,9 +34,6 @@ def generate_launch_description():
     )
   )
   
-  rviz_config_dir = os.path.join(
-    launch_ros.substitutions.FindPackageShare(package='testbed_description').find('testbed_description'),
-    'rviz/full_bringup.rviz')
   
   rviz_node = Node(
     package='rviz2',

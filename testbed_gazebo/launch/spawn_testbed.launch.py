@@ -23,8 +23,8 @@ def generate_launch_description():
 
     # Spawn ROBOT Set Gazebo
     spawn_robot = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
+        package='ros_gz_sim',
+        executable='create',
         name='spawn_entity',
         output='screen',
         arguments=['-entity',

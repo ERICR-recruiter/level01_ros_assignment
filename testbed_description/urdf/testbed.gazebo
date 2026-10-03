@@ -4,53 +4,46 @@
 <xacro:property name="body_color" value="Gazebo/Silver" />
 
 <gazebo>
-  <plugin name="control" filename="libgazebo_ros_control.so"/>
+  <plugin name="gz::sim::systems::JointStatePublisher" filename="gz-sim-joint-state-publisher-system"/>
 </gazebo>
 
   <gazebo>
-    <plugin name="diff_drive_control" filename="libgazebo_ros_diff_drive.so">
+    <plugin name="gz::sim::systems::DiffDrive" filename="gz-sim-diff-drive-system">
       <update_rate>100</update_rate>
      
       <left_joint>left_wheel_joint</left_joint>
       <right_joint>right_wheel_joint</right_joint>
 
       <wheel_separation>0.35</wheel_separation>
-      <wheel_diameter>0.1</wheel_diameter>
+      <wheel_radius>0.05</wheel_radius>
 
-      <command_topic>cmd_vel</command_topic>
-
-      <publish_odom>true</publish_odom>
-      <publish_odom_tf>true</publish_odom_tf>
-      <publish_wheel_tf>true</publish_wheel_tf>
-
-      <odometry_topic>odom</odometry_topic>
-      <odometry_frame>odom</odometry_frame>
-      <robot_base_frame>base_footprint</robot_base_frame>
+      <topic>cmd_vel</topic>
+      <odom_topic>odom</odom_topic>
+      <tf_topic>tf</tf_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
 
     </plugin>
   </gazebo>
 
   <gazebo reference="imu_link_1">
-    <gravity>true</gravity>
     <sensor name="imu_link_1" type="imu">
       <always_on>true</always_on>
       <update_rate>10</update_rate>
       <visualize>true</visualize>
-      <plugin name="my_imu_plugin" filename="libgazebo_ros_imu_sensor.so">
-      <initial_orientation_as_reference>false</initial_orientation_as_reference>>
-        <ros>
-          <remapping>~/out:=imu</remapping>
-        </ros>
-        <frame_name>imu_link_1</frame_name>
+      <topic>imu</topic>
+      <plugin name="gz::sim::systems::Imu" filename="gz-sim-imu-system">
       </plugin>
     </sensor>
   </gazebo>
 
   <gazebo reference="lidar_link_1">
-    <sensor type="ray" name="head_hokuyo_sensor">
+    <sensor type="gpu_lidar" name="head_hokuyo_sensor">
+    <gz_frame_id>lidar_link_1</gz_frame_id>
       <pose>0 0 0 0 0 0</pose>
-      <visualize>false</visualize>
+      <visualize>true</visualize>
       <update_rate>30</update_rate>
+      <topic>scan</topic>
       <ray>
         <scan>
           <horizontal>
@@ -62,7 +55,7 @@
         </scan>
         <range>
           <min>0.10</min>
-          <max>1.5</max>
+          <max>12</max>
           <resolution>0.01</resolution>
         </range>
         <noise>
@@ -71,17 +64,8 @@
           <stddev>0.01</stddev>
         </noise>
       </ray>
-      <plugin name="my_ray_sensor_plugin" filename="libgazebo_ros_ray_sensor.so">
-        <ros>
-          <!-- Configure namespace and remap to publish to /ray/pointcloud2 -->
-          <remapping>~/out:=scan</remapping>
-        </ros>
-        <!-- Output as a PointCloud2, see above for other types -->
-        <output_type>sensor_msgs/LaserScan</output_type>
-        <!-- Clip intensity values so all are above 100, optional -->
-        <min_intensity>100.0</min_intensity>
-        <!-- Frame id for header of output, defaults to sensor's parent link name -->
-        <frame_name>lidar_link_1</frame_name>
+      <plugin name="gz::sim::systems::Sensors" filename="gz-sim-sensors-system">
+        <render_engine>ogre2</render_engine>
       </plugin>
     </sensor>
   </gazebo>

@@ -26,7 +26,7 @@ endif()
 
 install(
   DIRECTORY
-    launch
+    maps launch
   DESTINATION
     share/${PROJECT_NAME}/
 )
