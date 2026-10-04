@@ -35,13 +35,22 @@ def generate_launch_description():
   rviz_config_dir = os.path.join(
     launch_ros.substitutions.FindPackageShare(package='testbed_description').find('testbed_description'),
     'rviz/full_bringup.rviz')
-  
+
+  # Some snap-packaged apps leak their bundled libpthread/libc into
+  # LD_LIBRARY_PATH, which crashes the system rviz2 binary with a
+  # "GLIBC_PRIVATE" symbol lookup error. Strip snap paths for this node only.
+  sanitized_ld_library_path = os.pathsep.join(
+    path for path in os.environ.get('LD_LIBRARY_PATH', '').split(os.pathsep)
+    if path and not path.startswith('/snap')
+  )
+
   rviz_node = Node(
     package='rviz2',
     executable='rviz2',
     name='rviz_node',
     parameters=[{'use_sim_time': True}],
-    arguments=['-d', LaunchConfiguration('rvizconfig')]
+    arguments=['-d', LaunchConfiguration('rvizconfig')],
+    additional_env={'LD_LIBRARY_PATH': sanitized_ld_library_path},
   )
 
   return LaunchDescription([
