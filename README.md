@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Nandanaa M S
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -125,6 +125,44 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Nandanaa M S
+ - Contact number: 7892208539
+ - Email Address: nandanaams555@gmail.com
+
+---
+
+# My Solution
+
+I made a new package called `testbed_navigation` with three launch files:
+
+1. `map_loader.launch.py` - loads the map
+2. `localization.launch.py` - runs AMCL (robot finds its position on the map)
+3. `navigation.launch.py` - runs the planner, controller and behavior tree (robot moves to a goal)
+
+Parameter files are in `testbed_navigation/config/` (`amcl_params.yaml` and `nav2_params.yaml`).
+
+## How to run
+
+```bash
+colcon build --symlink-install
+source install/setup.bash
+
+ros2 launch testbed_bringup testbed_full_bringup.launch.py
+ros2 launch testbed_navigation map_loader.launch.py
+ros2 launch testbed_navigation localization.launch.py
+ros2 launch testbed_navigation navigation.launch.py
+```
+
+Run each command in a new terminal. Then give a goal using "2D Goal Pose" in RViz.
+
+## Bugs
+
+I listed the bugs I found and how I fixed them in `BUGS.txt`.
+
+## Challenges
+
+- WRITE 2 OR 3 SHORT LINES HERE
+
+## Results
+
+- ADD SCREENSHOT OR VIDEO LINK HERE

@@ -1,0 +1,50 @@
+BUGS FOUND IN THE STARTER CODE AND HOW I FIXED THEM
+
+1. File: testbed_description/CMakeLists.txt
+   Problem: The last line was "ament_package" without brackets, so the package did not build.
+   Fix: Changed it to "ament_package()".
+
+2. File: testbed_bringup/maps/testbed_world.yaml
+   Problem: The image name was "wrong_path_testbed_world.pgm". That file does not exist, so the map could not load.
+   Fix: Changed it to "testbed_world.pgm".
+
+3. File: testbed_bringup/CMakeLists.txt
+   Problem: The "maps" folder was not installed, so the map file was missing after building.
+   Fix: Added "maps" to the install line.
+
+4. File: testbed_gazebo/launch/spawn_playground.launch.py
+   Problem: The world file was set as a launch argument but never passed to Gazebo, so Gazebo opened an empty world.
+   Fix: Passed the world argument to the Gazebo launch file.
+
+5. File: testbed_description/urdf/testbed.gazebo
+   Problem: It used the plugin "libgazebo_ros_control.so". This is a ROS 1 plugin and does not exist in ROS 2 Humble, so Gazebo showed an error.
+   Fix: Removed it. The robot already moves with the diff drive plugin.
+
+6. File: testbed_gazebo/CMakeLists.txt
+   Problem: The "models" folder was not installed, but the launch file uses it.
+   Fix: Added "models" to the install line.
+
+7. File: testbed_description/urdf/testbed.gazebo (lidar)
+   Problem: The lidar maximum range was only 1.5 m. The rooms are about 10 m wide, so localization would be poor.
+   Fix: Changed the maximum range to 10 m. AMCL uses the same value.
+
+8. File: testbed_description/urdf/testbed.gazebo (diff drive)
+   Problem: The wheel separation was 0.35, but the wheels in the robot model are 0.376 m apart. This makes the odometry turn slightly wrong.
+   Fix: Changed wheel separation to 0.376.
+
+9. File: testbed_description/urdf/testbed.gazebo (IMU)
+   Problem: There was an extra ">" character after the "initial_orientation_as_reference" tag.
+   Fix: Removed it.
+
+10. File: testbed_description/launch/robot_description.launch.py
+    Problem: robot_state_publisher was not using simulation time like the rest of the system.
+    Fix: Added use_sim_time set to True.
+
+11. Files: package.xml in testbed_bringup, testbed_description and testbed_gazebo
+    Problem: Some needed packages were not listed (xacro, robot_state_publisher, joint_state_publisher, rviz2, gazebo_ros, testbed_description, testbed_gazebo).
+    Fix: Added them as exec_depend.
+
+Other things I noticed but did not change:
+- The robot's base_footprint is not in the middle of the robot, so I used a footprint polygon instead of a robot radius in the Nav2 settings.
+- The file testbed.trans has old ROS 1 settings. They are not used and cause no harm.
+- The robot spawns at x=0, y=5, which is free space on the map, so I used it as the AMCL start pose.

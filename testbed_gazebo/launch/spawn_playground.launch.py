@@ -8,6 +8,7 @@ from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_prefix
 from launch.actions import ExecuteProcess
+from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
 
@@ -41,7 +42,10 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py'),
         ),
-    )    
+        # BUG FIX: the 'world' argument was declared below but never forwarded,
+        # so Gazebo always started with an empty world.
+        launch_arguments={'world': LaunchConfiguration('world')}.items(),
+    )
 
     return LaunchDescription([
         DeclareLaunchArgument(
