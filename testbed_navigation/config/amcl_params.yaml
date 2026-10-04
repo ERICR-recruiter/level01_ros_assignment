@@ -1,0 +1,6 @@
+amcl:
+  ros__parameters:
+    use_sim_time: True
+    min_particles: 500
+    max_particles: 2000
+    topic_name: scan
