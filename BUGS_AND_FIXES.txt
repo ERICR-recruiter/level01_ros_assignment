@@ -1,0 +1,77 @@
+Testbed-T1.0.0 - Bugs and Fixes
+================================
+
+Bug 1: Incorrect map image path
+
+File:
+testbed_bringup/maps/testbed_world.yaml
+
+Problem:
+The map YAML file referenced a non-existent image file:
+wrong_path_testbed_world.pgm
+
+The actual map image supplied with the repository is:
+testbed_world.pgm
+
+Fix:
+Changed the image entry from:
+image: wrong_path_testbed_world.pgm
+
+to:
+image: testbed_world.pgm
+
+Verification:
+Confirmed that testbed_world.pgm exists in:
+testbed_bringup/maps/
+
+The corrected YAML can now be used by Nav2's map_server.
+
+Bug 2: Map directory was not installed
+
+File:
+testbed_bringup/CMakeLists.txt
+
+Problem:
+The CMake install rule installed only the launch directory and did not
+install the maps directory. Therefore, testbed_world.yaml was present
+in the source tree but was missing from the installed testbed_bringup
+package.
+
+This caused package-based nodes using get_package_share_directory()
+to fail when trying to load the map.
+
+Fix:
+Updated the install rule to install both launch and maps directories.
+
+Verification:
+Rebuilt the testbed_bringup package and confirmed that both
+testbed_world.yaml and testbed_world.pgm are present in the installed
+maps directory. The map_loader launch was then tested successfully:
+map_server reached the active state and published the /map topic.
+Bug 3: Unavailable Gazebo ROS control plugin
+
+File:
+testbed_description/urdf/testbed.gazebo
+
+Problem:
+The robot description loaded the Gazebo plugin:
+libgazebo_ros_control.so
+
+This plugin is not available in the ROS 2 Humble installation used for
+the assignment. Its presence prevented the Gazebo robot control setup
+from working correctly, resulting in missing /cmd_vel and /odom topics.
+
+Fix:
+Removed the obsolete/unavailable gazebo_ros_control plugin block from
+testbed.gazebo.
+
+The ROS 2 Gazebo diff-drive plugin
+libgazebo_ros_diff_drive.so was retained because it is available in
+ROS 2 Humble and provides the required velocity command and odometry
+interfaces.
+
+Verification:
+After rebuilding testbed_description and restarting the simulation,
+the /diff_drive_control node appeared successfully. The /cmd_vel and
+/odom topics were also restored, confirming that the robot's
+differential-drive and odometry interfaces are functioning correctly.

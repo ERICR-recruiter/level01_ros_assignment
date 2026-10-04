@@ -4,7 +4,7 @@
 <xacro:property name="body_color" value="Gazebo/Silver" />
 
 <gazebo>
-  <plugin name="control" filename="libgazebo_ros_control.so"/>
+  <plugin name="diff_drive_control" filename="libgazebo_ros_diff_drive.so"/>
 </gazebo>
 
   <gazebo>
