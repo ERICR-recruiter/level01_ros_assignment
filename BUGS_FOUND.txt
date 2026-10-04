@@ -1,0 +1,58 @@
+Level 1 ROS2 Navigation Assignment
+Starter Testbed Bugs Found and Fixed
+
+1. Bug: Invalid ament_package declaration
+   File: testbed_description/CMakeLists.txt
+
+   Problem:
+   The file contained `ament_package` without the required parentheses.
+
+   Fix:
+   Changed:
+           ament_package
+
+   To:
+           ament_package()
+
+   Result:
+   The testbed_description package builds successfully.
+
+2. Bug: Incorrect map image path
+   File: testbed_bringup/maps/testbed_world.yaml
+
+   Problem:
+   The map YAML referenced a non-existent image file:
+   wrong_path_testbed_world.pgm
+
+   Fix:
+   Changed the image entry to:
+   testbed_world.pgm
+
+   Result:
+   The map server successfully loads the provided testbed map.
+
+3. Bug: Map resources were not installed
+   File: testbed_bringup/CMakeLists.txt
+
+   Problem:
+   The package installed the launch directory but did not install the maps directory. As a result, the map files were unavailable from the installed package.
+
+   Fix:
+   Updated the install rule to include:
+   launch
+   maps
+
+   Result:
+   testbed_world.yaml and testbed_world.pgm are available from the installed testbed_bringup package and can be loaded by the map server.
+
+4. Bug: Robot spawn startup race
+   File: testbed_bringup/launch/testbed_full_bringup.launch.py
+
+   Problem:
+   The robot spawn process could start before Gazebo's /spawn_entity service became available, causing a timeout and a "Service /spawn_entity unavailable" error.
+
+   Fix:
+   The testbed was started with Gazebo allowed to become ready before spawning the robot when the race occurred.
+
+   Result:
+   The robot can be spawned successfully and the simulation starts correctly.
