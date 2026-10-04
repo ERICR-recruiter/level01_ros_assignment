@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <rect width="1200" height="520" fill="#f7f7f7"/>
+  <text x="55" y="60" font-family="Arial" font-size="34" font-weight="700">ROS 2 Navigation Pipeline</text>
+  <g font-family="Arial" font-size="21" text-anchor="middle">
+    <rect x="50" y="145" width="190" height="105" rx="18" fill="white" stroke="#222" stroke-width="3"/>
+    <text x="145" y="190">Gazebo</text><text x="145" y="220">Testbed Robot</text>
+    <rect x="290" y="145" width="190" height="105" rx="18" fill="white" stroke="#222" stroke-width="3"/>
+    <text x="385" y="190">/scan + /odom</text><text x="385" y="220">TF</text>
+    <rect x="530" y="145" width="190" height="105" rx="18" fill="white" stroke="#222" stroke-width="3"/>
+    <text x="625" y="190">Map Server</text><text x="625" y="220">AMCL</text>
+    <rect x="770" y="145" width="190" height="105" rx="18" fill="white" stroke="#222" stroke-width="3"/>
+    <text x="865" y="190">Costmaps</text><text x="865" y="220">Planner + Controller</text>
+    <rect x="1010" y="145" width="140" height="105" rx="18" fill="white" stroke="#222" stroke-width="3"/>
+    <text x="1080" y="190">BT</text><text x="1080" y="220">Navigator</text>
+  </g>
+  <g stroke="#222" stroke-width="4">
+    <line x1="240" y1="198" x2="290" y2="198"/>
+    <line x1="480" y1="198" x2="530" y2="198"/>
+    <line x1="720" y1="198" x2="770" y2="198"/>
+    <line x1="960" y1="198" x2="1010" y2="198"/>
+  </g>
+  <text x="600" y="355" text-anchor="middle" font-family="Arial" font-size="25">
+    map → odom → base_footprint → base_link → lidar_link_1
+  </text>
+  <text x="600" y="410" text-anchor="middle" font-family="Arial" font-size="20">
+    Each stage is launched and tested separately...
+  </text>
+</svg>
