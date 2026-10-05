@@ -1,0 +1,173 @@
+Testbed-T1.0.0 starter-code bug report
+======================================
+
+This report records 15 issues found in the supplied description, Gazebo, and
+bringup packages. The fixes were checked with a workspace build and a Gazebo
+navigation run. Most issues had a direct runtime or build symptom; BUG-09 was a
+stray character that did not prevent XML parsing.
+
+Summary
+-------
+
+ID       Severity  Issue
+BUG-01   Blocker   Map YAML named a missing image
+BUG-02   Blocker   Bringup package did not install its maps
+BUG-13   Blocker   Missing parentheses in ament_package()
+BUG-03   Major     Gazebo package did not install its models
+BUG-04   Major     Wheel joint positions were asymmetric
+BUG-05   Major     Self-collision was enabled on rigid links
+BUG-06   Major     Playground launch ignored its world argument
+BUG-07   Major     robot_state_publisher used wall-clock time
+BUG-08   Major     LiDAR range was too short for the arena
+BUG-15   Major     Fixed casters caused excess tire scrub
+BUG-09   Minor     Extra character in the IMU plugin XML
+BUG-10   Minor     Unused ROS 1 control plugin and transmissions
+BUG-11   Minor     Package dependencies were incomplete or unused
+BUG-12   Minor     Wooden-fence model names did not match their folders
+BUG-14   Minor     Source files used Windows line endings
+
+Details
+-------
+
+BUG-01 — Map YAML referenced the wrong image
+Severity: Blocker
+File: testbed_bringup/maps/testbed_world.yaml
+
+The image field pointed to wrong_path_testbed_world.pgm, which is not in the
+package. It now points to testbed_world.pgm. The map is 405 by 400 cells at
+0.05 m per cell and loads from the installed package.
+
+BUG-02 — Bringup package omitted its maps
+Severity: Blocker
+File: testbed_bringup/CMakeLists.txt
+
+The install rule copied launch/ but not maps/. Added maps/ so map_loader can
+find the YAML and image under the installed package share directory.
+
+BUG-03 — Gazebo package omitted its models
+Severity: Major
+File: testbed_gazebo/CMakeLists.txt
+
+The launch file adds the installed models directory to GAZEBO_MODEL_PATH, but
+CMake did not install that directory. Added models/ to the install rule.
+
+BUG-04 — Wheel joints were not symmetric
+Severity: Major
+File: testbed_description/urdf/testbed.xacro
+
+The wheel joints were offset from the robot centreline. Their y positions are
+now +0.175 m and -0.175 m, matching the 0.35 m wheel separation in
+testbed.gazebo. At 0.30 m/s for 12 seconds, measured lateral drift fell from
+0.181 m to 0.111 m.
+
+The supplied wheel and chassis meshes are still slightly off-centre. Fixing the
+remaining geometry properly would require re-exporting the CAD model. The
+remaining straight-line drift after BUG-15 was 0.0839 m over the same run.
+
+BUG-05 — Self-collision was enabled on rigid links
+Severity: Major
+File: testbed_description/urdf/testbed.gazebo
+
+Self-collision was enabled on the robot's rigidly connected links, including
+meshes that overlap. Removed the self_collide tags to prevent unnecessary
+contact calculations and jitter.
+
+BUG-06 — Playground launch did not pass its world argument
+Severity: Major
+File: testbed_gazebo/launch/spawn_playground.launch.py
+
+The launch file declared a world argument but did not forward it to
+gazebo.launch.py, so Gazebo could start in an empty world. The argument is now
+forwarded, and its default value is a string path. Verified that the playground
+world loads with the test_room model.
+
+BUG-07 — Robot state used wall-clock time
+Severity: Major
+Files: testbed_description/launch/robot_description.launch.py and
+testbed_bringup/launch/testbed_full_bringup.launch.py
+
+Gazebo and RViz use simulated time. robot_state_publisher did not, which made
+its TF timestamps inconsistent with the rest of the simulation. Enabled
+use_sim_time for the state publisher.
+
+BUG-08 — LiDAR range was too short
+Severity: Major
+File: testbed_description/urdf/testbed.gazebo
+
+The LiDAR range was capped at 1.5 m in a roughly 20 m arena. Increased its
+maximum range to 10 m. The published LaserScan now reports range_max: 10.0.
+
+BUG-09 — Extra character in the IMU plugin XML
+Severity: Minor
+File: testbed_description/urdf/testbed.gazebo
+
+Removed a trailing > after initial_orientation_as_reference. XML parsers
+accepted the original file, so this was a cleanup issue rather than a build
+failure.
+
+BUG-10 — Unused ROS 1 control setup
+Severity: Minor
+Files: testbed_description/urdf/testbed.gazebo, testbed_description/urdf/testbed.trans, and testbed_description/urdf/testbed.xacro
+
+The robot is driven by the Gazebo diff-drive plugin. It also referenced
+libgazebo_ros_control.so, a ROS 1 library, and included unused transmission
+blocks. Removed the plugin, transmission file, and include. The expanded URDF
+now contains only the diff-drive, IMU, and LiDAR Gazebo plugins.
+
+BUG-11 — Package dependencies were incomplete or unused
+Severity: Minor
+Files: package.xml and CMakeLists.txt files in testbed_description,
+testbed_gazebo, and testbed_bringup
+
+Added runtime dependencies used by the launch files and removed unused
+rclpy/urdf build dependencies. This also gives colcon the package ordering
+needed by bringup. rosdep check passes for the workspace.
+
+BUG-12 — Wooden-fence names did not match
+Severity: Minor
+Files: testbed_gazebo/models/wooden_fence/model.config and
+testbed_gazebo/models/wooden_fence/wooden_fence/model.config
+
+Both model.config files declared the name as wooden fence while their folders
+use wooden_fence. Updated the names to match. The two model.sdf files differ,
+so both were kept; the playground world currently embeds the fence geometry
+instead of loading either file through a model:// URI.
+
+BUG-13 — Missing parentheses in ament_package()
+Severity: Blocker
+File: testbed_description/CMakeLists.txt
+
+The file called ament_package without parentheses, which stopped CMake
+configuration. Changed it to ament_package() and confirmed the workspace builds.
+
+BUG-14 — Source files used Windows line endings
+Severity: Minor
+Files: testbed_description/urdf/materials.xacro, testbed_description/urdf/testbed.xacro, testbed_description/urdf/testbed.gazebo, and testbed_description/launch/robot_description.launch.py
+
+Converted the remaining files to Unix line endings. testbed.trans was removed
+with the unused control setup in BUG-10.
+
+BUG-15 — Fixed casters caused excess scrub
+Severity: Major
+Files: testbed_description/urdf/testbed.xacro and
+testbed_description/urdf/testbed.gazebo
+
+The four caster links are fixed joints, so their collision geometry dragged
+against the floor during turns. Kept their collision meshes but lowered their
+friction to 0.0001 so they can slide. For the same 12-second straight-line
+command, drift fell from 0.111 m after BUG-04 to 0.0839 m. This is a simulation
+approximation; a proper swivel caster would need a different joint model.
+
+Verification
+------------
+
+- colcon build --symlink-install: four packages built successfully.
+- rosdep check: no missing system dependencies.
+- Gazebo: map, AMCL, planner, controller, behavior server, BT navigator, and
+  velocity smoother reached the active state.
+- Navigation: goals at (3, 2) and (0, 5) returned SUCCEEDED.
+- Stop behavior: about 0.036 m of drift over three seconds after goal completion.
+- LiDAR: /scan publishes with a 10 m maximum range.
+- URDF: xacro expands, with the diff-drive, IMU, and LiDAR plugins present.
+
+See testbed_navigation/evidence/ for the RViz screenshot and Gazebo demo.

@@ -2,7 +2,6 @@
 <robot name="testbed" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <xacro:include filename="$(find testbed_description)/urdf/materials.xacro" />
-<xacro:include filename="$(find testbed_description)/urdf/testbed.trans" />
 <xacro:include filename="$(find testbed_description)/urdf/testbed.gazebo" />
 
 
@@ -43,14 +42,14 @@
     <inertia ixx="9.7e-05" iyy="0.000183" izz="9.7e-05" ixy="0.0" iyz="0.0" ixz="-0.0"/>
   </inertial>
   <visual>
-    <origin xyz="0.050476 -0.135241 -0.050004" rpy="0 0 0"/>
+    <origin xyz="0.050476 -0.175 -0.050004" rpy="0 0 0"/>
     <geometry>
       <mesh filename="file://$(find testbed_description)/meshes/left_wheel_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.050476 -0.135241 -0.050004" rpy="0 0 0"/>
+    <origin xyz="0.050476 -0.175 -0.050004" rpy="0 0 0"/>
     <geometry>
       <mesh filename="file://$(find testbed_description)/meshes/left_wheel_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -211,14 +210,14 @@
     <inertia ixx="9.7e-05" iyy="0.000183" izz="9.7e-05" ixy="0.0" iyz="-0.0" ixz="-0.0"/>
   </inertial>
   <visual>
-    <origin xyz="0.050503 0.210759 -0.050004" rpy="0 0 0"/>
+    <origin xyz="0.050503 0.175 -0.050004" rpy="0 0 0"/>
     <geometry>
       <mesh filename="file://$(find testbed_description)/meshes/right_wheel_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.050503 0.210759 -0.050004" rpy="0 0 0"/>
+    <origin xyz="0.050503 0.175 -0.050004" rpy="0 0 0"/>
     <geometry>
       <mesh filename="file://$(find testbed_description)/meshes/right_wheel_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -232,7 +231,7 @@
 </joint>
 
 <joint name="left_wheel_joint" type="continuous">
-  <origin xyz="-0.050476 0.135241 0.050004" rpy="0 0 0"/>
+  <origin xyz="-0.050476 0.175 0.050004" rpy="0 0 0"/>
   <parent link="base_link"/>
   <child link="left_wheel_1"/>
   <axis xyz="0.0 1.0 0.0"/>
@@ -281,7 +280,7 @@
 </joint>
 
 <joint name="right_wheel_joint" type="continuous">
-  <origin xyz="-0.050503 -0.210759 0.050004" rpy="0 0 0"/>
+  <origin xyz="-0.050503 -0.175 0.050004" rpy="0 0 0"/>
   <parent link="base_link"/>
   <child link="right_wheel_1"/>
   <axis xyz="0.0 1.0 -0.0"/>

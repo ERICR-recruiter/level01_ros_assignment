@@ -1,0 +1,35 @@
+<!-- Clear costmaps only during recovery; clearing while planning removes the static map. -->
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="2" name="NavigateRecovery">
+
+      <PipelineSequence name="NavigateToPose">
+        <!-- Replan at 2 Hz. -->
+        <RateController hz="2.0">
+          <ReactiveSequence name="Plan">
+            <ComputePathToPose goal="{goal}" path="{path}" planner_id="NavFn"/>
+          </ReactiveSequence>
+        </RateController>
+
+        <ReactiveSequence name="Control">
+          <FollowPath path="{path}" controller_id="FollowPath"/>
+        </ReactiveSequence>
+      </PipelineSequence>
+
+      <!-- Skip recovery if the goal was cancelled or replaced. -->
+      <ReactiveFallback name="RecoveryFallback">
+        <GoalUpdated/>
+        <RoundRobin name="RecoveryActions">
+          <Sequence name="ClearBothCostmaps">
+            <ClearEntireCostmap service_name="local_costmap/clear_entirely_local_costmap"/>
+            <ClearEntireCostmap service_name="global_costmap/clear_entirely_global_costmap"/>
+          </Sequence>
+          <Spin spin_dist="1.57"/>
+          <BackUp backup_dist="0.30" backup_speed="0.05"/>
+          <Wait wait_duration="1.0"/>
+        </RoundRobin>
+      </ReactiveFallback>
+
+    </RecoveryNode>
+  </BehaviorTree>
+</root>
