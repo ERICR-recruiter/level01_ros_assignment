@@ -1,0 +1,58 @@
+BUGS FIXED IN ORDER
+===================
+
+Bug 1: testbed_description/CMakeLists.txt
+
+- Issue: 
+    colcon build failed with: 
+        --- stderr: testbed_description
+        CMake Error at CMakeLists.txt:24:
+        Parse error.  Expected "(", got newline with text "
+        ".
+
+- Fix: 
+    changed: ament_package 
+    to: ament_package()
+
+-------------------
+
+Bug 2: testbed_bringup/maps/testbed_world.yaml
+
+- Issue: 
+    The map YAML referenced a nonexistent image: wrong_path_testbed_world.pgm
+    The correct map image is located in the same directory:
+        testbed_bringup/maps/testbed_world.pgm
+
+- Fix:  
+    changed: image: wrong_path_testbed_world.pgm
+    to: image: testbed_world.pgm
+
+-------------------
+
+Bug 3: testbed_bringup/CMakeLists.txt 
+
+- Issue:
+    Map directory not installed, installed only the launch directory
+    so the map YAML/PGM files were absent from the installed package
+
+- Fix:
+    Added maps to the install directory list
+
+-------------------
+
+Bug 4 / Improvement: testbed_description/urdf/testbed.gazebo - Lidar max range too short (1.5 m)
+
+- Issue: 
+    AMCL pose drifted from the robot's true position while teleoping
+    most scan rays were infinite, and the robot appeared far off in RViz than its actual location
+
+- Cause: the sensor's <range><max> was 1.5 m, too short for the map.
+    in open areas it returned no data, so AMCL could not correct odometry drift
+
+- Fix: 
+    set <max> to 8 m
+    using 8m, several walls are visible and it is a realistic range for a 2D lidar
+    laser scan now overlays the map walls in RViz, and stays aligned even after extended driving
+
+-------------------
+
