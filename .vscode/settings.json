@@ -1,3 +1,30 @@
 {
-    "cmake.sourceDirectory": "/home/eric-ros1/level01_ros_assignment/testbed_bringup"
+    "cmake.sourceDirectory": "/home/eric-ros1/level01_ros_assignment/testbed_bringup",
+    "ROS2.distro": "jazzy",
+    "python.autoComplete.extraPaths": [
+        "/home/ved_oswal/tb_ws/install/turtle_bot/lib/python3.12/site-packages",
+        "/home/ved_oswal/tb_ws/install/turtle_bot_interfaces/lib/python3.12/site-packages",
+        "/home/ved_oswal/tb_ws/install/tortoisebot_control/lib/python3.12/site-packages",
+        "/home/ved_oswal/install/turtlesim_command_controller/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/turtlesim_catch_them_all/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/practice/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/my_robot_interfaces/local/lib/python3.10/dist-packages",
+        "/home/ved_oswal/install/my_py_pkg/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/calculator/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/actions_py/lib/python3.10/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/ved_oswal/tb_ws/install/turtle_bot/lib/python3.12/site-packages",
+        "/home/ved_oswal/tb_ws/install/turtle_bot_interfaces/lib/python3.12/site-packages",
+        "/home/ved_oswal/tb_ws/install/tortoisebot_control/lib/python3.12/site-packages",
+        "/home/ved_oswal/install/turtlesim_command_controller/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/turtlesim_catch_them_all/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/practice/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/my_robot_interfaces/local/lib/python3.10/dist-packages",
+        "/home/ved_oswal/install/my_py_pkg/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/calculator/lib/python3.10/site-packages",
+        "/home/ved_oswal/install/actions_py/lib/python3.10/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ]
 }
