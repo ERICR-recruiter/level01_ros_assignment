@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment- Shiva Sai Vangala
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -124,7 +124,274 @@ We’ll be looking for:
 
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
-## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+## Contact Info
+ - Name: Shiva Sai Vangala
+ - Contact number:+61416652923
+   Whatsapp:+919346432923
+ - Email Address: saishiva791@gmail.com
+
+# Implementation
+
+## Approach
+
+I created a separate ROS2 package called `testbed_navigation` and configured the Nav2 components individually instead of using `nav2_bringup`.
+
+The navigation system was divided into three stages:
+
+1. Map loading
+2. Localization
+3. Navigation
+
+This keeps each part modular and allows the components to be tested independently.
+
+## Map Loading
+
+The provided map is loaded using `nav2_map_server`.
+
+Launch command:
+
+```bash
+ros2 launch testbed_navigation map_loader.launch.py
+```
+
+The launch file starts the map server together with a lifecycle manager. The supplied `testbed_world.yaml` map is loaded and published on `/map`.
+
+## Localization
+
+Localization is implemented using AMCL.
+
+Configuration file:
+
+```text
+testbed_navigation/config/amcl_params.yaml
+```
+
+Launch command:
+
+```bash
+ros2 launch testbed_navigation localization.launch.py
+```
+
+AMCL uses:
+
+- `/map` as the global map
+- `/scan` for LiDAR measurements
+- `/odom` for odometry
+- `base_footprint` as the robot base frame
+
+After setting the initial robot pose in RViz using **2D Pose Estimate**, AMCL successfully provides the `map -> odom` transform and tracks the robot position on the map.
+
+## Navigation
+
+Navigation parameters are configured in:
+
+```text
+testbed_navigation/config/nav2_params.yaml
+```
+
+The navigation launch file manually starts the required Nav2 components instead of calling `nav2_bringup`.
+
+The following nodes are launched:
+
+- `planner_server`
+- `controller_server`
+- `behavior_server`
+- `bt_navigator`
+- `nav2_lifecycle_manager`
+
+Launch command:
+
+```bash
+ros2 launch testbed_navigation navigation.launch.py
+```
+
+### Global Planner
+
+The NavFn planner is used for global path planning:
+
+```text
+nav2_navfn_planner/NavfnPlanner
+```
+
+It generates a path from the robot's current position to the requested goal.
+
+### Local Controller
+
+The DWB local planner is used for path following:
+
+```text
+dwb_core::DWBLocalPlanner
+```
+
+The controller follows the generated path and publishes velocity commands on `/cmd_vel`.
+
+### Costmaps
+
+A global and local costmap are configured.
+
+The global costmap uses:
+
+- the saved map
+- LiDAR obstacle information
+- an inflation layer
+
+The local costmap uses:
+
+- a rolling window around the robot
+- live `/scan` data
+- an obstacle layer
+- an inflation layer
+
+## Behavior Tree
+
+`bt_navigator` coordinates planning, path following and recovery actions.
+
+The configured recovery behaviors include:
+
+- spin
+- backup
+- wait
+
+## LiDAR Tuning
+
+The supplied simulated LiDAR initially had a maximum range of approximately 1.5 m.
+
+During testing, the short range provided limited environmental information to AMCL, especially during turns and in larger open areas.
+
+The simulated LiDAR maximum range was increased to 5.0 m.
+
+The AMCL and Nav2 costmap parameters were also updated to match the new LiDAR range.
+
+This improved localization stability during turns and provided better obstacle information for navigation.
+
+## Testing
+
+The following functionality was successfully tested:
+
+- Robot spawned correctly in Gazebo
+- Robot responded correctly to `/cmd_vel`
+- LiDAR published valid `/scan` data
+- Map loaded correctly in RViz
+- AMCL localized the robot successfully
+- `map -> odom` transform was generated
+- Nav2 lifecycle nodes activated successfully
+- Global and local costmaps operated correctly
+- Navigation goals were accepted from RViz
+- Global paths were generated
+- Robot followed the planned path
+- Robot successfully navigated through turns
+- Robot reached the requested goal positions
+
+## Screenshots
+
+### AMCL Localization
+
+![AMCL Localization](screenshots/localisation.png)
+
+### Navigation Path
+
+![Navigation Path](screenshots/navigationimage.png)
+
+### Gazebo and RViz Navigation
+
+![Gazebo and RViz](screenshots/gazebowithrviz.png)
+
+### Navigation Goal Reached
+
+![Navigation Goal Reached](screenshots/navigationreachedgoal.png)
+
+## Challenges Faced
+
+### CMake Build Error
+
+The starter `testbed_description/CMakeLists.txt` contained:
+
+```cmake
+ament_package
+```
+
+instead of:
+
+```cmake
+ament_package()
+```
+
+This caused the initial workspace build to fail. Adding the parentheses fixed the CMake error.
+
+### Map Directory Not Installed
+
+The `maps` directory was not included in the installation configuration of `testbed_bringup`.
+
+The CMake installation configuration was updated so the map files are available from the installed package.
+
+### Incorrect Map Image Path
+
+The supplied map YAML referenced:
+
+```text
+wrong_path_testbed_world.pgm
+```
+
+The path was corrected to:
+
+```text
+testbed_world.pgm
+```
+
+After this fix, `nav2_map_server` successfully loaded the supplied map.
+
+### Simulation Time Synchronization
+
+`robot_state_publisher` initially did not use simulation time while Gazebo was running with simulation time.
+
+`use_sim_time` was enabled for `robot_state_publisher` so TF timestamps were consistent with the simulation.
+
+### Costmap Parameter Type
+
+During initial navigation testing, the local costmap failed because `width` and `height` were provided as floating-point values.
+
+They were changed to integer values expected by Nav2 Humble.
+
+After this correction, all navigation lifecycle nodes configured and activated successfully.
+
+## Running the Complete System
+
+Build and source the workspace:
+
+```bash
+cd ~/assignment_ws
+colcon build
+source install/setup.bash
+```
+
+### Terminal 1 - Simulation
+
+```bash
+ros2 launch testbed_bringup testbed_full_bringup.launch.py
+```
+
+### Terminal 2 - Map Server
+
+```bash
+ros2 launch testbed_navigation map_loader.launch.py
+```
+
+### Terminal 3 - Localization
+
+```bash
+ros2 launch testbed_navigation localization.launch.py
+```
+
+Set the initial robot pose using **2D Pose Estimate** in RViz.
+
+### Terminal 4 - Navigation
+
+```bash
+ros2 launch testbed_navigation navigation.launch.py
+```
+
+Navigation goals can then be sent using **2D Goal Pose** in RViz.
+
+## Result
+
+The completed ROS2 navigation system successfully performs map loading, AMCL localization, global path planning, local path following and autonomous navigation in the supplied Gazebo environment.
