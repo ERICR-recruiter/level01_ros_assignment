@@ -1,0 +1,53 @@
+Testbed Starter Code - Bugs Identified and Fixed
+
+1. testbed_description/CMakeLists.txt
+Problem:
+The file used "ament_package" without parentheses. This caused colcon build to fail with a CMake parse error.
+
+Fix:
+Changed:
+ament_package
+
+To:
+ament_package()
+
+Result:
+The testbed_description package builds successfully.
+
+
+2. testbed_bringup/CMakeLists.txt
+Problem:
+The maps directory was not installed with the package. As a result, the map files were not available inside the installed package share directory.
+
+Fix:
+Added the maps directory to the install() command.
+
+Result:
+testbed_world.yaml and testbed_world.pgm are now available from the installed testbed_bringup package.
+
+
+3. testbed_bringup/maps/testbed_world.yaml
+Problem:
+The YAML file referenced a non-existent image:
+wrong_path_testbed_world.pgm
+
+Fix:
+Changed the image path to:
+testbed_world.pgm
+
+Result:
+nav2_map_server successfully loads and publishes the provided map.
+
+
+4. testbed_description/launch/robot_description.launch.py
+Problem:
+robot_state_publisher was running with use_sim_time disabled while Gazebo uses simulation time. This caused inconsistent timestamps and TF message-filter warnings during simulation.
+
+Fix:
+Added:
+{'use_sim_time': True}
+
+to the robot_state_publisher parameters.
+
+Result:
+robot_state_publisher now uses the same simulation clock as Gazebo and the navigation/localization system.
