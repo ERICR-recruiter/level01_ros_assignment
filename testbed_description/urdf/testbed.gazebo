@@ -37,7 +37,11 @@
       <update_rate>10</update_rate>
       <visualize>true</visualize>
       <plugin name="my_imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+<<<<<<< HEAD
+      <initial_orientation_as_reference>false</initial_orientation_as_reference>
+=======
       <initial_orientation_as_reference>false</initial_orientation_as_reference>>
+>>>>>>> 6086b810674fdc480a963e55ace0626ed9b7837b
         <ros>
           <remapping>~/out:=imu</remapping>
         </ros>
@@ -62,7 +66,11 @@
         </scan>
         <range>
           <min>0.10</min>
+<<<<<<< HEAD
+          <max>10.0</max> <!--will tweak this number to get better result-->
+=======
           <max>1.5</max>
+>>>>>>> 6086b810674fdc480a963e55ace0626ed9b7837b
           <resolution>0.01</resolution>
         </range>
         <noise>

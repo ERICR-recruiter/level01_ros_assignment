@@ -9,6 +9,9 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_prefix
 from launch.actions import ExecuteProcess
 
+from launch.substitutions import LaunchConfiguration
+
+
 def generate_launch_description():
 
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
@@ -41,6 +44,10 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py'),
         ),
+<<<<<<< HEAD
+        launch_arguments={'world': LaunchConfiguration('world')}.items(),
+=======
+>>>>>>> 6086b810674fdc480a963e55ace0626ed9b7837b
     )    
 
     return LaunchDescription([

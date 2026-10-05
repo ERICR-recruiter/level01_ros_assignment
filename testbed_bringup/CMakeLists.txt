@@ -27,6 +27,10 @@ endif()
 install(
   DIRECTORY
     launch
+<<<<<<< HEAD
+    maps
+=======
+>>>>>>> 6086b810674fdc480a963e55ace0626ed9b7837b
   DESTINATION
     share/${PROJECT_NAME}/
 )

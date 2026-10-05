@@ -23,5 +23,12 @@ def generate_launch_description():
             executable='robot_state_publisher',
             name='robot_state_publisher',
             output='screen',
+<<<<<<< HEAD
+            parameters=[robot_description, {'use_sim_time': True}]),
+    ])
+
+# using sim time for tf timing errors in Nav2
+=======
             parameters=[robot_description]),
     ])
+>>>>>>> 6086b810674fdc480a963e55ace0626ed9b7837b
