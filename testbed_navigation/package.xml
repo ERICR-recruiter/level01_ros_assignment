@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<package format="3">
+
+  <name>testbed_navigation</name>
+  <version>0.0.1</version>
+
+  <description>
+    Manual Nav2 navigation stack for the ERIC Robotics Testbed T1.0.0.
+  </description>
+
+  <maintainer email="harshsengar1006@gmail.com">Harsh Sengar</maintainer>
+
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclpy</depend>
+
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
+
+  <depend>nav2_map_server</depend>
+  <depend>nav2_amcl</depend>
+  <depend>nav2_planner</depend>
+  <depend>nav2_controller</depend>
+  <depend>nav2_bt_navigator</depend>
+  <depend>nav2_behaviors</depend>
+  <depend>nav2_lifecycle_manager</depend>
+
+  <depend>nav2_navfn_planner</depend>
+  <depend>dwb_core</depend>
+  <depend>dwb_critics</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>
