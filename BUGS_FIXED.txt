@@ -1,0 +1,15 @@
+BUGS FOUND IN THE STARTER CODE
+
+1) testbed_description/CMakeLists.txt
+   Fix: last line was "ament_package", changed it to "ament_package()".
+
+2) testbed_bringup/CMakeLists.txt
+   install(DIRECTORY ...) next to "launch".
+
+3) testbed_bringup/maps/testbed_world.yaml
+   Fix: image was "wrong_path_testbed_world.pgm", changed it to
+   "testbed_world.pgm" (the real file name).
+
+4) testbed_description/urdf/testbed.gazebo
+   Fix: there was an extra ">" after </initial_orientation_as_reference>
+   in the IMU plugin. Removed it.
