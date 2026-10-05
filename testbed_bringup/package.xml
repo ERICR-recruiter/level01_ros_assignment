@@ -4,7 +4,7 @@
   <name>testbed_bringup</name>
   <version>0.0.0</version>
   <description>Launch files and map assets for the testbed simulation.</description>
-  <maintainer email="rohit.panikar@ericrobotics.com">rohit</maintainer>
+  <maintainer email="alffrin10@gmail.com">Alffrin Regi</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

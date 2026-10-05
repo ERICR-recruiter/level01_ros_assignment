@@ -12,6 +12,12 @@ __pycache__/
 .idea/
 .DS_Store
 
+# Local credentials and keys
+.env
+.env.*
+*.pem
+*.key
+
 # Crash dumps
 core
 core.*

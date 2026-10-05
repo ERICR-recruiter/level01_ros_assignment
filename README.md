@@ -71,6 +71,10 @@ The known model-geometry limitation and the fixes made to the starter packages a
 
 [Watch the 20-second Gazebo navigation demo](testbed_navigation/evidence/navigation_demo.mp4).
 
-## Submission details
+## Author
 
-Before submitting, add your name, contact number, and email address, and choose a license for the package metadata. Keep bugs.txt at the repository root, outside testbed_navigation, and submit the finished work as a pull request from your fork.
+- Name: Alffrin Regi
+- Email: alffrin10@gmail.com
+- Contact number: +91 9495937829
+
+`bugs.txt` is at the repository root, outside `testbed_navigation`, as requested. The starter repository has no license file; its package manifests use `TODO: License declaration`.

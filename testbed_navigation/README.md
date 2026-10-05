@@ -53,6 +53,7 @@ The map loader accepts a different map with map:=/path/to/map.yaml.
 ## Nodes and parameters
 
 - map_loader.launch.py runs map_server and a lifecycle manager.
+- `config/map_server_params.yaml` contains the map server defaults; the launch argument supplies the map path and simulation time setting.
 - localization.launch.py runs AMCL and a lifecycle manager.
 - navigation.launch.py runs planner_server, controller_server, behavior_server, bt_navigator, velocity_smoother, and their lifecycle manager.
 - NavFn and Regulated Pure Pursuit handle planning and path following. The behavior trees include recovery actions.
@@ -63,6 +64,8 @@ The map loader accepts a different map with map:=/path/to/map.yaml.
 ## Evidence
 
 The full workflow was run in Gazebo. The map, AMCL, and navigation nodes activated; goals at (3, 2) and (0, 5) completed successfully. Measured post-goal drift was about 0.036 m over three seconds.
+
+The starter setup needed separate lifecycle-managed launch stages so each part could be started and checked independently. During simulation, wheel and caster contact settings caused the robot to drift, and the controller continued to publish nonzero velocity briefly after reaching a goal. Those issues were corrected and the stop behavior was measured again. The remaining model geometry limitation is recorded in the root `bugs.txt`.
 
 ![RViz navigation view](evidence/navigation_result.png)
 

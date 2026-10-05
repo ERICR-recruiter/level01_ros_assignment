@@ -17,6 +17,10 @@ def generate_launch_description():
     )
 
     map_yaml = LaunchConfiguration('map')
+    map_server_params = os.path.join(
+        get_package_share_directory('testbed_navigation'),
+        'config', 'map_server_params.yaml',
+    )
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -35,11 +39,9 @@ def generate_launch_description():
             executable='map_server',
             name='map_server',
             output='screen',
-            parameters=[{
+            parameters=[map_server_params, {
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
                 'yaml_filename': map_yaml,
-                'topic_name': 'map',
-                'frame_id': 'map',
             }],
         ),
 
