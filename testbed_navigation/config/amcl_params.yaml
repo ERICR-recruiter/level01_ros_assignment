@@ -1,0 +1,36 @@
+amcl:
+  ros__parameters:
+    # gazebo sim clock
+    use_sim_time: true
+
+    # TF frames used by AMCL
+    global_frame_id: map
+    odom_frame_id: odom
+    base_frame_id: base_footprint
+
+    # Initialize AMCL at the known starting pose in the map
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0
+
+    # laser scan input topic
+    scan_topic: /scan
+
+    # particle filter parameters
+    min_particles: 500
+    max_particles: 2000
+
+    # no. of laser beams used for localization
+    max_beams: 120 # default: 60
+
+    laser_model_type: likelihood_field
+
+    # min robot motion before updating the filter
+    update_min_d: 0.15
+    update_min_a: 0.15
+
+    # max TF lookup delay
+    transform_tolerance: 1.0
