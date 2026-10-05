@@ -129,9 +129,6 @@ We’re excited to see how you approach this task. Good luck, and happy coding! 
  - Contact number:+61416652923
    Whatsapp:+919346432923
  - Email Address: saishiva791@gmail.com
-# Implementation
-
-## Approach
 
 # Implementation
 
