@@ -1,0 +1,23 @@
+# ROS 2 and colcon output
+build/
+install/
+log/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Local credentials and keys
+.env
+.env.*
+*.pem
+*.key
+
+# Crash dumps
+core
+core.*
