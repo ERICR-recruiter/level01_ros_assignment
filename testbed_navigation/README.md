@@ -81,6 +81,11 @@ To test only the map, run `map_loader.launch.py` instead of `localization.launch
 - `velocity_smoother` and `collision_monitor` are not used; only basic navigation
   is needed.
 
+## Demo
+
+A screen recording of localization and navigation in the simulation is in
+[`media/demo.mp4`](../media/demo.mp4) at the root of the repository (about 3 min 45 s).
+
 ## Bugs and challenges
 
 Bugs found in the starter code and their fixes (map path, install rules,
