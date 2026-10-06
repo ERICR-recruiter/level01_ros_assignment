@@ -1,0 +1,90 @@
+BUG REPORT - Testbed-T1.0.0 starter code
+=========================================
+
+Bugs found in the starter code and how each one was fixed.
+
+1. Wrong map image path
+   File: testbed_bringup/maps/testbed_world.yaml
+   Problem: "image: wrong_path_testbed_world.pgm" does not exist, so the map
+            server cannot load the map.
+   Fix: changed it to "image: testbed_world.pgm".
+
+2. Missing parentheses on ament_package
+   File: testbed_description/CMakeLists.txt
+   Problem: the last line was "ament_package" without "()", so the package
+            was not finalised correctly by CMake.
+   Fix: changed it to "ament_package()".
+
+3. Gazebo models were not installed
+   File: testbed_gazebo/CMakeLists.txt
+   Problem: only "launch" and "worlds" were installed; the "models" folder
+            was left out, so the installed package could not find its models.
+   Fix: added "models" to the install(DIRECTORY ...) list.
+
+4. Map folder was not installed
+   File: testbed_bringup/CMakeLists.txt
+   Problem: only "launch" was installed, so maps/testbed_world.yaml and the
+            .pgm were missing from the installed share directory and
+            map_server could not open them.
+   Fix: added "maps" to the install(DIRECTORY ...) list.
+
+5. Plugin that is not available / not needed
+   File: testbed_description/urdf/testbed.gazebo
+   Problem: the URDF loads libgazebo_ros_control.so. That plugin is not
+            installed in the environment, and Gazebo printed
+            "Failed to load plugin libgazebo_ros_control.so". Nothing in
+            this robot uses ros_control (the diff-drive plugin does the work).
+   Fix: removed the plugin block.
+
+6. Stray character in the IMU plugin XML
+   File: testbed_description/urdf/testbed.gazebo
+   Problem: "<initial_orientation_as_reference>false</initial_orientation_as_reference>>"
+            has an extra ">" after the closing tag.
+   Fix: removed the extra ">".
+
+7. Wheel separation did not match the robot
+   File: testbed_description/urdf/testbed.gazebo (diff-drive plugin)
+   Problem: wheel_separation was 0.35 m. Measured from the wheel meshes, the
+            distance between the wheel centres is about 0.376 m (left wheel
+            centre y = +0.150, right wheel centre y = -0.226). The plugin
+            therefore reports a yaw that is about 7% larger than the real
+            rotation, which makes odometry drift when the robot turns.
+   Fix: set wheel_separation to 0.376.
+
+8. Friction values were inverted for wheels and casters
+   File: testbed_description/urdf/testbed.gazebo
+   Problem: all links had mu1 = mu2 = 0.2. The driven wheels need good grip,
+            while the casters are modelled as FIXED joints, so they act as
+            skids and drag on the floor. This causes wheel slip and unstable
+            odometry.
+   Fix: wheels mu1 = mu2 = 1.0, casters mu1 = mu2 = 0.01.
+
+9. Self collision on every link
+   File: testbed_description/urdf/testbed.gazebo
+   Problem: self_collide was true on all links, which can cause parts of the
+            robot to push against each other and add jitter.
+   Fix: set self_collide to false.
+
+10. Lidar range too short
+   File: testbed_description/urdf/testbed.gazebo (ray sensor)
+   Problem: the lidar max range was 1.5 m. In a map this large most beams
+            return nothing, so AMCL had little to match against; its pose
+            drifted about 1 m away from the Gazebo ground truth and the
+            global plan ended up outside the local costmap (DWB reported
+            "None of the points of the global plan were in the local costmap").
+   Fix: raised the max range to 6.0 m and set the Nav2 values to match
+        (laser_max_range 6.0, raytrace_max_range 6.0, obstacle_max_range 5.5).
+
+Observations (not changed in the robot files)
+---------------------------------------------
+- The chassis is not centred on base_footprint (mesh extents about
+  x -0.226..0.124, y -0.214..0.138). The costmap footprint in nav2_params.yaml
+  is a polygon around base_footprint instead of a circle to account for this.
+
+Environment note (not a code bug)
+---------------------------------
+Development was done on macOS (Apple silicon) with ROS 2 Humble from RoboStack
+(pixi), not Ubuntu 22.04. The "setuptools <=58.2.0" pin in pixi.toml kept the
+environment on an older Gazebo/ros-gazebo build where gzserver crashed when the
+libgazebo_ros_factory plugin loaded. Removing the pin let pixi resolve newer
+builds and the standard spawn_entity launch works.
