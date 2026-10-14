@@ -1,0 +1,15 @@
+=====================================================
+Identified Bugs & Fixes - Testbed T1.0.0 Starter Code
+=====================================================
+
+1. Bug: TF Frame ID Mismatch in Lidar Sensor Plugin
+   - Cause: URDF sensor link was named 'laser_frame', but Gazebo plugin published to 'base_laser'.
+   - Fix: Updated <frame_name> in testbed_description URDF to 'laser_frame'.
+
+2. Bug: Differential Drive Odom Topic Naming
+   - Cause: Gazebo diff_drive plugin published to '/demo/odom' instead of '/odom'.
+   - Fix: Remapped odometry topic to '/odom' in testbed_description URDF plugin settings.
+
+3. Bug: Incorrect Mesh File Paths
+   - Cause: URDF used relative paths for visual mesh assets failing package resolution.
+   - Fix: Updated mesh URI paths to 'package://testbed_description/meshes/...'.
