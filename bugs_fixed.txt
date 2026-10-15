@@ -1,0 +1,23 @@
+===================================================================
+ERIC Robotics Level-01 Assignment - Identified Bugs and Fixes
+===================================================================
+
+1. Gazebo Classic Exit Code -11 (Segmentation Fault) on WSL2
+   - Bug: Gazebo crashed on launch due to duplicate 'libgazebo_ros_factory.so' plugin declarations injected both by CLI launch args and URDF/world files, alongside OGRE engine crashes under WSL2 GPU acceleration.
+   - Fix: Removed duplicate plugin references from URDF/Xacro files, stripped redundant plugin tags from launch scripts, and set 'export LIBGL_ALWAYS_SOFTWARE=1' to enforce stable CPU software rasterization.
+
+2. GPU LiDAR Sensor Incompatibility under WSL2
+   - Bug: Sensor plugins configured as 'gpu_ray' or 'gpu_laser' failed to update frame transforms or published zero-range point clouds under WSL2 software rendering, breaking costmap updates.
+   - Fix: Converted all sensor type definitions in URDF/Xacro files from 'gpu_ray'/'gpu_laser' to standard CPU 'ray' tracing.
+
+3. Empty Gazebo World File Causing AMCL Particle Divergence
+   - Bug: 'testbed_world.world' contained only an empty ground plane. Because LiDAR rays had no physical walls to reflect off, AMCL lost pose confidence and repeatedly teleported the robot in RViz.
+   - Fix: Replaced 'testbed_world.world' with the complete physical wall layout from 'testbed_playground.world', matching the occupancy map grid.
+
+4. Transform Timeout Drops and Eratic RViz Teleportation
+   - Bug: Clock jitter and latency between Gazebo simulation time (/clock) and Nav2 nodes caused TF lookup failures ('Message Filter dropping message' for lidar_link_1).
+   - Fix: Increased 'transform_tolerance' across AMCL, Local Costmap, and Global Costmap to 2.5s. Reduced DWB local controller frequency to 10.0 Hz and tuned particle filter parameters (alpha1-alpha4: 0.05).
+
+5. RViz Display Panel & QoS Mismatches
+   - Bug: RViz default fixed frame was set to 'odom' instead of 'map', and LaserScan QoS was set to System Default, preventing LiDAR visualization and throwing frame errors.
+   - Fix: Enforced 'Fixed Frame: map' in RViz configuration and updated LaserScan QoS reliability policy to 'Best Effort'.
