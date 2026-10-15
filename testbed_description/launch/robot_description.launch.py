@@ -23,5 +23,10 @@ def generate_launch_description():
             executable='robot_state_publisher',
             name='robot_state_publisher',
             output='screen',
-            parameters=[robot_description]),
+            # BUG FIX: Added use_sim_time=True so robot_state_publisher uses
+            # Gazebo simulation clock instead of wall clock. Without this,
+            # TF transforms are published with wall-time stamps while all
+            # sensor data uses sim time, causing TF lookup failures and
+            # breaking AMCL/Nav2 entirely.
+            parameters=[robot_description, {'use_sim_time': True}]),
     ])

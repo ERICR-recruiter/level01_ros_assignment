@@ -1,0 +1,49 @@
+ERIC Robotics ROS Intern Assignment
+Bug Report and Fixes
+
+1. Map YAML image path
+File: testbed_bringup/maps/testbed_world.yaml
+Issue: The image field referenced wrong_path_testbed_world.pgm.
+Fix: Changed the image path to testbed_world.pgm.
+Impact: Allows the map server to load the occupancy map.
+
+2. Map installation
+File: testbed_bringup/CMakeLists.txt
+Issue: Map assets were not included in the package installation.
+Fix: Added the maps directory to the installed directories.
+Impact: Makes the map YAML and image available from the installed package.
+
+3. Robot simulation clock
+File: testbed_description/launch/robot_description.launch.py
+Issue: robot_state_publisher did not explicitly use simulation time.
+Fix: Set use_sim_time to true.
+Impact: Keeps robot state publishing aligned with the Gazebo simulation clock.
+
+4. Gazebo sensor plugin XML
+File: testbed_description/urdf/testbed.gazebo
+Issue: An extra closing angle bracket appeared in the IMU plugin configuration.
+Fix: Removed the stray character.
+Impact: Prevents malformed XML in the sensor plugin configuration.
+
+5. AMCL parameter configuration
+File: testbed_navigation/config/nav2_params.yaml
+Issue: The likelihood-field laser model configuration lacked an explicit
+laser_likelihood_max_dist parameter.
+Fix: Added laser_likelihood_max_dist with a value of 2.0.
+Impact: Explicitly configures the laser likelihood-field distance.
+
+6. Navigation costmap configuration
+File: testbed_navigation/config/nav2_params.yaml
+Issue: Costmap configuration was nested at the wrong level.
+Fix: Configured global_costmap and local_costmap as top-level sections.
+Impact: Makes the costmap configuration available to the appropriate Nav2 servers.
+
+7. LiDAR range configuration
+File: testbed_description/urdf/testbed.gazebo
+Issue: The original configured maximum LiDAR range was 1.5 metres.
+Change: Increased the maximum range to 8.0 metres for navigation testing.
+Impact: Extends the configured sensing range. This is a configuration improvement,
+not necessarily a starter-code defect.
+
+Note:
+Each change should be verified by building and testing the assignment.
