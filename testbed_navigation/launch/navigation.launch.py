@@ -5,41 +5,43 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     nav_dir = get_package_share_directory('testbed_navigation')
-    nav2_params = os.path.join(nav_dir, 'config', 'nav2_params.yaml')
+    nav2_params_file = os.path.join(nav_dir, 'config', 'nav2_params.yaml')
 
-    planner_node = Node(
-        package='nav2_planner',
-        executable='planner_server',
-        name='planner_server',
-        output='screen',
-        parameters=[nav2_params]
-    )
+    nodes_to_start = ['controller_server', 'planner_server', 'behavior_server', 'bt_navigator']
 
-    controller_node = Node(
+    controller_server = Node(
         package='nav2_controller',
         executable='controller_server',
         name='controller_server',
         output='screen',
-        parameters=[nav2_params]
+        parameters=[nav2_params_file, {'use_sim_time': True}]
     )
 
-    behavior_node = Node(
+    planner_server = Node(
+        package='nav2_planner',
+        executable='planner_server',
+        name='planner_server',
+        output='screen',
+        parameters=[nav2_params_file, {'use_sim_time': True}]
+    )
+
+    behavior_server = Node(
         package='nav2_behaviors',
         executable='behavior_server',
         name='behavior_server',
         output='screen',
-        parameters=[nav2_params]
+        parameters=[nav2_params_file, {'use_sim_time': True}]
     )
 
-    bt_navigator_node = Node(
+    bt_navigator = Node(
         package='nav2_bt_navigator',
         executable='bt_navigator',
         name='bt_navigator',
         output='screen',
-        parameters=[nav2_params]
+        parameters=[nav2_params_file, {'use_sim_time': True}]
     )
 
-    lifecycle_manager_node = Node(
+    lifecycle_manager = Node(
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
         name='lifecycle_manager_navigation',
@@ -47,14 +49,14 @@ def generate_launch_description():
         parameters=[{
             'use_sim_time': True,
             'autostart': True,
-            'node_names': ['planner_server', 'controller_server', 'behavior_server', 'bt_navigator']
+            'node_names': nodes_to_start
         }]
     )
 
     return LaunchDescription([
-        planner_node,
-        controller_node,
-        behavior_node,
-        bt_navigator_node,
-        lifecycle_manager_node
+        controller_server,
+        planner_server,
+        behavior_server,
+        bt_navigator,
+        lifecycle_manager
     ])

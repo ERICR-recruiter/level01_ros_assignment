@@ -5,14 +5,14 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     nav_dir = get_package_share_directory('testbed_navigation')
-    amcl_params = os.path.join(nav_dir, 'config', 'amcl_params.yaml')
+    nav2_params_file = os.path.join(nav_dir, 'config', 'nav2_params.yaml')
 
     amcl_node = Node(
         package='nav2_amcl',
         executable='amcl',
         name='amcl',
         output='screen',
-        parameters=[amcl_params]
+        parameters=[nav2_params_file]
     )
 
     lifecycle_manager_node = Node(

@@ -12,7 +12,10 @@ def generate_launch_description():
         executable='map_server',
         name='map_server',
         output='screen',
-        parameters=[{'yaml_filename': map_yaml_path}]
+        parameters=[{
+            'yaml_filename': map_yaml_path,
+            'use_sim_time': True
+        }]
     )
 
     lifecycle_manager_node = Node(
