@@ -1,0 +1,23 @@
+BUGS FOUND AND FIXED IN STARTER CODE
+1. testbed_description/CMakeLists.txt - `ament_package` was missing parentheses -> CMake parse error, whole workspace failed to build. Fixed: ament_package().
+2. testbed_bringup/maps/testbed_world.yaml - image pointed to wrong_path_testbed_world.pgm. Fixed: testbed_world.pgm.
+3. testbed_bringup/CMakeLists.txt - maps/ directory was not installed, so map_server could not find the map from the install space. Fixed: install launch + maps.
+4. testbed_description/urdf/testbed.gazebo - lidar max range was 1.5 m; in a 20x20 m map the robot saw no walls from most positions, so AMCL could not localize and costmaps stayed empty. Fixed: 10.0 m.
+5. testbed_description/urdf/testbed.gazebo - wheel_separation 0.35 m used the joint origins (inner wheel faces); real wheel-centre track from the meshes is 0.376 m. Measured: commanded 361 deg turn produced ~329 deg. Fixed: 0.376.
+6. testbed_description/urdf/testbed.gazebo - loaded libgazebo_ros_control.so (ROS 1 plugin, fails to load in ROS 2). Removed; motion is handled by gazebo_ros_diff_drive.
+7. testbed_description/urdf/testbed.gazebo - stray ">" after </initial_orientation_as_reference> in the IMU plugin. Removed.
+8. testbed_description/launch/robot_description.launch.py - robot_state_publisher did not use sim time. Fixed: use_sim_time True.
+9. testbed_gazebo/CMakeLists.txt - models/ was not installed although the launch file adds it to GAZEBO_MODEL_PATH. Fixed.
+10. testbed_description/rviz/full_bringup.rviz - RobotModel subscribed to /robot_description with Volatile durability, so the latched description was often missed. Fixed: Transient Local.
+11. (Observation) base_footprint is not at the robot's geometric centre (centre is at x=-0.05, y=-0.04), so a centred robot_radius under-covers the body. Handled in nav2_params.yaml with an offset polygon footprint.
+12. (Observation) imu_joint / dummy_joint y-offsets do not match their meshes (~17 cm apart). Not used by navigation; left unchanged.
+
+ENVIRONMENT ISSUES FOUND DURING TESTING (not code bugs)
+- Lab LAN: default DDS domain shared with other PCs caused cross-talk and network drops that killed AMCL's lifecycle bond. Fixed with Cyclone DDS bound to loopback (multicast enabled) and ROS_DOMAIN_ID=37.
+- ROS_LOCALHOST_ONLY with Cyclone limits participants (~10) -> Nav2 nodes failed "free participant index". Replaced with a Cyclone XML config.
+- `pkill -f ros2` does not kill node processes; leftover lifecycle managers caused map_server to hang unconfigured. Use a kill script matching "--ros-args".
+- Lifecycle bonds timed out under load -> set bond_timeout: 0.0.
+- /tf flood starved the Nav2 controller: gazebo_ros_diff_drive at update_rate 100 published odom + 2 wheel
+  transforms (~300 msg/s). controller_server stopped receiving AMCL's map->odom a few seconds after start,
+  so the robot drove past goals ("Transform data too old"). Fixed: diff-drive update_rate 30 (/tf ~116 msg/s).
+  Result: 7/8 goals reached over two clean-start runs.

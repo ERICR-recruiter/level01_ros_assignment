@@ -6,22 +6,22 @@ from launch_ros.actions import Node
 from launch import LaunchDescription
 
 
-# this is the function launch  system will look for
+# Entry point used by the launch system.
 def generate_launch_description():
 
 
-    # Position and orientation
-    # [X, Y, Z]
+    # Robot position and orientation in the world.
+    # Position: [x, y, z]
     position = [0.0, 5.0, 0.0]
-    # [Roll, Pitch, Yaw]
+    # Orientation: [roll, pitch, yaw]
     orientation = [0.0, 0.0, 0.0]
-    # Base Name or robot
+    # Robot base name.
     robot_base_name = "testbed"
 
 
     entity_name = robot_base_name#+"-"+str(int(random.random()*100000))
 
-    # Spawn ROBOT Set Gazebo
+    # Spawn the robot in Gazebo.
     spawn_robot = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
@@ -39,7 +39,7 @@ def generate_launch_description():
 
  
 
-    # create and return launch description object
+    # Return the launch description.
     return LaunchDescription(
         [
             spawn_robot,
