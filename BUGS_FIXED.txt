@@ -1,0 +1,51 @@
+Level 1 ROS 2 Navigation Assignment — Bug Log
+
+1. File: testbed_description/CMakeLists.txt
+   Symptom:
+   The initial colcon build failed with a CMake parse error at line 24.
+
+   Root cause:
+   The ament_package macro was invoked without parentheses.
+
+   Correction:
+   Changed ament_package to ament_package().
+
+   Verification:
+   The workspace subsequently built all three starter packages successfully.
+
+## Additional findings — 2026-10-14
+
+1. **Obsolete Gazebo plugin reference**
+   Removed the ROS 1 `libgazebo_ros_control.so` reference because it is incompatible with this ROS 2 Humble setup. The existing Gazebo differential-drive plugin provides drive control.
+
+2. **Malformed IMU configuration**
+   Corrected an extra closing angle bracket in the IMU sensor configuration.
+
+3. **LiDAR topic configuration**
+   Configured `libgazebo_ros_ray_sensor.so` with the LaserScan output type and remapped `~/out` to `/scan`.
+
+4. **LiDAR frame**
+   Added `frame_name=lidar_link_1`. Verified that `/scan` publishes messages carrying this frame ID and that TF resolves `base_footprint` to `lidar_link_1`.
+
+5. **RViz grid configuration**
+   Investigated grid placement through RViz display properties. This was a visualization/reference-frame issue, not proof of an incorrect robot spawn pose.
+
+## Issues not conclusively resolved
+
+- Gazebo previously exited with segmentation fault code -11. Recent GDB runs remained alive during scan and TF checks, but the original crash cause is not conclusively established.
+- RViz reported a timestamp-related message-filter warning. Both RViz and robot_state_publisher have use_sim_time enabled; the warning's root cause remains unconfirmed.
+
+
+6. **Map YAML referenced a nonexistent image**
+   Symptom: The map YAML referenced `wrong_path_testbed_world.pgm`.
+   Root cause: The configured filename did not match the available map image, `testbed_world.pgm`.
+   Correction: Updated the YAML image entry to `image: testbed_world.pgm`.
+   Verification: map_loader.launch.py activated map_server and published /map; the 405x400 map image loaded successfully.
+
+## LiDAR range validation — 2026-10-16
+
+- Initial scan: all 300 rays returned positive infinity with a 1.5 m maximum range.
+- Changed the Gazebo ray sensor maximum range to 10.0 m.
+- Verification: a later scan contained 220 finite returns and 80 positive-infinity returns.
+- A subsequent fresh startup produced successful navigation with reduced robot-pose flickering.
+- The change improved observed sensor output, but the intermittent Gazebo segmentation fault and timestamp-related warnings remain unresolved.
