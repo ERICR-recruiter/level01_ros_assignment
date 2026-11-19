@@ -1,0 +1,25 @@
+Bugs Identified and Fixed in Starter Code
+
+1. Syntax error in testbed_description (Line 23)
+- Issue: Missing closing brackets on line 23 caused the package build/xacro parsing to fail right at the start.
+- Fix: Added the missing brackets and verified the build with colcon build.
+
+2. Simulation clock mismatch in robot_state_publisher
+- File: testbed_description/launch/robot_description.launch.py
+- Issue: use_sim_time was not passed to robot_state_publisher, while Gazebo and RViz were running on /clock. This causes TF timestamp mismatches when running Nav2 nodes.
+- Fix: Added {'use_sim_time': True} to the robot_state_publisher node parameters.
+
+3. LiDAR max range too short to detect room walls
+- File: testbed_description/urdf/testbed.gazebo
+- Issue: The ray sensor <max> range was set to 1.5m. From the robot's spawn position, all walls are further than 1.5m away, so /scan was publishing inf values and nothing showed up in RViz.
+- Fix: Increased <max> range from 1.5 to 10.0m so the scan hits the surrounding walls properly.
+
+4. Legacy ROS 1 control plugin and XML typo in Gazebo config
+- File: testbed_description/urdf/testbed.gazebo
+- Issue: libgazebo_ros_control.so (a ROS 1 plugin) was still declared at the top of the file, throwing plugin load errors in ROS 2 Gazebo. Also found an extra '>' at the end of the <initial_orientation_as_reference> tag in the IMU plugin block.
+- Fix: Removed the unused libgazebo_ros_control.so block and deleted the extra '>'.
+
+5. Wrong map image filename in map YAML
+- File: testbed_bringup/maps/testbed_world.yaml
+- Issue: The image field was pointing to 'wrong_path_testbed_world.pgm', which prevents map_server from loading the occupancy grid.
+- Fix: Updated the image field to 'testbed_world.pgm'.
