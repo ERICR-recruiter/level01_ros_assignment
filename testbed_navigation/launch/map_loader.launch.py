@@ -13,6 +13,12 @@ def generate_launch_description():
         'testbed_world.yaml'
     )
 
+    default_map_params = os.path.join(
+        get_package_share_directory('testbed_navigation'),
+        'config',
+        'map_server_params.yaml'
+    )
+
     use_sim_time = LaunchConfiguration('use_sim_time')
     map_yaml_file = LaunchConfiguration('map')
 
