@@ -1,0 +1,52 @@
+# Semantic waypoints for ERIC Robotics Testbed-T1.0.0
+# Coordinates are defined in the 'map' frame: [x (m), y (m), yaw (rad)]
+
+waypoints:
+  living_room:
+    name: "Living Room"
+    x: 0.0
+    y: 5.0
+    yaw: 0.0
+    aliases: ["living", "living room", "lounge", "main room"]
+
+  hallway:
+    name: "Hallway"
+    x: -1.5
+    y: -2.5
+    yaw: -1.5708
+    aliases: ["hallway", "corridor", "passage", "hall"]
+
+  kitchen:
+    name: "Kitchen"
+    x: -5.5
+    y: -4.0
+    yaw: 3.14159
+    aliases: ["kitchen", "pantry", "cookhouse"]
+
+  bathroom:
+    name: "Bathroom"
+    x: -5.5
+    y: -7.5
+    yaw: -1.5708
+    aliases: ["bathroom", "washroom", "restroom", "bath", "toilet"]
+
+  bedroom:
+    name: "Bedroom"
+    x: 6.5
+    y: -5.0
+    yaw: 0.0
+    aliases: ["bedroom", "bed", "master bedroom", "guest room"]
+
+  dining_room:
+    name: "Dining Room"
+    x: 2.0
+    y: -5.0
+    yaw: 0.0
+    aliases: ["dining", "dining room", "dining area", "table"]
+
+  home:
+    name: "Home / Spawn"
+    x: 0.0
+    y: 5.0
+    yaw: 0.0
+    aliases: ["home", "spawn", "start", "base", "dock", "charging"]

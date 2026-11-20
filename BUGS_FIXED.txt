@@ -1,0 +1,77 @@
+================================================================================
+ERIC ROBOTICS LEVEL 1 ROS 2 NAVIGATION ASSIGNMENT - BUGS IDENTIFIED AND FIXED
+================================================================================
+
+1. BUG: CMakeLists.txt Parse Syntax Error in testbed_description
+   - File: testbed_description/CMakeLists.txt (Line 23)
+   - Issue: The directive 'ament_package' was invoked without trailing parentheses ('ament_package').
+   - Impact: CMake failed parsing immediately during 'colcon build', preventing compilation of the entire workspace.
+   - Fix: Corrected 'ament_package' to 'ament_package()'.
+   - Verification: 'colcon build --symlink-install' succeeded with zero errors.
+
+2. BUG: Incorrect Map Image Filename in Map YAML
+   - File: testbed_bringup/maps/testbed_world.yaml (Line 1)
+   - Issue: The 'image' field pointed to a non-existent file 'wrong_path_testbed_world.pgm'.
+   - Impact: nav2_map_server threw a runtime error and failed to load the occupancy grid map into memory.
+   - Fix: Corrected the image attribute to 'testbed_world.pgm'.
+   - Verification: Verified via Python YAML parser that the referenced file exists and is accessible.
+
+3. BUG: Missing 'maps' Directory in testbed_bringup CMake Install Target
+   - File: testbed_bringup/CMakeLists.txt (Lines 27-33)
+   - Issue: The install(DIRECTORY ...) rule only installed the 'launch' directory, ignoring 'maps'.
+   - Impact: In standard ROS 2 deployment and non-symlink installs, 'install/testbed_bringup/share/testbed_bringup/maps' was missing, causing map loader launch files relying on get_package_share_directory() to fail.
+   - Fix: Added 'maps' to the install(DIRECTORY ...) directive.
+   - Verification: Inspected 'install/testbed_bringup/share/testbed_bringup/' and confirmed 'maps' is installed.
+
+4. BUG: Missing 'models' Directory in testbed_gazebo CMake Install Target
+   - File: testbed_gazebo/CMakeLists.txt (Lines 28-35)
+   - Issue: The install(DIRECTORY ...) rule only installed 'launch' and 'worlds', omitting 'models'.
+   - Impact: Gazebo world models located in 'models/' were not installed to the package share directory, causing model loading errors in Gazebo when launched from install path.
+   - Fix: Added 'models' to the install(DIRECTORY ...) directive.
+   - Verification: Inspected 'install/testbed_gazebo/share/testbed_gazebo/' and confirmed 'models' is installed.
+
+5. BUG: Malformed XML Tag in IMU Sensor Plugin Definition
+   - File: testbed_description/urdf/testbed.gazebo (Line 40)
+   - Issue: The tag '<initial_orientation_as_reference>false</initial_orientation_as_reference>>' contained an erroneous duplicate closing bracket ('>').
+   - Impact: Corrupted the XML tag hierarchy, risking parser rejection during SDF/URDF processing.
+   - Fix: Removed the extraneous closing angle bracket.
+   - Verification: XML was parsed and validated through Python xml.etree.ElementTree and xacro.
+
+6. BUG: Incompatible ROS 1 Gazebo Control Plugin
+   - File: testbed_description/urdf/testbed.gazebo (Lines 6-8)
+   - Issue: The URDF declared '<plugin name="control" filename="libgazebo_ros_control.so"/>', which is a legacy ROS 1 plugin.
+   - Impact: Gazebo threw a plugin loading error ("Failed to load plugin libgazebo_ros_control.so") on startup under ROS 2 Humble. The robot already possesses an active differential drive plugin ('libgazebo_ros_diff_drive.so') that directly interfaces with cmd_vel and odom.
+   - Fix: Removed the obsolete ROS 1 plugin declaration and documented that differential drive actuation is fully handled by 'libgazebo_ros_diff_drive.so'.
+   - Verification: xacro compilation verified with no unresolved plugin references.
+
+7. BUG: Unrealistically Constrained LiDAR Max Range
+   - File: testbed_description/urdf/testbed.gazebo (Line 65)
+   - Issue: The ray sensor maximum range was set to only 1.5 meters ('<max>1.5</max>').
+   - Impact: The simulated playground world is ~20m x 20m. The robot spawn position (0, 5) is 3.32 meters from the nearest barrier. With a 1.5m range, the LiDAR outputted only infinite/out-of-range readings at spawn and in open corridors, preventing AMCL particles from converging and costmaps from detecting obstacles.
+   - Fix: Adjusted '<max>1.5</max>' to '<max>10.0</max>', which matches realistic planar LiDAR capabilities and the indoor world dimensions.
+   - Verification: Sensor range validated against map geometry and verified in URDF output.
+
+8. BUG: Missing 'use_sim_time' in robot_state_publisher Launch Configuration
+   - File: testbed_description/launch/robot_description.launch.py (Lines 21-27)
+   - Issue: 'robot_state_publisher' was instantiated without declaring or passing 'use_sim_time: True'.
+   - Impact: In simulation, robot_state_publisher published TF frames with wall-clock time instead of simulation time (/clock), causing TF timestamp desynchronization, TF extrapolation errors in RViz, AMCL, and Nav2 costmaps.
+   - Fix: Added a DeclareLaunchArgument for 'use_sim_time' (defaulting to 'true') and passed {'use_sim_time': use_sim_time} to the Node parameters.
+   - Verification: Verified launch description via 'ros2 launch --print'.
+
+9. BUG: Wheel Separation Mismatch in Gazebo Differential Drive Plugin
+   - File: testbed_description/urdf/testbed.gazebo (Line 16)
+   - Issue: The differential drive plugin configured '<wheel_separation>0.35</wheel_separation>', whereas the physical joint origins in 'testbed.xacro' ('left_wheel_joint' at y=0.135241, 'right_wheel_joint' at y=-0.210759) define an exact transverse wheel span of 0.346000 m.
+   - Impact: A 4 mm kinematic parameter mismatch introduced odometric errors during turning maneuvers and rotational velocity calculation.
+   - Fix: Corrected '<wheel_separation>0.35</wheel_separation>' to '<wheel_separation>0.346</wheel_separation>'.
+   - Verification: Verified against URDF joint origins and verified in simulation that angular velocities accurately correspond to wheel velocities.
+
+================================================================================
+INTEGRATION ISSUES FOUND DURING DEVELOPMENT
+================================================================================
+
+1. ISSUE: Parent Launch Configuration Overriding Child AMCL Parameters
+   - File: testbed_navigation/launch/testbed_navigation.launch.py & testbed_navigation/config/nav2_params.yaml
+   - Description: The parent launch file's 'params_file' argument overrode the child launch file's default, so AMCL received 'nav2_params.yaml' without an amcl block. Consequently, AMCL initialized with unconfigured defaults ('set_initial_pose: false') and remained dormant without broadcasting the 'map -> odom' transform.
+   - Resolution: Fixed by explicitly passing a dedicated 'amcl_params_file' argument to the localization launch include. As an additional measure, child inclusions were scoped with GroupAction, and the amcl parameters were also mirrored into nav2_params.yaml.
+   - Verification: Verified that AMCL activates with 'set_initial_pose: true' and immediately publishes '/amcl_pose' and 'map -> odom' TF upon launch.
+================================================================================
