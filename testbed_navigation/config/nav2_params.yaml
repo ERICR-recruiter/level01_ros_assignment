@@ -79,7 +79,7 @@ controller_server:
     goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
       xy_goal_tolerance: 0.15
-      yaw_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.15  # 0.25 left 10-14 deg final yaw error
     FollowPath:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
       desired_linear_vel: 0.3
@@ -117,8 +117,8 @@ local_costmap:
       width: 3
       height: 3
       resolution: 0.05
-      # chassis + outer wheel faces from the STLs; offset because base_footprint is not the body centre
-      footprint: "[[0.1243, 0.1652], [0.1243, -0.2408], [-0.2257, -0.2408], [-0.2257, 0.1652]]"
+      # chassis + outer wheel faces from the STLs, in base_footprint (axle midpoint) frame
+      footprint: "[[0.1748, 0.2030], [0.1748, -0.2030], [-0.1752, -0.2030], [-0.1752, 0.2030]]"
       footprint_padding: 0.01
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
@@ -133,8 +133,8 @@ local_costmap:
           obstacle_max_range: 3.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.55     # > circumscribed radius 0.344 m
-        cost_scaling_factor: 4.0   # doorway centre cost ~79, well below inscribed (253)
+        inflation_radius: 0.55     # > circumscribed radius 0.282 m
+        cost_scaling_factor: 4.0   # doorway centre cost ~96, well below inscribed (253)
       always_send_full_costmap: true
 
 global_costmap:
@@ -147,7 +147,7 @@ global_costmap:
       publish_frequency: 1.0
       resolution: 0.05
       track_unknown_space: true
-      footprint: "[[0.1243, 0.1652], [0.1243, -0.2408], [-0.2257, -0.2408], [-0.2257, 0.1652]]"
+      footprint: "[[0.1748, 0.2030], [0.1748, -0.2030], [-0.1752, -0.2030], [-0.1752, 0.2030]]"
       footprint_padding: 0.01
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       static_layer:

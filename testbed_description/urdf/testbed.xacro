@@ -229,7 +229,8 @@
 <joint name="fixed_base_joint" type="fixed">
   <parent link="base_footprint" />
   <child link="base_link" />
-  <origin xyz="0 0 0" rpy="0 0 0" />
+  <!-- base_footprint at the wheel axle midpoint (rotation centre), from the wheel STL tread centres -->
+  <origin xyz="0.050490 0.037759 0" rpy="0 0 0" />
 </joint>
 
 <joint name="left_wheel_joint" type="continuous">
