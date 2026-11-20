@@ -1,0 +1,99 @@
+Testbed-T1.0.0 starter code - bugs found and how they were fixed
+=================================================================
+
+Environment used for testing: ROS 2 Humble + Gazebo Classic 11 (Docker image, see Dockerfile/Makefile
+in the workspace root), Cyclone DDS.
+
+------------------------------------------------------------------------------------------------
+BUILD / INSTALL BUGS
+------------------------------------------------------------------------------------------------
+
+1. testbed_description/CMakeLists.txt - `ament_package` called without parentheses
+   Symptom : `colcon build` fails: "CMake Error at CMakeLists.txt:24: Parse error. Expected "(",
+             got newline".
+   Fix     : `ament_package` -> `ament_package()`.
+
+2. testbed_bringup/maps/testbed_world.yaml - wrong image file name
+   Symptom : map_server fails to load the map ("wrong_path_testbed_world.pgm" does not exist).
+   Fix     : `image: wrong_path_testbed_world.pgm` -> `image: testbed_world.pgm`
+             (relative to the yaml, so it works from both src/ and install/).
+
+3. testbed_bringup/CMakeLists.txt - `maps/` directory was never installed
+   Symptom : share/testbed_bringup/maps does not exist after a build, so the map cannot be found
+             via get_package_share_directory('testbed_bringup').
+   Fix     : added `maps` to the install(DIRECTORY ...) list.
+
+4. testbed_gazebo/CMakeLists.txt - `models/` directory was never installed
+   Symptom : spawn_playground.launch.py appends share/testbed_gazebo/models to GAZEBO_MODEL_PATH,
+             but that folder did not exist in the install space.
+   Fix     : added `models` to the install(DIRECTORY ...) list.
+
+5. package.xml files - missing run-time dependencies
+   Symptom : rosdep cannot install what the launch files need and colcon has no ordering info
+             (testbed_bringup launches testbed_gazebo/testbed_description but did not depend on them).
+   Fix     : testbed_description -> exec_depend xacro, robot_state_publisher, joint_state_publisher, rviz2
+             testbed_gazebo      -> exec_depend gazebo_ros, gazebo_plugins
+             testbed_bringup     -> exec_depend testbed_description, testbed_gazebo, rviz2
+
+------------------------------------------------------------------------------------------------
+LAUNCH BUGS
+------------------------------------------------------------------------------------------------
+
+6. testbed_description/launch/robot_description.launch.py - robot_state_publisher not on sim time
+   Symptom : RSP stamps TF with wall-clock time while Gazebo, AMCL and the costmaps use /clock
+             (sim time) -> TF extrapolation / "message filter dropping message" errors in Nav2.
+   Fix     : pass {'use_sim_time': True} to robot_state_publisher. The xacro output is also wrapped
+             in ParameterValue(..., value_type=str) so it is never parsed as YAML.
+
+------------------------------------------------------------------------------------------------
+ROBOT DESCRIPTION / SIMULATION BUGS (testbed_description/urdf)
+------------------------------------------------------------------------------------------------
+
+7. testbed.gazebo - ROS 1 plugin `libgazebo_ros_control.so`
+   Symptom : Gazebo prints "Failed to load plugin libgazebo_ros_control.so" - that plugin only
+             exists in ROS 1; the robot is driven by gazebo_ros_diff_drive anyway.
+   Fix     : removed the plugin block.
+
+8. testbed.gazebo - lidar max range of only 1.5 m
+   Symptom : in a ~10 m x 10 m room most beams return nothing, so AMCL has almost no features to
+             match against the map (localization diverges) and costmaps cannot see obstacles in time.
+   Fix     : range 0.10-1.5 m -> 0.12-12.0 m, 360 samples over a full -pi..pi sweep (1 deg/beam).
+             amcl_params.yaml uses the same min/max range.
+
+9. testbed.gazebo - stray `>` after </initial_orientation_as_reference> in the IMU plugin
+   Symptom : malformed plugin config (an extra text node inside <plugin>).
+   Fix     : removed the extra `>`.
+
+10. testbed.gazebo - wrong friction on wheels and casters
+    Symptom : drive wheels had mu=0.2 (they slip) and the four FIXED casters also had mu=0.2
+              (they drag along the floor), so the robot barely follows cmd_vel / turns poorly.
+    Fix     : drive wheels mu1=mu2=1.0 (+ kp/kd/minDepth for stable contact), casters mu1=mu2=0.0
+              so they act as frictionless sliders. Also raised max_wheel_torque to 20 Nm.
+
+11. testbed.gazebo - wrong wheel_separation for the diff-drive plugin
+    Symptom : wheel_separation was 0.35 m, but the wheel meshes' mid-planes are at y=+0.150 and
+              y=-0.226 (0.376 m apart; the joints sit on the wheels' inner faces). Commanded
+              angular velocities were therefore not achieved accurately.
+    Fix     : wheel_separation 0.35 -> 0.376 (measured from the STL bounding boxes).
+
+12. testbed.xacro - base_footprint not at the robot's centre of rotation
+    Symptom : base_link's origin (the CAD origin) is ~6 cm away from the midpoint between the
+              wheels. Since base_footprint == base_link, the robot rotated about a point that was not
+              the frame Nav2 controls, and the footprint was not centred on the frame.
+    Fix     : fixed_base_joint origin set to xyz="0.0505 0.0378 0" so base_footprint sits on the
+              wheel-axle midpoint. Robot outline around base_footprint is now symmetric:
+              x in [-0.176, 0.174], y in [-0.203, 0.203]  -> footprint used in nav2_params.yaml.
+
+------------------------------------------------------------------------------------------------
+MINOR / NOTED
+------------------------------------------------------------------------------------------------
+
+13. .vscode/settings.json points to another machine's absolute path
+    (/home/eric-ros1/...). Harmless for building; left as-is.
+
+14. IMU and dummy link frames look swapped relative to their meshes (imu_link_1 frame at y=+0.05
+    while its mesh is at y=-0.124, dummy the other way round). IMU position does not affect a 2D
+    diff-drive nav setup (only orientation is used), so this was noted but not changed.
+
+15. The workspace Dockerfile previously patched bugs 1 and 3 with sed/cp at build time; with the
+    fixes above those workarounds are no longer needed.
