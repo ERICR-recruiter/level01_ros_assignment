@@ -23,7 +23,8 @@ def generate_launch_description():
   state_pub = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(
       os.path.join(pkg_testbed_description, 'launch', 'robot_description.launch.py'),
-    )
+    ),
+    launch_arguments={'use_sim_time': LaunchConfiguration('use_sim_time')}.items(),
   )
 
   spawn = IncludeLaunchDescription(
@@ -47,6 +48,8 @@ def generate_launch_description():
   return LaunchDescription([
     launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=rviz_config_dir,
                                             description='Absolute path to rviz config file'),
+    launch.actions.DeclareLaunchArgument(name='use_sim_time', default_value='true',
+                                            description='Use Gazebo /clock for robot_state_publisher'),
     state_pub,
     gazebo,
     spawn,

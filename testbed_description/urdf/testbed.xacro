@@ -2,7 +2,6 @@
 <robot name="testbed" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <xacro:include filename="$(find testbed_description)/urdf/materials.xacro" />
-<xacro:include filename="$(find testbed_description)/urdf/testbed.trans" />
 <xacro:include filename="$(find testbed_description)/urdf/testbed.gazebo" />
 
 
@@ -58,10 +57,11 @@
 </link>
 
 <link name="caster_1">
+  <!-- ~50 g caster; inertia = CAD value scaled by 0.05/1.1823 -->
   <inertial>
     <origin xyz="-4.0676331974909274e-07 1.5110754275626803e-07 -0.03786364523061746" rpy="0 0 0"/>
-    <mass value="1.1822860353009592"/>
-    <inertia ixx="0.000755" iyy="0.000755" izz="0.000353" ixy="0.0" iyz="-0.0" ixz="-0.0"/>
+    <mass value="0.05"/>
+    <inertia ixx="3.2e-05" iyy="3.2e-05" izz="1.5e-05" ixy="0.0" iyz="0.0" ixz="0.0"/>
   </inertial>
   <visual>
     <origin xyz="0.175703 -0.108591 -0.084004" rpy="0 0 0"/>
@@ -81,8 +81,8 @@
 <link name="caster_2">
   <inertial>
     <origin xyz="-4.067633256332748e-07 1.511075468918488e-07 -0.037863645230617166" rpy="0 0 0"/>
-    <mass value="1.1822860353009592"/>
-    <inertia ixx="0.000755" iyy="0.000755" izz="0.000353" ixy="0.0" iyz="-0.0" ixz="0.0"/>
+    <mass value="0.05"/>
+    <inertia ixx="3.2e-05" iyy="3.2e-05" izz="1.5e-05" ixy="0.0" iyz="0.0" ixz="0.0"/>
   </inertial>
   <visual>
     <origin xyz="0.175703 0.184109 -0.084004" rpy="0 0 0"/>
@@ -102,8 +102,8 @@
 <link name="caster_3">
   <inertial>
     <origin xyz="-4.0676332645206426e-07 1.5110753784353115e-07 -0.03786364523061741" rpy="0 0 0"/>
-    <mass value="1.1822860353009592"/>
-    <inertia ixx="0.000755" iyy="0.000755" izz="0.000353" ixy="-0.0" iyz="-0.0" ixz="-0.0"/>
+    <mass value="0.05"/>
+    <inertia ixx="3.2e-05" iyy="3.2e-05" izz="1.5e-05" ixy="0.0" iyz="0.0" ixz="0.0"/>
   </inertial>
   <visual>
     <origin xyz="-0.074297 -0.108591 -0.084004" rpy="0 0 0"/>
@@ -123,8 +123,8 @@
 <link name="caster_4">
   <inertial>
     <origin xyz="-4.067633323501241e-07 1.5110754184033404e-07 -0.03786364523061713" rpy="0 0 0"/>
-    <mass value="1.1822860353009592"/>
-    <inertia ixx="0.000755" iyy="0.000755" izz="0.000353" ixy="0.0" iyz="-0.0" ixz="0.0"/>
+    <mass value="0.05"/>
+    <inertia ixx="3.2e-05" iyy="3.2e-05" izz="1.5e-05" ixy="0.0" iyz="0.0" ixz="0.0"/>
   </inertial>
   <visual>
     <origin xyz="-0.074297 0.184109 -0.084004" rpy="0 0 0"/>
@@ -142,8 +142,9 @@
 </link>
 
 <link name="lidar_link_1">
+  <!-- mesh centre in this frame (visual origin + STL bbox centre) -->
   <inertial>
-    <origin xyz="-0.04570340676333076 -0.21275884889245775 -0.06900465054505728" rpy="0 0 0"/>
+    <origin xyz="-0.005703 -0.004759 0.010995" rpy="0 0 0"/>
     <mass value="0.26337542011370024"/>
     <inertia ixx="0.000153" iyy="0.000153" izz="0.000267" ixy="0.0" iyz="0.0" ixz="-0.0"/>
   </inertial>
@@ -164,19 +165,19 @@
 
 <link name="imu_link_1">
   <inertial>
-    <origin xyz="-0.21570340676333022 -0.3447588488924569 -0.0820046505450562" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
     <mass value="0.008832000000000027"/>
     <inertia ixx="1e-06" iyy="1e-06" izz="2e-06" ixy="0.0" iyz="-0.0" ixz="-0.0"/>
   </inertial>
   <visual>
-    <origin xyz="0.1 -0.05 -0.1612" rpy="0 0 0"/>
+    <origin xyz="0.095703 0.123759 -0.159504" rpy="0 0 0"/>
     <geometry>
       <mesh filename="file://$(find testbed_description)/meshes/imu_link_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.1 -0.05 -0.1612" rpy="0 0 0"/>
+    <origin xyz="0.095703 0.123759 -0.159504" rpy="0 0 0"/>
     <geometry>
       <mesh filename="file://$(find testbed_description)/meshes/imu_link_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -185,19 +186,19 @@
 
 <link name="dummy_link_1">
   <inertial>
-    <origin xyz="-0.21570340676332594 -0.08475884889245736 -0.08200465054505635" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
     <mass value="0.008832000000000027"/>
     <inertia ixx="1e-06" iyy="1e-06" izz="2e-06" ixy="-0.0" iyz="0.0" ixz="0.0"/>
   </inertial>
   <visual>
-    <origin xyz="0.1 0.14 -0.1612" rpy="0 0 0"/>
+    <origin xyz="0.095703 -0.046241 -0.159504" rpy="0 0 0"/>
     <geometry>
       <mesh filename="file://$(find testbed_description)/meshes/dummy_link_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.1 0.14 -0.1612" rpy="0 0 0"/>
+    <origin xyz="0.095703 -0.046241 -0.159504" rpy="0 0 0"/>
     <geometry>
       <mesh filename="file://$(find testbed_description)/meshes/dummy_link_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -269,13 +270,14 @@
 </joint>
 
 <joint name="imu_joint" type="fixed">
-  <origin xyz="-0.1 0.05 0.163" rpy="0 0 0"/>
+  <!-- IMU/dummy frames at their STL mesh centres (were swapped) -->
+  <origin xyz="-0.095703 -0.123759 0.159504" rpy="0 0 0"/>
   <parent link="base_link"/>
   <child link="imu_link_1"/>
 </joint>
 
 <joint name="dummy_joint" type="fixed">
-  <origin xyz="-0.1 -0.1315 0.163" rpy="0 0 0"/>
+  <origin xyz="-0.095703 0.046241 0.159504" rpy="0 0 0"/>
   <parent link="base_link"/>
   <child link="dummy_link_1"/>
 </joint>
