@@ -15,7 +15,7 @@ This assignment gives you hands-on experience with ROS2’s navigation plugins, 
 1. Four days (96 hrs) from the moment you accept the assignment.
 2. All applicants should fork the repository for the assignment. To submit your code, after completion create a Pull Request (PR) back to the `main` branch. You can commit any number of times to your fork before your deadline.
 
-## Repository Structure
+## Repository Structure 
 
 ```
 ros_nav2_assignment/
