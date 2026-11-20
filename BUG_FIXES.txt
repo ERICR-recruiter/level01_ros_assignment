@@ -1,0 +1,30 @@
+BUG 1: Invalid CMake function invocation
+File: testbed_description/CMakeLists.txt
+Problem: ament_package was missing parentheses, so CMake failed to configure the package.
+Fix: changed ament_package to ament_package().
+
+BUG 2: Incorrect map image filename
+File: testbed_bringup/maps/testbed_world.yaml
+Problem: the YAML referenced wrong_path_testbed_world.pgm, but the actual image is
+testbed_world.pgm, so the map image could not be loaded.
+Fix: corrected the image filename to testbed_world.pgm.
+
+BUG 3: Maps directory not installed
+File: testbed_bringup/CMakeLists.txt
+Problem: the install(DIRECTORY ...) block only installed the launch folder, so the
+maps folder was never copied to the install space. map_server could not find
+testbed_world.yaml and failed to configure ("bad file").
+Fix: added maps to the install(DIRECTORY ...) block.
+
+BUG 4: Lidar max range too short
+File: testbed_description/urdf/testbed.gazebo
+Problem: the lidar <range><max> was 1.5 m, so most beams returned inf. No laser
+points were visible in RViz and AMCL could not localize in the ~20 m map.
+Found by checking /scan with: ros2 topic echo /scan --once --field range_max
+Fix: increased the max range to 12.0 m.
+
+BUG 5: Typo in the IMU plugin block
+File: testbed_description/urdf/testbed.gazebo
+Problem: an extra ">" after </initial_orientation_as_reference> (malformed XML text
+inside the plugin element).
+Fix: removed the extra character.
