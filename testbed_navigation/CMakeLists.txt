@@ -8,9 +8,15 @@ install(
     config
     launch
     rviz
-    scripts
   DESTINATION
     share/${PROJECT_NAME}/
+)
+
+install(
+  PROGRAMS
+    scripts/send_goals.py
+  DESTINATION
+    lib/${PROJECT_NAME}
 )
 
 ament_package()
