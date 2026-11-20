@@ -20,7 +20,8 @@
 | Video or screenshots of localization and navigation | Done ([`media/navigation_demo.mp4`](media/navigation_demo.mp4)) |
 
 The workspace builds cleanly (`colcon build`: 4 packages finished). In a headless Gazebo simulation,
-the robot localized itself and reached two navigation goals in different rooms.
+the robot localized itself and reached all 5 goals of a route covering every room, with 0 recovery
+behaviours and an AMCL error under 0.21 m.
 
 ---
 
@@ -139,11 +140,13 @@ The test script started gzserver (no GUI), robot_state_publisher, the spawned ro
 | Driving | 0.2 m/s for ~5 s gave ~1.4 m of travel (commands are followed, no stalling) |
 | Lifecycle | map_server, amcl, controller, planner, behavior, bt_navigator, velocity_smoother all **active** |
 | Initial localization | AMCL pose (0.04, 5.01), spawn point (0, 5) |
-| Goal 1: (1.0, -4.0), through the doorway into the room below | **reached**, AMCL pose (1.06, -3.87) |
-| Goal 2: (-7.0, 7.0), into the top-left room | **reached**, AMCL pose (-6.93, 6.79) |
+| Navigation benchmark: 5 goals in sequence covering every room, (1,-4), (-7,7), (-6,-6), (7,-7), then back to (0,5) | **5/5 reached** |
+| Recovery behaviours triggered | **0** |
+| Planner failures | **0** |
+| Max localization error (AMCL estimate vs Gazebo ground truth) | **0.21 m** |
 
-Both goals ended within the 0.2 m tolerance of the goal checker. A later 5-goal run covering
-every room ((1,-4), (-7,7), (-6,-6), (7,-7), back to (0,5)) also succeeded with 0 recoveries.
+This 5-goal run, done after the planner fix in section 5, is the final benchmark. An earlier
+2-goal test had also succeeded: (1,-4) reached at (1.06, -3.87) and (-7,7) at (-6.93, 6.79).
 
 ---
 
