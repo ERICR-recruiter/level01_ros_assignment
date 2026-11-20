@@ -13,6 +13,7 @@ def generate_launch_description():
 
   pkg_testbed_gazebo = get_package_share_directory('testbed_gazebo')
   pkg_testbed_description = get_package_share_directory('testbed_description')
+  pkg_testbed_navigation = get_package_share_directory('testbed_navigation')
 
   gazebo = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(
@@ -31,10 +32,28 @@ def generate_launch_description():
       os.path.join(pkg_testbed_gazebo, 'launch', 'spawn_testbed.launch.py'),
     )
   )
-  
-  rviz_config_dir = os.path.join(
-    launch_ros.substitutions.FindPackageShare(package='testbed_description').find('testbed_description'),
-    'rviz/full_bringup.rviz')
+
+  map_loader = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+      os.path.join(pkg_testbed_navigation, 'launch', 'map_loader.launch.py'),
+    )
+  )
+
+  localization = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+      os.path.join(pkg_testbed_navigation, 'launch', 'localization.launch.py'),
+    )
+  )
+
+  navigation = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+      os.path.join(pkg_testbed_navigation, 'launch', 'navigation.launch.py'),
+    )
+  )
+
+  description_pkg_prefix = get_package_share_directory('testbed_description')
+  rviz_config_path = description_pkg_prefix + '/rviz/full_bringup.rviz'
+
   
   rviz_node = Node(
     package='rviz2',
@@ -45,10 +64,13 @@ def generate_launch_description():
   )
 
   return LaunchDescription([
-    launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=rviz_config_dir,
+    launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=rviz_config_path,
                                             description='Absolute path to rviz config file'),
     state_pub,
     gazebo,
     spawn,
+    map_loader,
+    localization,
+    navigation,
     rviz_node,
   ])
