@@ -96,7 +96,10 @@ planner_server:
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
       tolerance: 0.25
-      use_astar: true
+      # Dijkstra (use_astar: false) is NavFn's default and most tested mode. With A* enabled,
+      # NavFn sometimes fails with "Failed to create a plan from potential when a legal
+      # potential was found", which makes the BT run recoveries (spin / back up) mid-route.
+      use_astar: false
       allow_unknown: false
 
 # ---------------------------------------------------------------------------

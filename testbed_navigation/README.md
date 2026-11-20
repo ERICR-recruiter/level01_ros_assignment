@@ -21,6 +21,13 @@ testbed_navigation/
 `-- scripts/send_goal.py         # send a NavigateToPose goal from the terminal
 ```
 
+## Demo
+
+[![Navigation demo](../media/navigation_demo.jpg)](../media/navigation_demo.mp4)
+
+Video: [`media/navigation_demo.mp4`](../media/navigation_demo.mp4). RViz with the Nav2 panel
+(localization and navigation active) next to Gazebo, with the robot driving to Nav2 goals.
+
 ## Architecture
 
 ```
@@ -109,9 +116,16 @@ Launch arguments: `map`, `use_sim_time`, `autostart`, `log_level`, and
    to mean "use the default". In Humble it loads an empty behaviour tree, so `bt_navigator`
    aborted every goal with `Behavior tree threw exception: Empty Tree`. Leaving the parameter
    unset fixed it.
-5. **Velocity smoother wiring.** The controller publishes on `cmd_vel_nav`. The smoother remaps
+5. **Robot turning back in the middle of a route.** The robot sometimes followed the path well,
+   then suddenly spun and reversed. I logged ground truth against the AMCL estimate during a
+   5-goal run. Localization error stayed under 0.2 m, so AMCL was not the cause. The planner log
+   showed `Failed to create a plan from potential when a legal potential was found`, a known
+   NavFn issue when A* is enabled. Each failed replan made the BT run its recovery sequence
+   (clear costmaps, spin, wait, back up). After switching NavFn to Dijkstra (`use_astar: false`),
+   the same run had 0 planner failures and 0 recoveries (before: 2 failures, 2 recoveries).
+6. **Velocity smoother wiring.** The controller publishes on `cmd_vel_nav`. The smoother remaps
    `cmd_vel_nav -> cmd_vel` so that the Gazebo diff-drive plugin receives smoothed commands.
-6. **Testing.** Everything was tested headless in the provided ROS 2 Humble Docker image:
+7. **Testing.** Everything was tested headless in the provided ROS 2 Humble Docker image:
    gzserver + robot + navigation stack, with `NavigateToPose` goals sent across rooms through
    the doorways using `send_goal.py`. Result: goal (1.0, -4.0) reached at AMCL pose (1.06, -3.87),
    and goal (-7.0, 7.0) reached at (-6.93, 6.79), both inside the 0.2 m goal tolerance.

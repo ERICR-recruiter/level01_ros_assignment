@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Vaibhav Vishwakarma
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -124,7 +124,14 @@ We’ll be looking for:
 
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
+## Submission
+
+- Navigation package: [`testbed_navigation/`](testbed_navigation/) (see its [README](testbed_navigation/README.md))
+- Bug list: [`BUGS_FIXED.txt`](BUGS_FIXED.txt)
+- Work report: [`REPORT.md`](REPORT.md)
+- Demo video (localization + navigation in RViz and Gazebo): [`media/navigation_demo.mp4`](media/navigation_demo.mp4)
+
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Vaibhav Vishwakarma
+ - Contact number: 9839010809
+ - Email Address: vaibhavh24@iitk.ac.in

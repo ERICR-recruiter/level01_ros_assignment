@@ -17,7 +17,7 @@
 | `config/nav2_params.yaml` + `launch/navigation.launch.py` (planner, controller, BT, behaviours, velocity smoother) | Done |
 | Proper `CMakeLists.txt` / `package.xml` | Done |
 | `README.md` describing the approach and the challenges | Done (`testbed_navigation/README.md`) |
-| Video or screenshots of localization and navigation | **Still to do.** Needs a GUI session (see section 7) |
+| Video or screenshots of localization and navigation | Done ([`media/navigation_demo.mp4`](media/navigation_demo.mp4)) |
 
 The workspace builds cleanly (`colcon build`: 4 packages finished). In a headless Gazebo simulation,
 the robot localized itself and reached two navigation goals in different rooms.
@@ -90,7 +90,7 @@ testbed_navigation/
 |---|---|
 | map_server | `nav2_map_server` -> `testbed_bringup/maps/testbed_world.yaml` |
 | amcl | `DifferentialMotionModel`, `likelihood_field` laser model, initial pose (0, 5, 0) |
-| planner_server | `nav2_navfn_planner/NavfnPlanner` (A*) |
+| planner_server | `nav2_navfn_planner/NavfnPlanner` (Dijkstra) |
 | controller_server | `nav2_regulated_pure_pursuit_controller` (0.35 m/s, rotates to the path heading first, collision checking) |
 | behavior_server | Spin, BackUp, DriveOnHeading, Wait |
 | bt_navigator | default `navigate_to_pose_w_replanning_and_recovery` tree |
@@ -112,6 +112,18 @@ testbed_navigation/
 2. **"Empty Tree" on every goal.** `default_nav_to_pose_bt_xml: ""` loads an *empty* behaviour tree
    in Humble, so every goal aborted. Fix: leave the parameter unset so the default tree is used.
 
+3. **Robot turning back mid-route.** In some runs the robot followed the path, then spun and
+   reversed. Logging ground truth against AMCL showed localization was fine (error < 0.2 m).
+   The real cause was NavFn with A* enabled. It sometimes fails with *"Failed to create a plan
+   from potential when a legal potential was found"*, and each failed replan triggers the BT
+   recoveries (spin, wait, back up). Fix: `use_astar: false` (Dijkstra).
+
+   | Same 5-goal route | A* | Dijkstra |
+   |---|---|---|
+   | Goals reached | 5/5 | 5/5 |
+   | Planner failures | 2 | 0 |
+   | Recoveries | 2 | 0 |
+
 ---
 
 ## 6. Verification (headless Docker simulation)
@@ -130,11 +142,12 @@ The test script started gzserver (no GUI), robot_state_publisher, the spawned ro
 | Goal 1: (1.0, -4.0), through the doorway into the room below | **reached**, AMCL pose (1.06, -3.87) |
 | Goal 2: (-7.0, 7.0), into the top-left room | **reached**, AMCL pose (-6.93, 6.79) |
 
-Both goals ended within the 0.2 m tolerance of the goal checker.
+Both goals ended within the 0.2 m tolerance of the goal checker. A later 5-goal run covering
+every room ((1,-4), (-7,7), (-6,-6), (7,-7), back to (0,5)) also succeeded with 0 recoveries.
 
 ---
 
-## 7. How to run and what is left to do
+## 7. How to run
 
 ```bash
 cd ~/assignment_ws && colcon build --symlink-install && source install/setup.bash
@@ -145,8 +158,9 @@ ros2 run testbed_navigation send_goal.py 1.0 -4.0 0.0               # or use "Na
 ```
 With Docker: `make build && make dev`, then `make shell` for the second terminal.
 
-Still to do before submitting:
-1. Record a video or take screenshots of localization (particle cloud) and navigation in RViz and Gazebo.
-2. Fill in your name and contact details in `README.md` and the maintainer field in `testbed_navigation/package.xml`.
-3. Commit to your fork and open the PR to `main` (nothing has been committed yet).
-4. Optional: remove the now-unneeded `sed`/`cp` workaround steps from the workspace `Dockerfile`.
+Demo video: [`media/navigation_demo.mp4`](media/navigation_demo.mp4), recorded in the GUI
+(RViz + Gazebo) with the Nav2 panel showing localization and navigation active and goals reached.
+
+---
+
+**Author:** Vaibhav Vishwakarma | vaibhavh24@iitk.ac.in | 9839010809

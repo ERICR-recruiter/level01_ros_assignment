@@ -4,7 +4,7 @@
   <name>testbed_navigation</name>
   <version>0.1.0</version>
   <description>Modular Nav2 bring-up (map server, AMCL, planner/controller/behaviour/BT servers) for the Testbed-T1.0.0 robot, launched plugin by plugin instead of via nav2_bringup.</description>
-  <maintainer email="todo@example.com">TODO</maintainer>
+  <maintainer email="vaibhavh24@iitk.ac.in">Vaibhav Vishwakarma</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
