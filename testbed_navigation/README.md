@@ -55,7 +55,7 @@ map ──(AMCL)──▶ odom ──(Gazebo Diff Drive)──▶ base_footprint
 
 ## Prerequisites
 
-- **OS / ROS 2:** Ubuntu 22.04 with ROS 2 Humble (or `osrf/ros:humble-desktop-full` Docker container)
+- **OS / ROS 2:** Ubuntu 22.04 with ROS 2 Humble (or `osrf/ros:humble-desktop-full` Docker container) I have been using Docker inside WSL2 in Windows. 
 - **Simulator:** Gazebo Classic 11 (`ros-humble-gazebo-ros-pkgs`) and RViz2
 - **Nav2 & Utilities:**
 
@@ -134,12 +134,12 @@ ros2 launch testbed_navigation navigation.launch.py
 
 Before implementing `testbed_navigation`, a full diagnostic audit of the starter repository uncovered **8 bugs** across CMake build scripts, launch files, URDF/Gazebo plugins, and map metadata. All fixes are documented in detail in `bugs_fixed.txt`:
 
-1. **CMake parse error** (`testbed_description/CMakeLists.txt`): Fixed missing parentheses on `ament_package()`.
-2. **Missing map installation** (`testbed_bringup/CMakeLists.txt`): Added `maps` to `install(DIRECTORY ...)`.
-3. **Missing model installation** (`testbed_gazebo/CMakeLists.txt`): Added `models` to `install(DIRECTORY ...)`.
-4. **Broken map image path** (`testbed_bringup/maps/testbed_world.yaml`): Corrected `wrong_path_testbed_world.pgm` to `testbed_world.pgm`.
-5. **Malformed XML tag** (`testbed_description/urdf/testbed.gazebo`): Removed stray `>` on `</initial_orientation_as_reference>>`.
-6. **Short LiDAR range** (`testbed_description/urdf/testbed.gazebo`): Increased `<max>` range from `1.5` m to `12.0` m so `/scan` detects room walls instead of returning `.inf`.
+1. **CMake parse error** (`testbed_description/CMakeLists.txt`): I have Fixed missing parentheses on `ament_package()`.
+2. **Missing map installation** (`testbed_bringup/CMakeLists.txt`): I have Added `maps` to `install(DIRECTORY ...)`.
+3. **Missing model installation** (`testbed_gazebo/CMakeLists.txt`): I have Added `models` to `install(DIRECTORY ...)`.
+4. **Broken map image path** (`testbed_bringup/maps/testbed_world.yaml`): I have Corrected `wrong_path_testbed_world.pgm` to `testbed_world.pgm`.
+5. **Malformed XML tag** (`testbed_description/urdf/testbed.gazebo`): I have Removed stray `>` on `</initial_orientation_as_reference>>`.
+6. **Short LiDAR range** (`testbed_description/urdf/testbed.gazebo`): I have Increased `<max>` range from `1.5` m to `12.0` m so `/scan` detects room walls instead of returning `.inf`.
 7. **Launch executable typo** (`testbed_description/launch/robot_description.launch.py`): Corrected `robot_state_publishe` to `robot_state_publisher`.
 8. **Missing simulation clock** (`testbed_description/launch/robot_description.launch.py`): Added `{'use_sim_time': True}` to `robot_state_publisher`.
 
@@ -148,7 +148,7 @@ Before implementing `testbed_navigation`, a full diagnostic audit of the starter
 ## Challenges Faced & Solutions
 
 - **TF Timestamp Mismatch (`use_sim_time`):** `robot_state_publisher` initially ran on system wall-clock time while Gazebo published `/scan` and `/odom` on `/clock`. Enforcing `use_sim_time: True` across all simulation and Nav2 nodes eliminated TF extrapolation errors.
-- **AMCL Starved of Features:** With the starter LiDAR capped at `1.5` m, scans in open areas returned `.inf`. Increasing the ray sensor's maximum range to `12.0` m and matching `laser_max_range` in `amcl_params.yaml` enabled reliable scan matching.
+- **AMCL Starved of Features:** I have made these changes because in the normal assignment repo With the starter LiDAR capped at `1.5` m, scans in open areas returned `.inf`. Increasing the ray sensor's maximum range to `12.0` m and matching `laser_max_range` in `amcl_params.yaml` enabled reliable scan matching.
 - **RViz QoS Policies in ROS 2 Humble:** `/map` and `/particle_cloud` initially failed to render in RViz until their topic QoS settings were matched to Nav2's publishers (`Transient Local` durability for `/map` and `Best Effort` reliability for `/particle_cloud`).
 - **Initial Pose Alignment:** Inspecting `spawn_testbed.launch.py` showed the robot spawns at `(0.0, 5.0, 0.0)` rather than the map origin `(0.0, 0.0, 0.0)`. Setting `set_initial_pose: true` with `y: 5.0` in `amcl_params.yaml` allowed immediate localization on startup.
 
