@@ -24,7 +24,7 @@ ros_nav2_assignment/
 │   └── worlds/             # Simulation world files
 ├── testbed_navigation/
 │   ├── config/             # AMCL and custom Nav2 parameter files
-│   ├── launch/             # Modular launch files (map loading, localization, navigation)
+│   ├── launch/             # Modular launch files (map loading, localization, navigation/
 │   └── README.md           # Detailed navigation package documentation
 ├── Bugs_and_Fixes.txt      # Starter code bugs identified and resolved
 ├── help.md                 # Guidelines and FAQs
