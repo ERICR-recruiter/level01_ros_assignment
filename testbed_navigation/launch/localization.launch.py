@@ -19,6 +19,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterFile
 
 
 def generate_launch_description():
@@ -28,6 +29,8 @@ def generate_launch_description():
 
     default_map_yaml  = os.path.join(pkg_testbed_bringup,    'maps',   'testbed_world.yaml')
     default_amcl_yaml = os.path.join(pkg_testbed_navigation, 'config', 'amcl_params.yaml')
+
+    amcl_params = ParameterFile(LaunchConfiguration('params_file'), allow_substs=True)
 
     return LaunchDescription([
 
@@ -55,14 +58,13 @@ def generate_launch_description():
             }]
         ),
 
-        # amcl: Monte Carlo localization — subscribes to /scan + /odom,
-        # publishes /amcl_pose and the map->odom transform
+        # amcl: Monte Carlo localization
         Node(
             package='nav2_amcl',
             executable='amcl',
             name='amcl',
             output='screen',
-            parameters=[LaunchConfiguration('params_file')]
+            parameters=[amcl_params]
         ),
 
         # lifecycle_manager: activates both map_server and amcl

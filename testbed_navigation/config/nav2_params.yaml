@@ -1,10 +1,9 @@
-# Nav2 Full Stack Parameters
-# Robot: Testbed-T1.0.0 (differential drive, wheel separation: 0.35m, wheel diameter: 0.1m)
-# Topics: /cmd_vel (control), /odom (odometry), /scan (LaserScan, 1.5m max range)
+# Nav2 Full Stack Parameters — Testbed-T1.0.0
+# Robot: Differential drive | Sensor: /scan LaserScan (0.1–1.5m, 300 rays)
 # Frames: map -> odom -> base_footprint -> base_link
 
 # ============================================================
-# BT Navigator - orchestrates the navigation behaviour tree
+# BT Navigator
 # ============================================================
 bt_navigator:
   ros__parameters:
@@ -14,15 +13,14 @@ bt_navigator:
     odom_topic: /odom
     bt_loop_duration: 10
     default_server_timeout: 20
-    navigators: ['navigate_to_pose', 'navigate_through_poses']
+    navigators: ["navigate_to_pose", "navigate_through_poses"]
     navigate_to_pose:
       plugin: "nav2_bt_navigator/NavigateToPoseNavigator"
     navigate_through_poses:
       plugin: "nav2_bt_navigator/NavigateThroughPosesNavigator"
 
 # ============================================================
-# Planner Server - global path planning
-# NavfnPlanner uses Dijkstra's (or A*) on the global costmap
+# Planner Server — NavFn (Dijkstra global planner)
 # ============================================================
 planner_server:
   ros__parameters:
@@ -35,8 +33,8 @@ planner_server:
       allow_unknown: true
 
 # ============================================================
-# Controller Server - local path following
-# DWB (Dynamic Window Approach) is chosen for diff-drive
+# Controller Server — DWB local planner for diff-drive
+# FIX: critics must be on a single line (ROS2 Humble YAML parser)
 # ============================================================
 controller_server:
   ros__parameters:
@@ -56,16 +54,16 @@ controller_server:
       movement_time_allowance: 10.0
 
     general_goal_checker:
+      stateful: true
       plugin: "nav2_controller::SimpleGoalChecker"
       xy_goal_tolerance: 0.25
       yaw_goal_tolerance: 0.25
-      stateful: true
 
-    # DWB Local Planner — tuned for small, slow differential drive robot
+    # DWB Local Planner — tuned for testbed robot
+    # wheel separation: 0.35m, wheel diameter: 0.1m, max speed: 0.26 m/s
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: true
-      # Velocity limits (wheel sep=0.35m, wheel diam=0.1m)
       min_vel_x: 0.0
       min_vel_y: 0.0
       max_vel_x: 0.26
@@ -74,14 +72,12 @@ controller_server:
       min_speed_xy: 0.0
       max_speed_xy: 0.26
       min_speed_theta: 0.0
-      # Acceleration limits
       acc_lim_x: 2.5
       acc_lim_y: 0.0
       acc_lim_theta: 3.2
       decel_lim_x: -2.5
       decel_lim_y: 0.0
       decel_lim_theta: -3.2
-      # Trajectory sampling
       vx_samples: 20
       vy_samples: 5
       vtheta_samples: 20
@@ -93,8 +89,8 @@ controller_server:
       trans_stopped_velocity: 0.25
       short_circuit_trajectory_evaluation: true
       stateful: true
-      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign",
-                "PathAlign", "PathDist", "GoalDist"]
+      # IMPORTANT: critics must be single line for ROS2 Humble YAML parser
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
       BaseObstacle.scale: 0.02
       PathAlign.scale: 32.0
       PathAlign.forward_point_distance: 0.1
@@ -107,9 +103,7 @@ controller_server:
       RotateToGoal.lookahead_time: -1.0
 
 # ============================================================
-# Recovery / Behavior Server (spin, back_up, wait)
-# Package renamed: nav2_recoveries → nav2_behaviors in ROS2 Humble
-# Executable renamed: recoveries_server → behavior_server
+# Behavior Server (renamed from recoveries_server in Humble)
 # ============================================================
 behavior_server:
   ros__parameters:
@@ -133,8 +127,9 @@ behavior_server:
     rotational_acc_lim: 3.2
 
 # ============================================================
-# Local Costmap — 3×3 m rolling window around robot
-# Obstacle range = 1.5m to match lidar hardware max
+# Local Costmap — 3x3m rolling window
+# FIX: use obstacle_layer (2D LaserScan), NOT voxel_layer (3D pointcloud)
+# The robot has a 2D ray sensor → LaserScan → obstacle_layer is correct
 # ============================================================
 local_costmap:
   local_costmap:
@@ -149,48 +144,7 @@ local_costmap:
       height: 3
       resolution: 0.05
       robot_radius: 0.22
-      plugins: ["voxel_layer", "inflation_layer"]
-      inflation_layer:
-        plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.55
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"
-        enabled: true
-        publish_voxel_map: true
-        origin_z: 0.0
-        z_resolution: 0.05
-        z_voxels: 16
-        max_obstacle_height: 2.0
-        mark_threshold: 0
-        observation_sources: scan
-        scan:
-          topic: /scan
-          max_obstacle_height: 2.0
-          clearing: true
-          marking: true
-          data_type: "LaserScan"
-          raytrace_max_range: 1.5    # matches lidar max range
-          raytrace_min_range: 0.0
-          obstacle_max_range: 1.5
-          obstacle_min_range: 0.0
-      always_send_full_costmap: true
-
-# ============================================================
-# Global Costmap — full map with static + obstacle layers
-# ============================================================
-global_costmap:
-  global_costmap:
-    ros__parameters:
-      use_sim_time: true
-      update_frequency: 1.0
-      publish_frequency: 1.0
-      global_frame: map
-      robot_base_frame: base_footprint
-      robot_radius: 0.22
-      resolution: 0.05
-      track_unknown_space: true
-      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: true
@@ -205,9 +159,6 @@ global_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 1.5
           obstacle_min_range: 0.0
-      static_layer:
-        plugin: "nav2_costmap_2d::StaticLayer"
-        map_subscribe_transient_local: true
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
@@ -215,12 +166,50 @@ global_costmap:
       always_send_full_costmap: true
 
 # ============================================================
-# Map Server — loaded at runtime with the map YAML path
+# Global Costmap — full static map + live obstacles
+# ============================================================
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: true
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_footprint
+      robot_radius: 0.22
+      resolution: 0.05
+      track_unknown_space: true
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 1.5
+          raytrace_min_range: 0.0
+          obstacle_max_range: 1.5
+          obstacle_min_range: 0.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55
+      always_send_full_costmap: true
+
+# ============================================================
+# Map Server
 # ============================================================
 map_server:
   ros__parameters:
     use_sim_time: true
-    yaml_filename: ""   # overridden at launch time
+    yaml_filename: ""
 
 map_saver:
   ros__parameters:
@@ -230,7 +219,7 @@ map_saver:
     occupied_thresh_default: 0.65
 
 # ============================================================
-# Velocity Smoother — smooths cmd_vel output from controller
+# Velocity Smoother
 # ============================================================
 velocity_smoother:
   ros__parameters:
@@ -248,20 +237,16 @@ velocity_smoother:
     velocity_timeout: 1.0
 
 # ============================================================
-# Lifecycle Managers — manage node activation lifecycle
+# Lifecycle Managers
 # ============================================================
 lifecycle_manager_localization:
   ros__parameters:
     use_sim_time: true
     autostart: true
-    node_names: ['map_server', 'amcl']
+    node_names: ["map_server", "amcl"]
 
 lifecycle_manager_navigation:
   ros__parameters:
     use_sim_time: true
     autostart: true
-    node_names: ['controller_server',
-                 'planner_server',
-                 'behavior_server',
-                 'bt_navigator',
-                 'velocity_smoother']
+    node_names: ["controller_server", "planner_server", "behavior_server", "bt_navigator", "velocity_smoother"]
