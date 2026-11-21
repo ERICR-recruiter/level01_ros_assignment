@@ -1,0 +1,29 @@
+Testbed starter code fixes
+=========================
+
+1. The robot description package failed to build. Its CMakeLists.txt ended
+   with `ament_package` without parentheses. Changed it to `ament_package()`
+   and verified that all packages built with colcon.
+
+2. The map could not load. The YAML referred to a nonexistent PGM file, and
+   the bringup package did not install the map assets. Corrected the filename
+   to `testbed_world.pgm` and installed both files under the package share
+   directory. An active map server published a 405 × 400 grid on /map.
+
+3. Gazebo's configured model search path pointed at an uninstalled directory.
+   Added `models` to the Gazebo package's install rule and verified that the
+   rebuilt package contained the models and still launched the playground.
+
+4. The starter manifests omitted launch-time dependencies. Declared the ROS
+   packages used for simulation, robot description, RViz, and launch. Dropped
+   the unused `rclpy` CMake lookups in the bringup and Gazebo packages.
+
+5. The simulated lidar returned no finite readings at the default spawn with
+   the original 1.5 m range. Increased its maximum range to 8 m. A repeat
+   test at spawn received 178 finite readings out of 300, and AMCL localized
+   using the resulting scan data.
+
+6. The robot model referenced an unavailable Gazebo control plugin and had
+   a stray `>` in its IMU configuration. Removed the obsolete control entry
+   and corrected the IMU tag. Verified live IMU data and successful movement
+   through the existing differential-drive plugin.

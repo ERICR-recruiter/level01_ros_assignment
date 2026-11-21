@@ -1,3 +1,17 @@
 {
-    "cmake.sourceDirectory": "/home/eric-ros1/level01_ros_assignment/testbed_bringup"
+    "cmake.sourceDirectory": "/home/eric-ros1/level01_ros_assignment/testbed_bringup",
+    "ROS2.distro": "humble",
+    "python.autoComplete.extraPaths": [
+        "/home/ronit/pico_ws/install/whycode_interfaces/local/lib/python3.10/dist-packages",
+        "/home/ronit/pico_ws/install/waypoint_navigation/local/lib/python3.10/dist-packages",
+        "/home/ronit/pico_ws/install/swift_msgs/local/lib/python3.10/dist-packages",
+        "/home/ronit/pico_ws/install/mav_planning_msgs/local/lib/python3.10/dist-packages",
+        "/home/ronit/pico_ws/install/mav_msgs/local/lib/python3.10/dist-packages",
+        "/home/ronit/pico_ws/install/error_msg/local/lib/python3.10/dist-packages",
+        "/home/ronit/pico_ws/install/controller_msg/local/lib/python3.10/dist-packages",
+        "/home/ronit/turtlesim_ws/install/turtlesim/local/lib/python3.10/dist-packages",
+        "/home/ronit/turtlesim_ws/install/kd_task_0/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
 }

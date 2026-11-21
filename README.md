@@ -8,14 +8,14 @@ At ERIC Robotics, we’re big believers in building software with modularity. Th
 2. However, rather than simply calling `nav2_bringup`, in this assignment you will manually build the required action components (i.e., using the `map_server`, `amcl`, `planner` plugins, and `bt_` plugins) to run ros2 navigation, by working directly with the respective `nav2` plugins.
 3. i.e., In the `testbed_navigation` package, write individual launch files to load a map, perform localization, and navigate using the plugins provided by `nav2`.
 4. Document your process so we can see how you tackled the task.
-
+ 
 This assignment gives you hands-on experience with ROS2’s navigation plugins, while showcasing your ability to design modular and effective robotics solutions.
 
 ### Deadline & submissions
 1. Four days (96 hrs) from the moment you accept the assignment.
 2. All applicants should fork the repository for the assignment. To submit your code, after completion create a Pull Request (PR) back to the `main` branch. You can commit any number of times to your fork before your deadline.
 
-## Repository Structure
+## Repository Structure 
 
 ```
 ros_nav2_assignment/
@@ -125,6 +125,6 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Ronit Kundnani
+ - Contact number: 8758150773
+ - Email Address: ronitkundnani07@gmail.com
