@@ -12,7 +12,7 @@ def generate_launch_description():
     pkg_nav = get_package_share_directory('testbed_navigation')
 
     use_sim_time = LaunchConfiguration('use_sim_time')
-    params_file = LaunchConfiguration('params_file')
+    params_file = LaunchConfiguration('amcl_params_file')
 
 
     declare_use_sim_time = DeclareLaunchArgument(
@@ -22,7 +22,7 @@ def generate_launch_description():
         )
 
     declare_params_file = DeclareLaunchArgument(
-        'params_file',
+        'amcl_params_file',
         default_value=os.path.join(pkg_nav, 'config', 'amcl_params.yaml'),
         description= "full path for the config file for params"
         )
