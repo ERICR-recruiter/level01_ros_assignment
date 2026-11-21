@@ -1,0 +1,41 @@
+Bug log - Ansh
+
+#1
+File: testbed_description/CMakeLists.txt (line 23)
+Problem: ament_package was called without parentheses, so CMake failed with a parse error and the workspace build aborted.
+Fix: Changed it to ament_package().
+
+#2
+File: testbed_description/launch/robot_description.launch.py
+Problem: robot_state_publisher did not have use_sim_time set, so it ran on wall-clock time while Gazebo, RViz and the other nodes ran on simulation time. TF timestamps did not match (RViz: "timestamp is earlier than all the data in the transform cache"), which would also break AMCL and Nav2.
+Fix: Added {'use_sim_time': True} to the robot_state_publisher parameters.
+
+#3
+File: testbed_bringup/maps/testbed_world.yaml
+Problem: image: pointed to "wrong_path_testbed_world.pgm", which does not exist, so map_server could not load the map.
+Fix: Changed it to testbed_world.pgm.
+
+#4
+File: testbed_description/urdf/testbed.gazebo (lidar sensor)
+Problem: Maximum lidar range was 1.5 m in a roughly 20 m x 20 m map, so AMCL and the costmaps could barely see walls.
+Fix: Increased the range max to 12.0 m.
+
+#5
+File: testbed_description/urdf/testbed.gazebo (IMU plugin)
+Problem: Stray extra ">" after </initial_orientation_as_reference>.
+Fix: Removed the extra character.
+
+#6
+File: testbed_bringup/CMakeLists.txt
+Problem: Only the launch directory was installed, so the maps directory never reached install/ and map_server failed with "bad file" when loading testbed_world.yaml.
+Fix: Added maps to the install(DIRECTORY ...) list.
+
+
+#7
+File: testbed_description/urdf/testbed.gazebo (control plugin)
+Problem: Loaded libgazebo_ros_control.so, which does not exist in ROS 2 Humble (ROS 1 leftover), so Gazebo could not load it.
+Fix: Removed the plugin. The diff-drive plugin handles motion.
+
+Additional hardening (not planted bugs):
+- testbed_gazebo/CMakeLists.txt: models/ directory was not installed; added.
+- testbed_gazebo/package.xml: added missing exec_depend on gazebo_ros.
