@@ -1,8 +1,13 @@
 #!/usr/bin/python3
 """
 navigation.launch.py — Full Nav2 navigation stack for Testbed-T1.0.0
-Uses ParameterFile (Humble best practice) for reliable parameter loading.
+Uses direct resolved YAML path for reliable parameter loading.
 Chains localization.launch.py so one command brings up everything.
+
+FIX: Pass nav2_params_yaml as a resolved string (not LaunchConfiguration
+substitution) so DWB can read critics at node startup time.
+Also pass FollowPath.critics explicitly as a Python dict override to
+guarantee DWB finds them regardless of YAML parser behavior.
 """
 
 import os
@@ -12,7 +17,6 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import ParameterFile
 
 
 def generate_launch_description():
@@ -20,13 +24,21 @@ def generate_launch_description():
     pkg_testbed_bringup    = get_package_share_directory('testbed_bringup')
     pkg_testbed_navigation = get_package_share_directory('testbed_navigation')
 
+    # Resolve paths at description-generation time (not via LaunchConfiguration
+    # substitution) so all nodes see absolute string paths immediately.
     default_map_yaml  = os.path.join(pkg_testbed_bringup,    'maps',   'testbed_world.yaml')
     default_nav2_yaml = os.path.join(pkg_testbed_navigation, 'config', 'nav2_params.yaml')
     default_amcl_yaml = os.path.join(pkg_testbed_navigation, 'config', 'amcl_params.yaml')
 
-    # ParameterFile ensures correct YAML loading in ROS2 Humble
-    # (avoids parameter namespace issues with sub-nodes like costmaps)
-    nav2_params = ParameterFile(LaunchConfiguration('params_file'), allow_substs=True)
+    # DWB critics explicitly declared as a Python dict override.
+    # This guarantees the controller_server receives 'FollowPath.critics'
+    # even if the YAML parameter file has loading order issues in Humble.
+    dwb_critics_override = {
+        'FollowPath.critics': [
+            'RotateToGoal', 'Oscillation', 'BaseObstacle',
+            'GoalAlign', 'PathAlign', 'PathDist', 'GoalDist',
+        ],
+    }
 
     # Reuse localization launch (map_server + amcl + their lifecycle manager)
     localization_launch = IncludeLaunchDescription(
@@ -47,7 +59,7 @@ def generate_launch_description():
 
         DeclareLaunchArgument('params_file',
             default_value=default_nav2_yaml,
-            description='Full path to nav2 parameter file'),
+            description='Full path to nav2 parameter file (unused, kept for CLI compat)'),
 
         DeclareLaunchArgument('localization_params',
             default_value=default_amcl_yaml,
@@ -57,11 +69,12 @@ def generate_launch_description():
         localization_launch,
 
         # --- Controller Server (DWB local planner) ---
+        # Pass YAML file first, then dict override to guarantee critics are set.
         Node(
             package='nav2_controller',
             executable='controller_server',
             output='screen',
-            parameters=[nav2_params],
+            parameters=[default_nav2_yaml, dwb_critics_override],
             remappings=[('cmd_vel', 'cmd_vel')]
         ),
 
@@ -71,7 +84,7 @@ def generate_launch_description():
             executable='planner_server',
             name='planner_server',
             output='screen',
-            parameters=[nav2_params]
+            parameters=[default_nav2_yaml]
         ),
 
         # --- Behavior Server (spin, back_up, wait) ---
@@ -80,7 +93,7 @@ def generate_launch_description():
             executable='behavior_server',
             name='behavior_server',
             output='screen',
-            parameters=[nav2_params]
+            parameters=[default_nav2_yaml]
         ),
 
         # --- BT Navigator ---
@@ -89,7 +102,7 @@ def generate_launch_description():
             executable='bt_navigator',
             name='bt_navigator',
             output='screen',
-            parameters=[nav2_params]
+            parameters=[default_nav2_yaml]
         ),
 
         # --- Velocity Smoother ---
@@ -98,7 +111,7 @@ def generate_launch_description():
             executable='velocity_smoother',
             name='velocity_smoother',
             output='screen',
-            parameters=[nav2_params]
+            parameters=[default_nav2_yaml]
         ),
 
         # --- Navigation Lifecycle Manager ---
