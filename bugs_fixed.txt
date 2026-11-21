@@ -1,0 +1,168 @@
+
+ERIC Robotics - Level 1 ROS2 Navigation Assignment
+ Bugs found in the starter code and how they were fixed
+
+Packages: testbed_description, testbed_gazebo, testbed_bringup
+ A. BUILD / INSTALL BUGS
+
+1. testbed_description/CMakeLists.txt - ament_package missing parentheses
+   Problem : The last line was "ament_package" instead of "ament_package()".
+             CMake treats it as an unknown command and the package fails to
+             build / register in the ament index.
+   Fix     : Changed to ament_package().
+
+2. testbed_bringup/CMakeLists.txt - maps folder not installed
+   Problem : Only launch/ was installed, so testbed_world.yaml/.pgm were not in
+             install/share/testbed_bringup and map_server could not find them.
+   Fix     : Added "maps" to the install(DIRECTORY ...) list.
+
+3. testbed_gazebo/CMakeLists.txt - models folder not installed
+   Problem : Only launch/ and worlds/ were installed. The world uses models
+             from testbed_gazebo/models, which Gazebo could not find.
+   Fix     : Added "models" to the install(DIRECTORY ...) list.
+
+4. package.xml files - missing runtime dependencies
+   Problem : testbed_bringup listed no dependencies at all; testbed_description
+             did not list xacro / robot_state_publisher / joint_state_publisher
+             / rviz2; testbed_gazebo did not list gazebo_ros. Builds worked only
+             because these were already installed; rosdep on a clean machine
+             would not install them, and colcon built testbed_bringup in
+             parallel with the packages it launches.
+   Fix     : Added <exec_depend> entries:
+               testbed_bringup     -> testbed_description, testbed_gazebo, rviz2
+               testbed_description -> xacro, robot_state_publisher,
+                                      joint_state_publisher, rviz2
+               testbed_gazebo      -> gazebo_ros, gazebo_plugins
+
+ B. MAP BUG
+
+5. testbed_bringup/maps/testbed_world.yaml - wrong image path
+   Problem : "image: wrong_path_testbed_world.pgm" - this file does not exist,
+             so map_server fails to load the map.
+   Fix     : Changed to "image: testbed_world.pgm".
+   
+ C. LAUNCH FILE BUGS
+
+6. testbed_gazebo/launch/spawn_playground.launch.py - world never passed to Gazebo
+   Problem : A 'world' launch argument was declared but never forwarded to
+             gazebo_ros/gazebo.launch.py, so Gazebo opened an empty world
+             instead of testbed_playground.world.
+   Fix     : Passed launch_arguments={'world': LaunchConfiguration('world'),
+             'verbose': 'true', 'pause': 'false'} to the include (and imported
+             LaunchConfiguration).
+
+7. testbed_description/launch/robot_description.launch.py - no use_sim_time
+   Problem : robot_state_publisher ran on wall-clock time while Gazebo, RViz
+             and Nav2 use simulation time (/clock). TF stamps did not match,
+             causing TF extrapolation errors.
+   Fix     : Added {'use_sim_time': True} to its parameters.
+
+8. testbed_bringup/launch/testbed_full_bringup.launch.py - robot spawned while
+   the world was still loading -> gzserver crash (exit code -11)
+   Problem : Gazebo, robot_state_publisher and spawn_entity were all started at
+             the same time. On the large playground world, /spawn_entity
+             inserted the robot while gzserver was still loading the world and
+             gzserver segfaulted. (Verified: the robot spawns fine in the empty
+             world, and the playground world runs fine without the robot;
+             spawning manually after the world had loaded also worked.)
+   Fix     : The spawn is now event-driven: an ExecuteProcess waits for the
+             first /clock message (Gazebo only publishes /clock once the world
+             is loaded and running), then RegisterEventHandler(OnProcessExit)
+             starts the spawn after an extra 'spawn_delay' (default 2 s).
+             A fixed timer was tried first but failed on a slow start.
+
+9. testbed_gazebo/launch/spawn_playground.launch.py - wrong GAZEBO_MODEL_PATH
+   Problem : install/testbed_description/share was added to GAZEBO_MODEL_PATH.
+             That folder holds ROS package data (ament_index, colcon-core, ...),
+             not Gazebo models, so gzclient reported
+             "Missing model.config for model .../ament_index" etc.
+   Fix     : Only testbed_gazebo/models is added. The robot meshes use absolute
+             file:// URIs, so they do not need the model path.
+
+
+ D. URDF / GAZEBO PLUGIN BUGS (testbed_description/urdf)
+
+
+10. testbed.gazebo - ROS 1 plugin libgazebo_ros_control.so
+    Problem : This ROS 1 plugin does not exist in ROS 2 Humble and is not used
+              (the robot is driven by the diff-drive plugin).
+    Fix     : Removed the plugin block.
+
+11. testbed.gazebo - malformed XML in the IMU plugin
+    Problem : "<initial_orientation_as_reference>false</initial_orientation_as_reference>>"
+              had an extra '>'.
+    Fix     : Removed the stray '>'.
+
+12. testbed.gazebo - lidar range too short
+    Problem : <max>1.5</max> - a 1.5 m lidar sees almost no walls in a
+              20 m x 20 m map, so AMCL cannot localize and costmaps are empty.
+    Fix     : Set <max>10.00</max> (AMCL laser_max_range set to match).
+
+13. testbed.gazebo - wrong wheel separation
+    Problem : <wheel_separation>0.35</wheel_separation>. Measured from the wheel
+              meshes, the wheel centres are at y = +0.150 m and y = -0.226 m,
+              i.e. 0.376 m apart. A wrong value makes odometry over/under-
+              estimate rotation, which breaks AMCL and navigation.
+    Fix     : Set <wheel_separation>0.376</wheel_separation> (diameter 0.1 m
+              confirmed from the mesh). Also added max_wheel_torque and
+              max_wheel_acceleration.
+
+14. testbed.gazebo - wrong friction values
+    Problem : Wheels had mu1/mu2 = 0.2 (wheels slipped, odometry drifted) and the
+              casters had 0.2 (casters dragged instead of rolling).
+    Fix     : Wheels mu1/mu2 = 1.0, casters mu1/mu2 = 0.0.
+
+15. testbed.gazebo - no joint states for the wheels
+    Problem : Nothing published /joint_states, so robot_state_publisher could
+              not publish the wheel transforms (wheels missing/broken in RViz).
+    Fix     : Added libgazebo_ros_joint_state_publisher.so for
+              left_wheel_joint and right_wheel_joint.
+
+16. testbed.gazebo - wheel TF published twice
+    Problem : The diff-drive plugin had <publish_wheel_tf>true</publish_wheel_tf>
+              while robot_state_publisher also publishes the wheel TFs
+              (from /joint_states) -> two publishers for the same transforms.
+    Fix     : <publish_wheel_tf>false</publish_wheel_tf> (publish_odom_tf stays
+              true - Nav2 needs odom -> base_footprint).
+
+17. testbed.gazebo - material "Gazebo/Silver" does not exist
+    Problem : Gazebo Classic has no Gazebo/Silver material:
+              "Unable to get Material[Gazebo/Silver] ... Object will appear white".
+    Fix     : body_color changed to "Gazebo/Grey".
+
+18. testbed.gazebo - IMU sensor without a noise model
+    Problem : The IMU <sensor> had no <imu> block, so the plugin printed
+              "[Sensor.cc:510] Get noise index not valid" six times (one per
+              angular-velocity / linear-acceleration axis).
+    Fix     : Added an <imu> block with Gaussian noise on all 6 axes
+              (angular velocity stddev 2e-4, linear acceleration stddev 1.7e-2).
+
+19. testbed.xacro - base_footprint not at the centre of the wheel axle
+    Problem : base_footprint was placed at the base_link origin with no offset,
+              but the wheel axle centre is at x = -0.0505, y = -0.038 in
+              base_link. The diff-drive plugin publishes odom -> base_footprint
+              assuming base_footprint is the point the robot rotates about, so
+              every turn added a false sideways motion to the odometry (laser
+              scans smeared in RViz). base_footprint also had a zero-size
+              <box size="0 0 0"/> visual.
+    Fix     : fixed_base_joint origin set to xyz="0.0505 0.038 0", and
+              base_footprint made an empty link (<link name="base_footprint"/>).
+
+20. testbed.xacro - wrong inertial origins and swapped IMU / dummy frames
+    Problem : (a) The lidar, IMU and dummy <inertial> origins were exported from
+              CAD in the wrong frame and placed their centres of mass outside
+              the robot (e.g. the 0.26 kg lidar about 21 cm to the side and
+              below the floor), pulling the robot's combined centre of mass
+              sideways.
+              (b) The imu_link_1 frame was at the position of the dummy mesh and
+              dummy_link_1 at the position of the IMU mesh (swapped). The lidar
+              frame was also offset ~7 mm from its mesh and at the bottom of the
+              lidar instead of its centre.
+              The wheel inertial origins were also offset; they were set to 0.
+    Fix     : Each joint is placed at its mesh centre (lidar -0.046 -0.038 0.238,
+              IMU -0.096 -0.124 0.160, dummy -0.096 0.046 0.160), each
+              visual/collision origin is the exact opposite of its joint, and
+              each <inertial> origin is 0 0 0. The scan plane now sits at the
+              middle of the lidar, 1.5 cm above the chassis.
+
+
