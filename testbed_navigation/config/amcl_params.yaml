@@ -1,0 +1,40 @@
+# AMCL (Adaptive Monte Carlo Localization) - Nav2 Humble
+# Matches /scan against /map and publishes the map -> odom TF (+ /amcl_pose).
+# Anything not listed here uses the Nav2 default.
+amcl:
+  ros__parameters:
+    use_sim_time: true
+
+    # frames / topics
+    global_frame_id: map
+    odom_frame_id: odom
+    base_frame_id: base_footprint          # root link of the testbed URDF
+    scan_topic: scan                       # Gazebo lidar -> /scan
+    transform_tolerance: 1.0
+
+    # how the robot moves (differential drive) and how much we trust odometry
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+
+    # particle filter
+    min_particles: 500
+    max_particles: 2000
+    update_min_d: 0.2                      # update after 0.2 m ...
+    update_min_a: 0.2                      # ... or 0.2 rad of motion
+
+    # laser model
+    laser_model_type: "likelihood_field"
+    laser_min_range: 0.1                   # same as the lidar in testbed.gazebo
+    laser_max_range: 12.0
+    max_beams: 60
+
+    # start pose = Gazebo spawn pose (map frame == Gazebo world frame)
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0
