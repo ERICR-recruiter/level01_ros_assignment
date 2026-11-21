@@ -5,6 +5,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
+from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_prefix
 from launch.actions import ExecuteProcess
@@ -41,6 +42,11 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py'),
         ),
+        launch_arguments={
+            'world': LaunchConfiguration('world'),
+            'gui': LaunchConfiguration('gui'),
+            'server': LaunchConfiguration('server'),
+        }.items(),
     )    
 
     return LaunchDescription([
@@ -48,5 +54,13 @@ def generate_launch_description():
           'world',
           default_value=[os.path.join(pkg_testbed_gazebo, 'worlds', 'testbed_playground.world'), ''],
           description='SDF world file'),
+        DeclareLaunchArgument(
+          'gui',
+          default_value='true',
+          description='Set to "false" to run Gazebo GUI headless.'),
+        DeclareLaunchArgument(
+          'server',
+          default_value='true',
+          description='Set to "false" not to run gzserver.'),
         gazebo,
     ])

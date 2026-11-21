@@ -1,0 +1,52 @@
+================================================================================
+BUGS IDENTIFIED AND FIXED - LEVEL 01 ROS ASSIGNMENT
+================================================================================
+
+1. Incomplete CMake Package Command
+   - File: testbed_description/CMakeLists.txt
+   - Observed Problem: Line 23 ended with `ament_package` lacking invocation parentheses `()`. During `colcon build`, CMake threw a parse error (`Parse error. Expected "(", got newline with text...`) and failed the build immediately.
+   - Fix: Changed `ament_package` to `ament_package()`.
+   - Verification: Ran `colcon build` on `testbed_description`. The package configured and compiled cleanly.
+
+2. Maps Directory Missing from Install Rules
+   - File: testbed_bringup/CMakeLists.txt
+   - Observed Problem: The CMake `install(DIRECTORY ...)` directive only installed the `launch` directory, omitting `maps`. Consequently, map files (`testbed_world.yaml` and `testbed_world.pgm`) were never installed into `<install_dir>/share/testbed_bringup/maps/`. Any launch file or node attempting to locate maps via `get_package_share_directory('testbed_bringup')` failed due to missing files.
+   - Fix: Added `maps` to `install(DIRECTORY launch maps DESTINATION share/${PROJECT_NAME}/)`.
+   - Verification: Ran `colcon build` and verified that `<install_dir>/share/testbed_bringup/maps/` contains both `testbed_world.yaml` and `testbed_world.pgm`.
+
+3. Gazebo Models Directory Missing from Install Rules
+   - File: testbed_gazebo/CMakeLists.txt
+   - Observed Problem: The CMake `install(DIRECTORY ...)` directive only installed `launch` and `worlds`, omitting `models`. `spawn_playground.launch.py` sets `GAZEBO_MODEL_PATH` to `<install_dir>/share/testbed_gazebo/models`, which was non-existent in the install tree. As a result, Gazebo could not find custom models (e.g., `wooden_fence`, `test_room`, `box_room`, etc.).
+   - Fix: Added `models` to `install(DIRECTORY launch worlds models DESTINATION share/${PROJECT_NAME}/)`.
+   - Verification: Ran `colcon build` and confirmed that `<install_dir>/share/testbed_gazebo/models/` contains all custom Gazebo models.
+
+4. Incorrect Map Image Filename in Map YAML
+   - File: testbed_bringup/maps/testbed_world.yaml
+   - Observed Problem: Line 1 specified `image: wrong_path_testbed_world.pgm`. The actual image file in that directory is `testbed_world.pgm`. Attempting to load this map with `nav2_map_server` failed because the file did not exist.
+   - Fix: Changed line 1 from `image: wrong_path_testbed_world.pgm` to `image: testbed_world.pgm`.
+   - Verification: Launched `nav2_map_server` pointing to `testbed_world.yaml`; it successfully loaded the map image dimensions and metadata without errors.
+
+5. Malformed Gazebo/Xacro XML in Robot Description
+   - File: testbed_description/urdf/testbed.gazebo
+   - Observed Problem: Line 40 had a redundant closing angle bracket: `<initial_orientation_as_reference>false</initial_orientation_as_reference>>` within the `libgazebo_ros_imu_sensor.so` plugin definition. This introduced invalid characters into the Gazebo sensor SDF model.
+   - Fix: Removed the trailing `>` character to make valid XML: `<initial_orientation_as_reference>false</initial_orientation_as_reference>`.
+   - Verification: Processed the Xacro file through `xacro` and verified the resulting model using `check_urdf`, confirming valid XML hierarchy and successful parsing.
+
+6. Gazebo World Launch Argument Not Forwarded
+   - File: testbed_gazebo/launch/spawn_playground.launch.py
+   - Observed Problem: The launch file declared a `world` launch argument (`DeclareLaunchArgument('world', default_value=...)`), but the `IncludeLaunchDescription` action for `gazebo.launch.py` did not pass `launch_arguments={'world': LaunchConfiguration('world')}.items()`. Gazebo therefore launched with its default empty world, ignoring the configured `testbed_playground.world` and any runtime world override.
+   - Fix: Imported `LaunchConfiguration` from `launch.substitutions` and forwarded `launch_arguments={'world': LaunchConfiguration('world')}.items()` to `IncludeLaunchDescription`.
+   - Verification: Inspected `ros2 launch testbed_gazebo spawn_playground.launch.py -s` output and confirmed that the `world` argument with `testbed_playground.world` is correctly forwarded to `gazebo_ros`.
+
+7. RViz Goal Tool Incompatible with Nav2 Action Interface
+   - File: testbed_description/rviz/full_bringup.rviz
+   - Observed Problem: Lines 251-257 defined the goal tool as `rviz_default_plugins/SetGoal`, which only publishes a `geometry_msgs/msg/PoseStamped` topic on `/goal_pose`. Nav2's action navigation expects action goals sent to `NavigateToPose` (`nav2_msgs/action/NavigateToPose`). The standard Nav2 RViz goal tool is `nav2_rviz_plugins/GoalTool`.
+   - Fix: Replaced `rviz_default_plugins/SetGoal` with `nav2_rviz_plugins/GoalTool`.
+   - Verification: Verified that `nav2_rviz_plugins/GoalTool` is available via `nav2_rviz_plugins` and successfully parsed in RViz configuration.
+
+8. Incompatible ROS 1 Control Plugin Causing Gazebo Segfault
+   - File: testbed_description/urdf/testbed.gazebo
+   - Observed Problem: Lines 6-8 specified `<plugin name="control" filename="libgazebo_ros_control.so"/>`. This is an obsolete ROS 1 plugin. In ROS 2 Humble, when the robot entity was spawned into Gazebo, attempting to load this plugin triggered a `Segmentation fault (core dumped)` in `gzserver` (exit code -11), crashing the simulation and stopping all simulation clock and TF publishing.
+   - Fix: Commented out the obsolete `<plugin name="control" filename="libgazebo_ros_control.so"/>` block (motor control and odometry are already fully handled by `libgazebo_ros_diff_drive.so`).
+   - Verification: Rebuilt package and spawned `testbed` entity into Gazebo; `gzserver` remained running and stable without crashing, advertising `/odom` and publishing `odom -> base_footprint` TF.
+================================================================================
