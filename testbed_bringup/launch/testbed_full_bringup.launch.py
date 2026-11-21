@@ -6,7 +6,6 @@ from launch import LaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from ament_index_python.packages import get_package_prefix
 from launch_ros.actions import Node
 
 def generate_launch_description():
