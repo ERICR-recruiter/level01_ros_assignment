@@ -1,0 +1,123 @@
+# Bugs Found in Starter Code — ERICR Level 01 ROS2 Navigation Assignment
+# Author: Student
+# Date: 2026-11-20
+
+This file documents all bugs identified in the starter code and the fixes applied.
+The README states: "there are some bugs intentionally left in the starter code that
+you will need to identify and fix."
+
+================================================================================
+BUG 1 — Wrong image path in map YAML
+================================================================================
+File:    testbed_bringup/maps/testbed_world.yaml
+Line:    1
+
+Problem:
+  The 'image' field references a non-existent file:
+    image: wrong_path_testbed_world.pgm
+
+  The actual map occupancy grid file in the same directory is:
+    testbed_world.pgm
+
+  This causes nav2_map_server to fail at startup with a "file not found" error.
+
+Fix:
+  Changed the image field to the correct filename:
+    image: testbed_world.pgm
+
+================================================================================
+BUG 2 — 'maps' directory not installed in testbed_bringup
+================================================================================
+File:    testbed_bringup/CMakeLists.txt
+
+Problem:
+  The CMakeLists.txt install block only installs the 'launch' directory:
+    install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
+
+  The 'maps' directory (containing testbed_world.yaml and testbed_world.pgm)
+  is NOT installed into the install space. This means after 'colcon build',
+  get_package_share_directory('testbed_bringup') will not contain the maps/
+  folder, and any launch file that uses that path to find the map will fail.
+
+Fix:
+  Added 'maps' to the install DIRECTORY list:
+    install(DIRECTORY launch maps DESTINATION share/${PROJECT_NAME}/)
+
+================================================================================
+BUG 3 — Missing parentheses on ament_package() call
+================================================================================
+File:    testbed_description/CMakeLists.txt
+Line:    last line
+
+Problem:
+  The final line reads:
+    ament_package
+
+  This is a CMake variable reference (a no-op), NOT a function call.
+  The package will fail to register itself with ament, causing colcon build
+  to skip it or fail downstream dependency resolution.
+
+Fix:
+  Changed to the correct function call syntax:
+    ament_package()
+
+================================================================================
+BUG 4 — Extra closing bracket in IMU plugin XML
+================================================================================
+File:    testbed_description/urdf/testbed.gazebo
+Line:    ~40
+
+Problem:
+  The IMU Gazebo plugin contains a malformed XML element:
+    <initial_orientation_as_reference>false</initial_orientation_as_reference>>
+
+  There is an extra '>' after the closing tag, which causes the URDF/xacro
+  parser to throw an XML parse error when loading the robot description.
+  This prevents the robot_state_publisher from starting correctly.
+
+Fix:
+  Removed the extra '>':
+    <initial_orientation_as_reference>false</initial_orientation_as_reference>
+
+================================================================================
+BUG 5 — ROS 1 control plugin included in ROS 2 URDF
+================================================================================
+File:    testbed_description/urdf/testbed.gazebo
+Lines:   ~5-8
+
+Problem:
+  The Gazebo plugin block includes:
+    <gazebo>
+      <plugin name="control" filename="libgazebo_ros_control.so"/>
+    </gazebo>
+
+  'libgazebo_ros_control.so' is the ROS 1 Gazebo control plugin.
+  It does NOT exist in a ROS 2 Humble + Gazebo 11 environment.
+  Gazebo will log an error "Failed to load plugin" and the simulation
+  may behave unexpectedly. The diff-drive plugin (libgazebo_ros_diff_drive.so)
+  already handles wheel control — this block is redundant and harmful.
+
+Fix:
+  Removed the entire libgazebo_ros_control.so plugin block.
+
+================================================================================
+BUG 6 — 'models' directory not installed in testbed_gazebo
+================================================================================
+File:    testbed_gazebo/CMakeLists.txt
+
+Problem:
+  The CMakeLists.txt install block installs only 'launch' and 'worlds':
+    install(DIRECTORY launch worlds DESTINATION share/${PROJECT_NAME}/)
+
+  The 'models/' directory (box_room, eric, Fence1, my_world, test_room,
+  wooden_fence) is NOT installed into the install space.
+
+  In spawn_playground.launch.py, GAZEBO_MODEL_PATH is set to:
+    pkg_testbed_gazebo + '/models'
+  which resolves to the install space path. Since models/ is not installed
+  there, Gazebo cannot find the world models and the simulation world
+  appears empty or fails to load entirely.
+
+Fix:
+  Added 'models' to the install DIRECTORY list:
+    install(DIRECTORY launch worlds models DESTINATION share/${PROJECT_NAME}/)
