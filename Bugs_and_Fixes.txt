@@ -1,0 +1,26 @@
+Starter Code Bugs Identified and Fixed
+
+1. Missing parentheses in CMakeLists.txt
+   - Location: testbed_description/CMakeLists.txt 
+   - Issue: `ament_package` was called without parentheses (`ament_package` instead of `ament_package()`), causing the initial `colcon build` to fail.
+   - Fix: Added the missing parentheses to `ament_package()`.
+
+2. Incorrect map image path in testbed_world.yaml
+   - Location: testbed_bringup/maps/testbed_world.yaml
+   - Issue: The `image:` field pointed to `wrong_path_testbed_world.pgm`, preventing `map_server` from loading the occupancy grid image.
+   - Fix: Corrected the `image:` path in `testbed_world.yaml` to reference the actual map `.pgm` file.
+
+3. LiDAR max range configuration in testbed.gazebo
+   - Location: testbed_description/urdf/testbed.gazebo
+   - Issue: The simulated 2D LiDAR sensor's maximum range was 1.5 m, range too short for proper localization
+   - Fix: Updated the `<max>` range parameter to 15 m in the Gazebo ray sensor plugin in `testbed.gazebo`.
+
+4. Missing `maps` directory in testbed_bringup/CMakeLists.txt
+   - Location: testbed_bringup/CMakeLists.txt
+   - Issue: The `maps/` directory was not listed in the `install(DIRECTORY ...)` command, so `testbed_world.yaml` and its image were not copied to the package's `share` directory on build. This caused `map_loader.launch.py` to fail when resolving the map path.
+   - Fix: Added `maps` to the `install(DIRECTORY ...)` directive in `testbed_bringup/CMakeLists.txt`.
+
+5. Low wheel friction (`mu`) in testbed.gazebo
+   - Location: testbed_description/urdf/testbed.gazebo
+   - Issue: Low friction coefficients (`mu1`/`mu2`) may cause wheel slip during navigation and turning in Gazebo, degrading odometry and path tracking.
+   - Fix: Increased the `mu` friction values in `testbed.gazebo` for more stable traction.
