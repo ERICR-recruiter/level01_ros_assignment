@@ -1,0 +1,23 @@
+Bug 1: testbed_description/CMakeLists.txt - last line `ament_package` is missing `()`, so colcon build fails with a CMake parse error.
+Fix: Changed `ament_package` to `ament_package()`.
+
+Bug 2: testbed_description/urdf/testbed.gazebo - lidar <range><max> was 1.5 m in a ~20 m room, so /scan had 0 valid readings (all inf) and AMCL/costmaps get no data.
+Fix: Set lidar max range to 12.0 m (now ~298/300 rays hit walls).
+
+Bug 3: testbed_bringup/CMakeLists.txt - install() only installs `launch`, not `maps`, so map_server cannot find share/testbed_bringup/maps/testbed_world.yaml ("bad file").
+Fix: Added `maps` to the install(DIRECTORY ...) list.
+
+Bug 4: testbed_bringup/maps/testbed_world.yaml - `image: wrong_path_testbed_world.pgm` points to a file that does not exist, so map_server fails to load the image.
+Fix: Changed it to `image: testbed_world.pgm`.
+
+Bug 5: testbed_description/urdf/testbed.gazebo - diff_drive <wheel_separation> was 0.35 m but the wheel meshes are 0.376 m apart, so the robot turned only ~93% of the commanded yaw rate (0.465 rad/s for 0.5).
+Fix: Set <wheel_separation> to 0.376.
+
+Bug 6: testbed_description/urdf/testbed.xacro - base_footprint was at the base_link origin, ~6 cm away from the wheel-axle centre, so the robot frame moved sideways while spinning in place (bad for Nav2 controllers/footprint).
+Fix: Set fixed_base_joint origin to xyz="0.05 0.038 0" so base_footprint sits under the axle centre.
+
+Bug 7: testbed_description/urdf/testbed.gazebo - loads the ROS 1 plugin libgazebo_ros_control.so, which does not exist in ROS 2 Humble ("Failed to load plugin" in gzserver).
+Fix: Removed that <gazebo><plugin .../></gazebo> block (driving is done by libgazebo_ros_diff_drive.so).
+
+Bug 8: testbed_description/urdf/testbed.gazebo - stray extra `>` after </initial_orientation_as_reference> in the IMU plugin.
+Fix: Removed the extra `>`.
