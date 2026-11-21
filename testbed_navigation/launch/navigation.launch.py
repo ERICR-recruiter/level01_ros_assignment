@@ -85,10 +85,11 @@ def generate_launch_description():
         ),
 
         # --- Recovery Behaviors (spin, back_up, wait) ---
+        # Package renamed from nav2_recoveries → nav2_behaviors in ROS2 Humble
         Node(
-            package='nav2_recoveries',
-            executable='recoveries_server',
-            name='recoveries_server',
+            package='nav2_behaviors',
+            executable='behavior_server',
+            name='behavior_server',
             output='screen',
             parameters=[LaunchConfiguration('params_file')]
         ),
@@ -123,7 +124,7 @@ def generate_launch_description():
                 'node_names': [
                     'controller_server',
                     'planner_server',
-                    'recoveries_server',
+                    'behavior_server',
                     'bt_navigator',
                     'velocity_smoother',
                 ],
