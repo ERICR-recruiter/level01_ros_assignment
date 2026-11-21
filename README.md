@@ -65,15 +65,15 @@ To get started, you’ll need:
 
 A map was given in the workspace named testbed_world.pgm and we have to navigate and localize the robot model . After the simulation certain things that should be taken into consideration. They were
 
-1)Map Loading
-2)Localization
-3)Navigation
+- Map Loading
+- Localization
+- Navigation
 
 ## Map loading
 To laod a given map(testbed_world.pgm) in Rviz a launch file was made to configure and activate map server and two nodes were taken :
-1)map_server(nav2_map_server) : reads testbed_world.yaml + tested_world.pgm and publishes it on :/map
-2)lifecycle_manager_map : configure and activate map server
-3)the node published data on the topic named :/map
+- map_server(nav2_map_server) : reads testbed_world.yaml + tested_world.pgm and publishes it on :/map
+- lifecycle_manager_map : configure and activate map server
+- the node published data on the topic named :/map
 
 ##Localization
 describes where the robot is and AMCL is used to make gusses of the robot position on the maps and these guesses are called particles by giving and setting values and references the location is constantly updated to give the accurate location
@@ -87,16 +87,16 @@ What AMCL does
 *After a few moves, all the guesses gather at the robot's real position.
 *AMCL then publishes the link between the map and the robot's odometry (the map → odom transform). This corrects the small errors that wheel odometry builds up over time.
 Many parameters and values were added in .yaml file to make localisation working these includes:
-1)Frame and topics  : added all frames that were required
-2)Starting position :set initial pose of the robot
-3)Motion settings   : include noise reduction caused by rotation, translation ,etc
-4)Range of lidar was also updated
+- Frame and topics  : added all frames that were required
+- Starting position :set initial pose of the robot
+- Motion settings   : include noise reduction caused by rotation, translation ,etc
+- Range of lidar was also updated
 
 ##Navigation
 Navigation actually means how will i reach the goal for that nav2 has certain plugins and main 5 nav2_servers to complete the process.They are as follows :
-1)bt_navigator :recieves the goal and decide what to do
-2)planner_server :it is also called the map reader it draws the full route to the goal
-3)controller_server : it follows the route and send speed commands
+- bt_navigator :recieves the goal and decide what to do
+- planner_server :it is also called the map reader it draws the full route to the goal
+- controller_server : it follows the route and send speed commands
 ##There are mainly two plugins for this DWD and Regulated Pure Pursuit
 ##We started with DWB, Nav2's classic controller. 
  - DWB imagines hundreds of possible short drives (different speeds and turns), throws away any that would hit something, and picks the best of the rest.
@@ -104,17 +104,16 @@ Navigation actually means how will i reach the goal for that nav2 has certain pl
    Tuning DWB (shorter simulation time, smaller inflation) helped only a little.
  - RPP doesn't search at all. It just follows the planned path. Since the planner already routes the path through the centre of each door, RPP drives straight through at a steady speed.
    The trade-off: RPP doesn't steer around new obstacles. It slows or stops, and the planner re-plans. In this static test world, that's fine.
-4)behaviour_server : it rescues or avoid from collision by spining and backup or stop if required
-5)velocity_smoother :it limits the sudden speed change during path travelling and publishes on cmd_vel
+- behaviour_server : it rescues or avoid from collision by spining and backup or stop if required
+- velocity_smoother :it limits the sudden speed change during path travelling and publishes on cmd_vel
 
 
 ##Challenges
-1) The ROS should use its own clock not the computer therefore we gave amcl file
-use_sim_time : true
-2)Gazebo crashed right after the robot spawned : so i spawe the robot after the gazebo published the /clock message to avaoid the crash
-3)base_footprint and wheel seperatio were wrong updated so it gave problem to laser scan  : so measured the meshes and moved the base_footprint
-4)RViz fixed frame was odom, due to which the goal was saved to odom with old timestamp , thats why after few second that time was no in TF buffer so the robot couldn't find the path and to fixed it the fixed fram was changed to :/map
-5)Robot stopped at sharp corner so we gave different inflation for global and local costmap and tested for various values and changed the follow path plugin from **DWB** to **RPP**
+- The ROS should use its own clock not the computer therefore we gave amcl file use_sim_time : true
+- Gazebo crashed right after the robot spawned : so i spawe the robot after the gazebo published the /clock message to avaoid the crash
+- base_footprint and wheel seperatio were wrong updated so it gave problem to laser scan  : so measured the meshes and moved the base_footprint
+- RViz fixed frame was odom, due to which the goal was saved to odom with old timestamp , thats why after few second that time was no in TF buffer so the robot couldn't find the path and to     fixed it the fixed fram was changed to :/map
+- Robot stopped at sharp corner so we gave different inflation for global and local costmap and tested for various values and changed the follow path plugin from **DWB** to **RPP**
 
 
 ## Contact Info 
