@@ -1,0 +1,13 @@
+CMake Error at CMakeLists.txt:24:
+  Parse error.  Expected "(", got newline with text "
+
+  ".
+
+  added () to ament_package in line 24 of testbed_description/CMakeLists.txt
+
+  maps not added in bringup cmakelists 
+
+  in testbed_world.yaml it points to wrong path
+
+  lidar range too low increased it to 10m from 1.5m 
+  
