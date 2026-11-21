@@ -4,7 +4,7 @@
   <name>testbed_navigation</name>
   <version>0.0.0</version>
   <description>Nav2 map loading, AMCL localization and navigation for the Testbed robot</description>
-  <maintainer email="your@email.com">Vedant Kulkarni</maintainer>
+  <maintainer email="vedantkulkarni252@gmail.com">Vedant Kulkarni</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -20,6 +20,10 @@
   <exec_depend>testbed_bringup</exec_depend>
   <exec_depend>testbed_description</exec_depend>
   <exec_depend>testbed_gazebo</exec_depend>
+  <exec_depend>nav2_waypoint_follower</exec_depend>
+  <exec_depend>nav2_simple_commander</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

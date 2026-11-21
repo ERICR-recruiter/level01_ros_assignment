@@ -24,4 +24,12 @@ if(BUILD_TESTING)
 endif()
 
 install(DIRECTORY launch config rviz DESTINATION share/${PROJECT_NAME}/)
+
+# executable scripts
+install(PROGRAMS
+  scripts/send_goal.py
+  scripts/patrol.py
+
+  DESTINATION lib/${PROJECT_NAME})
+
 ament_package()
