@@ -1,0 +1,34 @@
+Bugs Identified and Fixed in Starter Repository
+===============================================
+
+1. testbed_description/CMakeLists.txt (Line 23)
+   Issue: `colcon build` failed immediately with a CMake parse error because `ament_package` was missing its parentheses.
+   Fix: Changed `ament_package` to `ament_package()`.
+
+2. testbed_bringup/CMakeLists.txt (Lines 27-32)
+   Issue: The `install(DIRECTORY ...)` block only installed `launch` and left out `maps`, so `map_server` couldn't locate `testbed_world.yaml` from the installed share directory.
+   Fix: Added `maps` to the `install(DIRECTORY launch maps ...)` block.
+
+3. testbed_gazebo/CMakeLists.txt (Lines 28-34)
+   Issue: The `install(DIRECTORY ...)` block installed `launch` and `worlds` but omitted `models`, which can break Gazebo model path resolution from the install space.
+   Fix: Added `models` to the `install(DIRECTORY launch worlds models ...)` block.
+
+4. testbed_bringup/maps/testbed_world.yaml (Line 1)
+   Issue: The `image:` field was set to `wrong_path_testbed_world.pgm`, which does not exist in the `maps/` folder.
+   Fix: Updated `image:` to `testbed_world.pgm`.
+
+5. testbed_description/urdf/testbed.gazebo (Line 40)
+   Issue: The IMU plugin tag had a stray extra closing bracket (`</initial_orientation_as_reference>>`).
+   Fix: Removed the extra `>` to fix the XML syntax.
+
+6. testbed_description/urdf/testbed.gazebo (Line 65)
+   Issue: The LiDAR sensor's `<max>` range was capped at `1.5` meters. Because the robot spawns in the middle of a large room, almost every `/scan` reading returned `.inf`, leaving AMCL with no wall features to localize against.
+   Fix: Increased `<max>` range from `1.5` to `12.0` meters.
+
+7. testbed_description/launch/robot_description.launch.py (Line 23)
+   Issue: The `robot_state_publisher` node had a typo in its executable name (`robot_state_publishe`).
+   Fix: Corrected it to `robot_state_publisher`.
+
+8. testbed_description/launch/robot_description.launch.py (Line 26)
+   Issue: `robot_state_publisher` was not passed `use_sim_time: True`, so TF transforms were stamped with system wall time instead of Gazebo's `/clock`. This causes TF extrapolation errors in AMCL and Nav2 costmaps.
+   Fix: Added `{'use_sim_time': True}` to the node's `parameters` list.
