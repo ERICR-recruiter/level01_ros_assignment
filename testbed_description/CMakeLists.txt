@@ -19,5 +19,5 @@ find_package(urdf REQUIRED)
 install(DIRECTORY meshes urdf launch rviz
   DESTINATION share/${PROJECT_NAME}
 )
-
-ament_package
+#ament_package was missing paranthees ,corrected ament_package()
+ament_package()
