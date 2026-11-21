@@ -3,9 +3,9 @@
 
 <xacro:property name="body_color" value="Gazebo/Silver" />
 
-<gazebo>
+<!-- <gazebo>
   <plugin name="control" filename="libgazebo_ros_control.so"/>
-</gazebo>
+</gazebo> -->
 
   <gazebo>
     <plugin name="diff_drive_control" filename="libgazebo_ros_diff_drive.so">
@@ -37,7 +37,7 @@
       <update_rate>10</update_rate>
       <visualize>true</visualize>
       <plugin name="my_imu_plugin" filename="libgazebo_ros_imu_sensor.so">
-      <initial_orientation_as_reference>false</initial_orientation_as_reference>>
+      <initial_orientation_as_reference>false</initial_orientation_as_reference>
         <ros>
           <remapping>~/out:=imu</remapping>
         </ros>
@@ -62,7 +62,7 @@
         </scan>
         <range>
           <min>0.10</min>
-          <max>1.5</max>
+          <max>10.0</max>
           <resolution>0.01</resolution>
         </range>
         <noise>
@@ -96,29 +96,29 @@
 
 <gazebo reference="caster_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_2">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_3">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_4">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 

@@ -1,0 +1,16 @@
+1.Missing parentheses in testbed_description/CMakeLists.txt line 23
+ament_package() instead of ament_package 
+2.XML syntax error in testbed_description/urdf/testbed.gazebo line 40
+Removed the extra '>' to close the tag properly
+3.Missing `maps` install rule in testbed_bringup/CMakeLists.txt line 27
+Added maps to the install(DIRECTORY...) directive
+4.Missing `models` install rule in testbed_gazebo/CMakeLists.txt line 28
+Added `models` to the `install(DIRECTORY ...)` directive
+5.Incorrect map file path in testbed_bringup/maps/testbed_world.yaml line 1
+Changed `wrong_path_testbed_world.pgm` to `testbed_world.pgm`
+6.High friction values in testbed_description/urdf/testbed.gazebo line 97, 104, 111, 118
+Changed friction coefficients (mu1, mu2) to 0.001 to reduce friction
+7.Maximum range of laser scanner was 1.5m, but the simulated room is 20m across, so the laser scanner cannot scan the entire map
+Changed the maximum range of laser scanner to 10m
+8.ROS1 plugin used in testbed_description/urdf/testbed.gazebo line 6-8
+commented it out because differential drive is already ahndled by libgazebo_ros_diff_drive.so
