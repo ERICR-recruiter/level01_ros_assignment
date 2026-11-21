@@ -25,12 +25,14 @@ def generate_launch_description():
 
     nav_params = [params_file, {'use_sim_time': use_sim_time}]
 
+    # controller and behaviors publish to /cmd_vel_nav, not straight to the robot
     controller_server = Node(
         package='nav2_controller',
         executable='controller_server',
         name='controller_server',
         output='screen',
-        parameters=nav_params)
+        parameters=nav_params,
+        remappings=[('cmd_vel', 'cmd_vel_nav')])
 
     planner_server = Node(
         package='nav2_planner',
@@ -44,7 +46,8 @@ def generate_launch_description():
         executable='behavior_server',
         name='behavior_server',
         output='screen',
-        parameters=nav_params)
+        parameters=nav_params,
+        remappings=[('cmd_vel', 'cmd_vel_nav')])
 
     bt_navigator = Node(
         package='nav2_bt_navigator',
@@ -57,6 +60,21 @@ def generate_launch_description():
         package='nav2_waypoint_follower',
         executable='waypoint_follower',
         name='waypoint_follower',
+        output='screen',
+        parameters=nav_params)
+
+    velocity_smoother = Node(
+        package='nav2_velocity_smoother',
+        executable='velocity_smoother',
+        name='velocity_smoother',
+        output='screen',
+        parameters=nav_params,
+        remappings=[('cmd_vel', 'cmd_vel_nav')])
+
+    collision_monitor = Node(
+        package='nav2_collision_monitor',
+        executable='collision_monitor',
+        name='collision_monitor',
         output='screen',
         parameters=nav_params)
 
@@ -74,6 +92,8 @@ def generate_launch_description():
                 'behavior_server',
                 'bt_navigator',
                 'waypoint_follower',
+                'velocity_smoother',
+                'collision_monitor',
             ],
         }])
 
@@ -85,5 +105,7 @@ def generate_launch_description():
         behavior_server,
         bt_navigator,
         waypoint_follower,
+        velocity_smoother,
+        collision_monitor,
         lifecycle_manager,
     ])
