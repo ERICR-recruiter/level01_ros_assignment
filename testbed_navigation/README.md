@@ -157,11 +157,17 @@ Before implementing `testbed_navigation`, a full diagnostic audit of the starter
 ## Demo
 
 - **Video Demonstration:**
+
+https://github.com/user-attachments/assets/66178076-9f2d-48be-909c-2dd2ed490d81
+
+
 - **Screenshots:**
   - **Localization (AMCL + Map + LaserScan alignment):**
-    !
+
+    !<img width="1920" height="1028" alt="Localization" src="https://github.com/user-attachments/assets/640dac40-f026-42a0-b4ce-6a4a95c8e026" />
   - **Autonomous Navigation (Global/Local Costmaps + Path):**
-    !
+
+    !<img width="1920" height="982" alt="Navigation" src="https://github.com/user-attachments/assets/10286c20-9102-4b44-a631-41e6b5a94c5d" />
 
 ---
 
