@@ -1,0 +1,43 @@
+BUGS IDENTIFIED AND FIXED
+=========================
+
+1. Incorrect Map Image Path
+   File: testbed_bringup/maps/testbed_world.yaml
+
+   Issue:
+   The YAML file referenced "wrong_path_testbed_world.pgm",
+   which did not match the actual map image filename.
+
+   Fix:
+   Changed the image path to "testbed_world.pgm".
+
+2. Map Directory Missing from Installation
+   File: testbed_bringup/CMakeLists.txt
+
+   Issue:
+   The maps directory was not included in the package installation
+   configuration.
+
+   Fix:
+   Added "maps" to the install(DIRECTORY ...) section so that
+   map files are available from the installed package.
+
+3. Insufficient LiDAR Detection Range
+   File: testbed_description/urdf/testbed.gazebo
+
+   Issue:
+   The LiDAR maximum range was configured to 1.5 metres.
+
+   Fix:
+   Increased the maximum range to 5.0 metres to provide a wider
+   obstacle-detection range for navigation.
+
+VERIFICATION
+============
+
+- Map Server successfully publishes /map.
+- AMCL successfully publishes localization estimates.
+- The map-to-odom transform becomes available.
+- Nav2 navigation nodes successfully reach the active lifecycle state.
+- Global path planning works in RViz.
+- The robot successfully navigates to a goal in Gazebo and stops.
