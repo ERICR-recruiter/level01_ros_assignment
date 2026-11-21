@@ -228,7 +228,8 @@
 <joint name="fixed_base_joint" type="fixed">
   <parent link="base_footprint" />
   <child link="base_link" />
-  <origin xyz="0 0 0" rpy="0 0 0" />
+  <!-- base_footprint placed under the wheel-axle centre (rotation centre of the diff drive) -->
+  <origin xyz="0.05 0.038 0" rpy="0 0 0" />
 </joint>
 
 <joint name="left_wheel_joint" type="continuous">
