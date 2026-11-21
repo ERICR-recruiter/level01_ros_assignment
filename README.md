@@ -105,7 +105,7 @@ This publishes the robot's initial pose to AMCL (alternatively, use the **2D Pos
 ## Demo
 
 <p align="center">
-  <video src="result.webm" width="800" autoplay loop muted playsinline>
+  <video src="Result.webm" width="800" autoplay loop muted playsinline>
     Simulation demo
   </video>
 </p>
