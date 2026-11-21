@@ -26,7 +26,7 @@ def generate_launch_description():
         default_value=os.path.join(pkg_nav, 'rviz', 'navigation.rviz'),
         description='Full path to the RViz config file')
 
-    # 1. Environment: robot model, Gazebo world, robot spawn
+    # Env- robot, world, robot spawn
     state_pub = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_description, 'launch', 'robot_description.launch.py')))
@@ -39,19 +39,19 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(pkg_gazebo, 'launch', 'spawn_testbed.launch.py')))
 
-    # 2. Localization (map server + AMCL)
+    # Localization - (map server + AMCL)
     localization = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_nav, 'launch', 'localization.launch.py')),
         launch_arguments={'use_sim_time': use_sim_time}.items())
 
-    # 3. Navigation (planner, controller, behaviors, BT navigator)
+    # Navigation - (planner, controller, behaviors, BT navigator)
     navigation = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_nav, 'launch', 'navigation.launch.py')),
         launch_arguments={'use_sim_time': use_sim_time}.items())
 
-    # 4. RViz with the saved configuration
+    # RViz configs
     rviz = Node(
         package='rviz2',
         executable='rviz2',

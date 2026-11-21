@@ -25,7 +25,6 @@ def generate_launch_description():
 
     nav_params = [params_file, {'use_sim_time': use_sim_time}]
 
-    # controller and behaviors publish to /cmd_vel_nav, not straight to the robot
     controller_server = Node(
         package='nav2_controller',
         executable='controller_server',

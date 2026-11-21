@@ -24,22 +24,25 @@ def main():
     navigator.setInitialPose(make_pose(navigator, 0.0, 5.0, 0.0))
     navigator.waitUntilNav2Active()
 
-    # three poses you already drove to successfully
+    #positions for the patroling
     waypoints = [
         make_pose(navigator, 6.84, 5.39, 3.05),
         make_pose(navigator, -6.89, 1.18, -1.55),
-        make_pose(navigator, 0.0, 5.0, 0.0),      # back to start
+        make_pose(navigator, 0.0, 5.0, 0.0),     
     ]
 
     start = navigator.get_clock().now()
     navigator.followWaypoints(waypoints)
 
     last_wp = -1
+
+
     while not navigator.isTaskComplete():
         feedback = navigator.getFeedback()
         if feedback and feedback.current_waypoint != last_wp:
             last_wp = feedback.current_waypoint
             print(f'executing waypoint {last_wp + 1}/{len(waypoints)}')
+
 
     elapsed = (navigator.get_clock().now() - start).nanoseconds / 1e9
     result = navigator.getResult()
