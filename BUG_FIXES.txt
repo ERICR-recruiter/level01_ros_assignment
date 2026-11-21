@@ -1,0 +1,59 @@
+BUG FIXES – LEVEL 1 ROS2 NAVIGATION ASSIGNMENT
+
+1. CMake Build Failure
+   File: testbed_description/CMakeLists.txt
+
+   Problem:
+   The ament_package function was incorrectly written without parentheses, causing a CMake configuration/build failure.
+
+   Fix:
+   Changed `ament_package` to `ament_package()`.
+
+2. Missing Map Resources During Installation
+   File: testbed_bringup/CMakeLists.txt
+
+   Problem:
+   The maps directory was not included in the package installation rules. Consequently, installed launch files could not reliably locate the map resources.
+
+   Fix:
+   Added the maps directory to the installation rule.
+
+3. Incorrect Map Image Filename
+   File: testbed_bringup/maps/testbed_world.yaml
+
+   Problem:
+   The YAML file referenced `wrong_path_testbed_world.pgm`, which did not match the actual map image filename.
+
+   Fix:
+   Changed the image reference to `testbed_world.pgm`.
+
+4. Inconsistent Simulation Clock Configuration
+   File: testbed_description/launch/robot_description.launch.py
+
+   Problem:
+   The robot_state_publisher was not configured to use simulation time, potentially causing timestamp inconsistencies between simulation and ROS 2 nodes.
+
+   Fix:
+   Enabled `use_sim_time` for robot_state_publisher.
+
+5. Invalid XML Syntax in IMU Plugin Configuration
+   File: Robot description / IMU plugin configuration
+
+   Problem:
+   An extra `>` character appeared after the `initial_orientation_as_reference` parameter, resulting in malformed XML.
+
+   Fix:
+   Removed the unnecessary `>` character.
+
+VERIFICATION
+
+The workspace was successfully built using colcon.
+
+The simulation, map server, AMCL localization and Nav2 navigation components were launched and tested.
+
+Runtime testing included:
+- Map loading and localization.
+- Autonomous navigation to goals.
+- Dynamic obstacle detection and path replanning.
+- Collision prevention.
+- Navigation recovery behaviours.
