@@ -1,0 +1,48 @@
+# Starter Code Bugs & Debugging Notes
+
+During setup, build, and initial testing of the starter packages, the following bugs were identified and fixed:
+
+1. testbed_description/CMakeLists.txt: Build syntax failure
+   - Symptom: `colcon build` failed immediately on `testbed_description` with a CMake syntax error.
+   - Cause: Line 23 had `ament_package` without closing parentheses.
+   - Fix: Corrected to `ament_package()`.
+
+2. testbed_bringup/maps/testbed_world.yaml: Non-existent map image
+   - Symptom: `nav2_map_server` failed to load the occupancy grid image.
+   - Cause: The `image` property pointed to `wrong_path_testbed_world.pgm`, while the actual file in the folder is `testbed_world.pgm`.
+   - Fix: Changed the path to `image: testbed_world.pgm`.
+
+3. testbed_bringup/CMakeLists.txt: Missing maps install target
+   - Symptom: Map files were missing from the package share directory under `install/testbed_bringup/share/testbed_bringup/`.
+   - Cause: `CMakeLists.txt` only had `install(DIRECTORY launch ...)` and omitted the `maps` directory.
+   - Fix: Added `maps` to the `install(DIRECTORY ...)` command.
+
+4. testbed_gazebo/CMakeLists.txt: Missing models install target
+   - Symptom: Gazebo threw missing model warnings when trying to locate custom world assets like `test_room` and `wooden_fence`.
+   - Cause: `models` directory was not installed into `share/testbed_gazebo/`, so Gazebo's model path couldn't find them from the install prefix.
+   - Fix: Added `models` to `install(DIRECTORY ...)` in `testbed_gazebo/CMakeLists.txt`.
+
+5. testbed_description/urdf/testbed.gazebo: Obsolete ROS 1 plugin
+   - Symptom: Gazebo printed library loading errors for `libgazebo_ros_control.so`.
+   - Cause: `libgazebo_ros_control.so` is a ROS 1 Gazebo plugin and does not exist in ROS 2 Humble. Differential drive control is already handled by `libgazebo_ros_diff_drive.so`.
+   - Fix: Removed the obsolete `<plugin name="control" filename="libgazebo_ros_control.so"/>` block.
+
+6. testbed_description/urdf/testbed.gazebo: XML syntax error
+   - Symptom: Minor XML parsing warning during xacro expansion.
+   - Cause: Line 40 had a stray closing bracket `</initial_orientation_as_reference>>`.
+   - Fix: Removed the extra `>` character.
+
+7. testbed_description/urdf/testbed.gazebo: Constrained LIDAR range
+   - Symptom: The robot was unable to detect walls from the center of the rooms, and AMCL particle dispersion was very high.
+   - Cause: Ray sensor max range was set to `1.5` meters (`<max>1.5</max>`). In a 20m x 20m arena, the sensor beams couldn't reach the walls.
+   - Fix: Increased ray sensor `<max>` range to `12.0` meters to provide realistic laser coverage across the simulation environment.
+
+8. testbed_description/launch/robot_description.launch.py: TF clock desynchronization
+   - Symptom: RViz repeatedly printed `"Message Filter dropping message: ... the timestamp on the message is earlier than all the data in the transform cache"` and TF frames were erratic.
+   - Cause: `robot_state_publisher` was started without `use_sim_time: True`, publishing transforms with system wall clock while Gazebo and sensors published with simulation time (`/clock`).
+   - Fix: Added `use_sim_time: True` parameter to `robot_state_publisher`.
+
+9. testbed_description/urdf/testbed.gazebo: Wheel slippage & caster drag
+   - Symptom: During navigation turns, the robot dragged heavily and drifted, odometry diverged from visual movement, and AMCL lost tracking.
+   - Cause: The 4 fixed caster joints had friction coefficients set to `mu1=0.2, mu2=0.2` (acting like dragging brakes), while drive wheels only had `0.2` friction.
+   - Fix: Set caster wheel friction to `mu1=0.0, mu2=0.0` (frictionless sliding casters) and increased drive wheel traction to `mu1=1.0, mu2=1.0`.
