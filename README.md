@@ -48,7 +48,7 @@ ros_nav2_assignment/
 2. Clone the repository:
    ```bash
    cd ~/assignment_ws/src
-   git clone <your-fork-url>
+   git clone https://github.com/GAUTHAMPSANKAR/level01_ros_assignment.git
    ```
 3. Build and source the workspace:
    ```bash
@@ -101,6 +101,26 @@ This publishes the robot's initial pose to AMCL (alternatively, use the **2D Pos
 - **2D LiDAR Optimization:** Replaced `voxel_layer` with `obstacle_layer` in `local_costmap` to match the robot's 2D `/scan` sensor.
 - **Planner & Controller:** Enabled A\* (`use_astar: true`) in `NavfnPlanner`, set `vy_samples: 1` in `DWBLocalPlanner` for differential-drive kinematics, and tuned wheel friction (`mu`) in `testbed.gazebo` for stable traction.
 - **RViz2 Setup:** Updated `full_bringup.rviz` to use `map` as the fixed frame with Nav2 costmap, footprint, and path displays enabled.
+
+## Approach
+
+To avoid relying on the monolithic `nav2_bringup` package, the navigation stack was decomposed into three independent lifecycle-managed stages:
+
+1. **Map Loading (`map_loader.launch.py`):** Launches `nav2_map_server` with a dedicated lifecycle manager to publish the static occupancy grid on `/map`.
+2. **Localization (`localization.launch.py`):** Launches `nav2_amcl` with its own lifecycle manager, matching `/scan` data against `/map` to broadcast the `map → odom` transform.
+3. **Navigation (`navigation.launch.py`):** Launches the planning, control, smoothing, behavior, and velocity-smoothing servers under `lifecycle_manager_navigation`, consuming `/map`, `/scan`, and TF to output `/cmd_vel`.
+
+All Nav2 parameters were tuned specifically for the Testbed-T1.0.0 URDF geometry and differential-drive kinematics rather than using default TurtleBot3 values.
+
+## Challenges Faced
+
+* **Starter Code & Build Issues:** Initial builds and map loading failed due to a missing `ament_package()` parenthesis in `testbed_description/CMakeLists.txt`, un-installed `maps/` and `models/` directories in CMake, and a broken image path in `testbed_world.yaml`.
+* **Localization Failure (Short LiDAR Range):** The default LiDAR `<max>` range was 1.5 m, which prevented AMCL from seeing enough wall features to converge. Increasing it to 15 m resolved localization drift.
+* **Robot Slip & Odometry Drift:** Friction on the rigid casters (`caster_1`–`caster_4`) caused scrubbing during in-place rotation caused slip. Setting caster friction to `0` and increasing drive-wheel friction stabilized both turning and `/odom`.
+* **Gazebo Classic Verbose Warnings:** Running with `verbose:=true` exposed a leftover ROS 1 plugin (`libgazebo_ros_control.so`), a stray `>` in the IMU XML, missing IMU noise parameters, an invalid `Gazebo/Silver` material, and a non-model ROS share path in `GAZEBO_MODEL_PATH`. All were cleaned up for a warning-free startup.
+
+*(See [`Bugs_and_Fixes.txt`](Bugs_and_Fixes.txt) for the complete file-by-file breakdown.)*
+
 
 ## Demo
 
