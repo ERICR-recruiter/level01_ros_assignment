@@ -1,0 +1,4 @@
+1. testbed_description/CMakeLists.txt, line 24
+   Error: "CMake Error: Parse error. Expected '('"
+   Cause: ament_package was written without brackets.
+   Fix: changed to ament_package()
