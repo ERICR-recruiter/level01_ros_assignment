@@ -1,7 +1,9 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Anish Deep Toppo
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
+
+## setup guide, approach and challenges: [`testbed_navigation/README.md`](testbed_navigation/README.md)
 
 **Here’s what to do:**
 1. We have shared some starter code for the 'Testbed-T1.0.0', a simple open-source robot developed by the team here at ERIC Robotics. **Please note that there are some bugs intentionally left in the starter code that you will need to identify and fix. You also need to make a text file listing the bugs you were able to identify and how did you fix them and add that file in the root directory outside the navigation package** Your task is to develop a new ROS2 package called `testbed_navigation` to manage the navigation workflow for this robot.
@@ -124,7 +126,12 @@ We’ll be looking for:
 
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
+## My Submission
+ - Bugs found in the starter code: [`BUGS_FIXED.txt`](BUGS_FIXED.txt)
+ - Navigation package,setup guide, approach and challenges: [`testbed_navigation/README.md`](testbed_navigation/README.md)
+ - Simulation video: https://www.youtube.com/watch?v=JyK5GZwWCyk
+
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Anish Deep Toppo
+ - Contact number: 8770018584
+ - Email Address: anishdeeptoppo01@gmail.com

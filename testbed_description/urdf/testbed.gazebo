@@ -3,32 +3,48 @@
 
 <xacro:property name="body_color" value="Gazebo/Silver" />
 
+<!--
 <gazebo>
   <plugin name="control" filename="libgazebo_ros_control.so"/>
 </gazebo>
+-->
+	<gazebo>
+		<plugin name="diff_drive_control" filename="libgazebo_ros_diff_drive.so">
 
-  <gazebo>
-    <plugin name="diff_drive_control" filename="libgazebo_ros_diff_drive.so">
-      <update_rate>100</update_rate>
-     
-      <left_joint>left_wheel_joint</left_joint>
-      <right_joint>right_wheel_joint</right_joint>
+		  <update_rate>100</update_rate>
 
-      <wheel_separation>0.35</wheel_separation>
-      <wheel_diameter>0.1</wheel_diameter>
+		  <left_joint>left_wheel_joint</left_joint>
+		  <right_joint>right_wheel_joint</right_joint>
 
-      <command_topic>cmd_vel</command_topic>
+		  <wheel_separation>0.35</wheel_separation>
+		  <wheel_diameter>0.1</wheel_diameter>
 
-      <publish_odom>true</publish_odom>
-      <publish_odom_tf>true</publish_odom_tf>
-      <publish_wheel_tf>true</publish_wheel_tf>
+		  <max_wheel_torque>20.0</max_wheel_torque>
+		  <max_wheel_acceleration>1.0</max_wheel_acceleration>
 
-      <odometry_topic>odom</odometry_topic>
-      <odometry_frame>odom</odometry_frame>
-      <robot_base_frame>base_footprint</robot_base_frame>
+		  <publish_odom>true</publish_odom>
+		  <publish_odom_tf>true</publish_odom_tf>
 
-    </plugin>
-  </gazebo>
+		  <odometry_frame>odom</odometry_frame>
+		  <robot_base_frame>base_footprint</robot_base_frame>
+
+		  <ros>
+		    <remapping>cmd_vel:=/cmd_vel</remapping>
+		    <remapping>odom:=/odom</remapping>
+		  </ros>
+
+		</plugin>
+	</gazebo>
+	
+	<gazebo>
+		<plugin name="joint_state_publisher"
+		        filename="libgazebo_ros_joint_state_publisher.so">
+
+		  <joint_name>left_wheel_joint</joint_name>
+		  <joint_name>right_wheel_joint</joint_name>
+
+		</plugin>
+	</gazebo>
 
   <gazebo reference="imu_link_1">
     <gravity>true</gravity>
@@ -37,7 +53,7 @@
       <update_rate>10</update_rate>
       <visualize>true</visualize>
       <plugin name="my_imu_plugin" filename="libgazebo_ros_imu_sensor.so">
-      <initial_orientation_as_reference>false</initial_orientation_as_reference>>
+      <initial_orientation_as_reference>false</initial_orientation_as_reference>
         <ros>
           <remapping>~/out:=imu</remapping>
         </ros>
@@ -62,7 +78,7 @@
         </scan>
         <range>
           <min>0.10</min>
-          <max>1.5</max>
+          <max>10.0</max>
           <resolution>0.01</resolution>
         </range>
         <noise>

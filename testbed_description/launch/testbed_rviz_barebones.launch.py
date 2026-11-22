@@ -1,58 +1,80 @@
-import os
-from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.substitutions import Command
-from launch_ros.actions import Node
+#!/usr/bin/env python3
 
-# this is the function launch the system will look for
+from launch import LaunchDescription
+from launch.substitutions import (
+    Command,
+    FindExecutable,
+    PathJoinSubstitution
+)
+
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+
+
 def generate_launch_description():
 
-    ####### DATA INPUT ##########
-    urdf_file = 'testbed.xacro'
-    package_description = "testbed_description"
+    # Locate robot description package
+    description_package = FindPackageShare(
+        'testbed_description'
+    )
 
-    print("Fetching URDF ==>")
-    robot_desc_path = os.path.join(
-        get_package_share_directory(package_description), "urdf", urdf_file)
+    # Generate robot description from Xacro
+    robot_description_content = Command([
+        FindExecutable(name='xacro'),
+        ' ',
+        PathJoinSubstitution([
+            description_package,
+            'urdf',
+            'testbed.xacro'
+        ])
+    ])
 
-    #ROBOT STATE PUBLISHER
-    robot_state_publisher_node = Node(
+    robot_description = {
+        'robot_description': robot_description_content
+    }
+
+    # Robot State Publisher
+    robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        name='robot_state_publisher_node',
-        emulate_tty=True,
-        parameters=[{'use_sim_time': True, 
-                     'robot_description': Command(['xacro ', robot_desc_path])}],
-        output="screen"
+        name='robot_state_publisher',
+        output='screen',
+        parameters=[
+            robot_description,
+            {'use_sim_time': False}
+        ]
     )
 
-    #JOINT STATE PUBLISHER
-    joint_state_controller_node = Node(
+    # Joint State Publisher
+    joint_state_publisher = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
-        name='joint_state_publisher'
-            # parameters=[
-            #     {'use_sim_time': LaunchConfiguration('use_sim_time')}
-            # ] #since galactic use_sim_time gets passed somewhere and rejects this when defined from launch file
-    )
-    
-    #RVIZ CONFIGURATION
-    rviz_config_dir = os.path.join(
-        get_package_share_directory(package_description),
-        'rviz',
-        'testbed_barebones.rviz')
-    
-    rviz_node = Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz_node',
-            parameters=[{'use_sim_time': True}],
-            arguments=['-d', rviz_config_dir]
+        name='joint_state_publisher',
+        output='screen'
     )
 
-    # create and return launch description object
-    return LaunchDescription([            
-            robot_state_publisher_node,
-            joint_state_controller_node,
-            rviz_node,
+    # RViz configuration
+    rviz_config = PathJoinSubstitution([
+        description_package,
+        'rviz',
+        'testbed_barebones.rviz'
     ])
+
+    # RViz
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz_node',
+        output='screen',
+        arguments=['-d', rviz_config],
+        parameters=[
+            {'use_sim_time': False}
+        ]
+    )
+
+    return LaunchDescription([
+        robot_state_publisher,
+        joint_state_publisher,
+        rviz_node
+    ])
+
