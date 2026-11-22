@@ -1,0 +1,52 @@
+name: ROS 2 Humble CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    container:
+      image: osrf/ros:humble-desktop-full
+    env:
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      DEBIAN_FRONTEND: noninteractive
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: src/level01_ros_assignment
+
+      - name: Install dependencies (rosdep resolves every package.xml)
+        run: |
+          apt-get update
+          apt-get install -y ros-humble-rmw-cyclonedds-cpp
+          rosdep update
+          rosdep install --from-paths src --ignore-src -y --rosdistro humble
+
+      - name: Build
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon build --event-handlers console_cohesion+
+
+      - name: Smoke test (headless Gazebo + full Nav2 stack must reach ACTIVE)
+        run: |
+          source /opt/ros/humble/setup.bash
+          source install/setup.bash
+          source /usr/share/gazebo/setup.sh
+          colcon test --packages-select testbed_navigation --event-handlers console_direct+
+          colcon test-result --verbose
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: |
+            log/
+            build/testbed_navigation/test_results/

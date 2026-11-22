@@ -6,14 +6,7 @@
 <xacro:include filename="$(find testbed_description)/urdf/testbed.gazebo" />
 
 
-<link name="base_footprint">
-  <visual>
-    <origin xyz="0 0 0" rpy="0 0 0" />
-    <geometry>
-      <box size="0.0 0.0 0.0" />
-    </geometry>
-  </visual>
-</link>
+<link name="base_footprint"/>
 
 <link name="base_link">
   <inertial>
@@ -228,7 +221,8 @@
 <joint name="fixed_base_joint" type="fixed">
   <parent link="base_footprint" />
   <child link="base_link" />
-  <origin xyz="0 0 0" rpy="0 0 0" />
+  <!-- base_footprint at the center between the wheels -->
+  <origin xyz="0.051 0.038 0" rpy="0 0 0" />
 </joint>
 
 <joint name="left_wheel_joint" type="continuous">
