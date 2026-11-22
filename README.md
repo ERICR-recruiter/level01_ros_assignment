@@ -128,3 +128,35 @@ We’re excited to see how you approach this task. Good luck, and happy coding! 
  - Name: Your full name
  - Contact number: Your contact number
  - Email Address: Your email address
+
+## Manual Nav2 Implementation
+
+The testbed_navigation package implements Nav2 manually without using nav2_bringup launch files.
+
+### Package contents
+- launch/map_loader.launch.py: Map Server and lifecycle manager.
+- launch/localization.launch.py: AMCL and lifecycle manager.
+- launch/navigation.launch.py: Planner, Controller, Behavior Server, BT Navigator, Smoother and lifecycle manager.
+- config/amcl_params.yaml: AMCL parameters.
+- config/nav2_params.yaml: Navigation and costmap parameters.
+
+### Build
+```bash
+cd ~/assignment_ws
+source /opt/ros/humble/setup.bash
+colcon build --symlink-install
+source install/setup.bash
+```
+
+### Launch sequence
+1. Start simulation: ros2 launch testbed_bringup testbed_full_bringup.launch.py
+2. Start map: ros2 launch testbed_navigation map_loader.launch.py
+3. Start localization: ros2 launch testbed_navigation localization.launch.py
+4. Start navigation: ros2 launch testbed_navigation navigation.launch.py
+
+Set the initial pose and navigation goal using RViz 2D Pose Estimate and 2D Goal Pose tools.
+
+### Testing and limitations
+The map loaded successfully (405 x 400, 0.05 m/cell). AMCL published pose estimates. All five navigation lifecycle nodes reached active state, and navigation action servers were available. A navigation goal was accepted but ended with ABORTED status. Robot motion and pose jumps were observed. Further localization and navigation tuning is required; successful goal completion is not yet verified.
+
+See BUG_FIXES.txt for starter repository fixes.
