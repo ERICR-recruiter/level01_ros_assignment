@@ -5,7 +5,7 @@ Instead of nav2_bringup, map loading, localization and navigation each have
 their own launch file and parameter file, so every part can be started and
 tested on its own.
 
-Demo video: VIDEO_LINK
+Demo video: https://youtu.be/isu3eJIuoBA
 
 ## Package structure
 
