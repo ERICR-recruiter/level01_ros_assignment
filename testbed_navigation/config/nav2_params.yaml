@@ -134,6 +134,7 @@ local_costmap:
           # lidar is at z=0.228; Humble default max height 0.0 filters every point
           min_obstacle_height: 0.0
           max_obstacle_height: 2.0
+          inf_is_valid: true  # no-return rays clear old obstacles in open space
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         inflation_radius: 0.55     # > circumscribed radius 0.282 m
@@ -169,6 +170,7 @@ global_costmap:
           # lidar is at z=0.228; Humble default max height 0.0 filters every point
           min_obstacle_height: 0.0
           max_obstacle_height: 2.0
+          inf_is_valid: true  # no-return rays clear old obstacles in open space
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         inflation_radius: 0.55
