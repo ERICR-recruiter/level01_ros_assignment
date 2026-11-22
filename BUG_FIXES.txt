@@ -1,0 +1,76 @@
+BUG FIXES AND IMPLEMENTATION IMPROVEMENTS
+========================================
+
+Project: Level 1 – ROS 2 Navigation Assignment
+
+--------------------------------------------------
+1. MISSING MAP DIRECTORY IN PACKAGE INSTALLATION
+-------------------------------------------------
+
+File:
+testbed_bringup/CMakeLists.txt
+
+Issue:
+The original installation rule included only the launch directory.
+The maps directory containing testbed_world.yaml and testbed_world.pgm was not included in the package installation.
+
+Correction:
+Added the maps directory to the existing CMake install rule.
+
+Updated installation rule:
+
+install(
+  DIRECTORY
+    launch
+    maps
+  DESTINATION
+    share/${PROJECT_NAME}/
+)
+
+Verification:
+- Rebuilt testbed_bringup successfully.
+- Verified that testbed_world.yaml and testbed_world.pgm were installed under:
+
+  install/testbed_bringup/share/testbed_bringup/maps/
+
+- Successfully launched the Map Server using the installed
+  map resources.
+--------------------------------------
+2. BEHAVIOR TREE PLUGIN CONFIGURATION
+--------------------------------------
+
+File:
+testbed_navigation/config/nav2_params.yaml
+
+Issue:
+During navigation setup, missing Behavior Tree plugin
+loading errors were encountered.
+
+Correction:
+Added the following plugin libraries to the
+BT Navigator plugin_lib_names configuration:
+
+- nav2_remove_passed_goals_action_bt_node
+- nav2_compute_path_through_poses_action_bt_node
+
+Verification:
+The navigation servers subsequently configured and activated
+successfully. The BT Navigator lifecycle state was verified as active [3].
+
+
+------------------------
+3. MISSING PARENTHESES 
+------------------------
+File: testbed_description/CMakeLists.txt
+last Line after ament_package 
+() was missing 
+Replaced by ament_package()
+
+----------------------------------------------------------
+4. INCORRECT MENTION OF MAP PGM FILE NAME IN MAP YAML FILE
+-----------------------------------------------------------
+
+File: testbed_world.yaml
+Map .pgm file name is testbed_world.pgm, it  was incorrectly mentioned in the testbed_worls.yaml file wrong_testbed_world.pgm.
+Replaced it by the correct name that is testbed_world.pgm
+

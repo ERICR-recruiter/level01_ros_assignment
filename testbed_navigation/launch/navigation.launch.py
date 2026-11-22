@@ -1,13 +1,17 @@
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
 
-    params_file = (
-        '/home/payal/assignment_ws/src/level01_ros_assignment/'
-        'testbed_navigation/config/nav2_params.yaml'
+    params_file = os.path.join(
+        get_package_share_directory('testbed_navigation'),
+        'config',
+        'nav2_params.yaml'
     )
 
     # 1. Planner Server: calculates the path to the goal
@@ -73,3 +77,4 @@ def generate_launch_description():
         bt_navigator,
         lifecycle_manager
     ])
+

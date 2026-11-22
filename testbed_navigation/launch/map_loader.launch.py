@@ -1,9 +1,18 @@
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
+
+    map_file = os.path.join(
+        get_package_share_directory('testbed_bringup'),
+        'maps',
+        'testbed_world.yaml'
+    )
 
     map_server = Node(
         package='nav2_map_server',
@@ -13,7 +22,7 @@ def generate_launch_description():
         parameters=[
             {
                 'use_sim_time': True,
-                'yaml_filename': '/home/payal/assignment_ws/src/level01_ros_assignment/testbed_bringup/maps/testbed_world.yaml'
+                'yaml_filename': map_file
             }
         ]
     )
@@ -36,3 +45,4 @@ def generate_launch_description():
         map_server,
         lifecycle_manager
     ])
+

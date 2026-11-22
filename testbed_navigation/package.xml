@@ -12,6 +12,7 @@
   <!-- Launch system -->
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
 
   <!-- Map and localization -->
   <exec_depend>nav2_map_server</exec_depend>
