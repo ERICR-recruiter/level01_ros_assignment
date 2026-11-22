@@ -22,8 +22,8 @@ amcl:                       # must match the node's name in the launch file
     # Particle filter
     min_particles: 500
     max_particles: 2000
-    update_min_d: 0.25              # only update after moving 0.25 m...
-    update_min_a: 0.2               # ...or turning 0.2 rad (saves CPU)
+    update_min_d: 0.1              # only update after moving 0.25 m...
+    update_min_a: 0.1               # ...or turning 0.2 rad (saves CPU)
 
     # Start pose = where spawn_testbed.launch.py puts the robot
     set_initial_pose: true
