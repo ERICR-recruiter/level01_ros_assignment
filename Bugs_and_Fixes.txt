@@ -1,26 +1,80 @@
-Starter Code Bugs Identified and Fixed
+Bugs Identified and Fixed
+
+CRITICAL BUGS
+----------------------------------------------------------------------
 
 1. Missing parentheses in CMakeLists.txt
-   - Location: testbed_description/CMakeLists.txt 
-   - Issue: `ament_package` was called without parentheses (`ament_package` instead of `ament_package()`), causing the initial `colcon build` to fail.
+   - Location: testbed_description/CMakeLists.txt
+   - Issue: `ament_package` was called without parentheses (`ament_package`
+     instead of `ament_package()`), causing `colcon build` to fail.
    - Fix: Added the missing parentheses to `ament_package()`.
 
-2. Incorrect map image path in testbed_world.yaml
-   - Location: testbed_bringup/maps/testbed_world.yaml
-   - Issue: The `image:` field pointed to `wrong_path_testbed_world.pgm`, preventing `map_server` from loading the occupancy grid image.
-   - Fix: Corrected the `image:` path in `testbed_world.yaml` to reference the actual map `.pgm` file.
-
-3. LiDAR max range configuration in testbed.gazebo
-   - Location: testbed_description/urdf/testbed.gazebo
-   - Issue: The simulated 2D LiDAR sensor's maximum range was 1.5 m, range too short for proper localization
-   - Fix: Updated the `<max>` range parameter to 15 m in the Gazebo ray sensor plugin in `testbed.gazebo`.
-
-4. Missing `maps` directory in testbed_bringup/CMakeLists.txt
+2. Missing `maps` directory in install rules
    - Location: testbed_bringup/CMakeLists.txt
-   - Issue: The `maps/` directory was not listed in the `install(DIRECTORY ...)` command, so `testbed_world.yaml` and its image were not copied to the package's `share` directory on build. This caused `map_loader.launch.py` to fail when resolving the map path.
-   - Fix: Added `maps` to the `install(DIRECTORY ...)` directive in `testbed_bringup/CMakeLists.txt`.
+   - Issue: The `maps/` directory was not listed in `install(DIRECTORY ...)`,
+     so `testbed_world.yaml` and its `.pgm` image were not copied to the
+     package's `share` directory on build, causing `map_loader.launch.py` to
+     fail when resolving the map path.
+   - Fix: Added `maps` to the `install(DIRECTORY ...)` directive.
 
-5. Low wheel friction (`mu`) in testbed.gazebo
+3. Incorrect map image path in testbed_world.yaml
+   - Location: testbed_bringup/maps/testbed_world.yaml
+   - Issue: The `image:` field pointed to `wrong_path_testbed_world.pgm`,
+     preventing `map_server` from loading the occupancy grid image.
+   - Fix: Corrected the `image:` path to `testbed_world.pgm`.
+
+4. LiDAR max range too short
    - Location: testbed_description/urdf/testbed.gazebo
-   - Issue: Low friction coefficients (`mu1`/`mu2`) may cause wheel slip during navigation and turning in Gazebo, degrading odometry and path tracking.
-   - Fix: Increased the `mu` friction values in `testbed.gazebo` for more stable traction.
+   - Issue: The simulated 2D LiDAR sensor's `<max>` range was set to 1.5 m,
+     which was too short for reliable AMCL localization and costmap updates
+     in the testbed environment.
+   - Fix: Increased the `<max>` range parameter to 15 m in the Gazebo ray
+     sensor plugin.
+
+5. Malformed XML in IMU plugin
+   - Location: testbed_description/urdf/testbed.gazebo found when adding imu noise
+   - Issue: The closing tag `<initial_orientation_as_reference>false</initial_orientation_as_reference>>`
+     contained a stray extra `>` character.
+   - Fix: Removed the extra `>`.
+
+MINOR / SIMULATION & CONSOLE WARNINGS (when verbose:=true)
+----------------------------------------------------------------------
+
+6. Unused ROS 1 control plugin
+   - Location: testbed_description/urdf/testbed.gazebo
+   - Issue: `libgazebo_ros_control.so` (a ROS 1 plugin) is not available in
+     ROS 2 Humble and is unnecessary since `libgazebo_ros_diff_drive.so`
+     drives the robot, causing `[Err] [Plugin.hh:212] Failed to load plugin`.
+   - Fix: Removed the `libgazebo_ros_control.so` plugin block.
+
+7. Missing IMU noise model
+   - Location: testbed_description/urdf/testbed.gazebo
+   - Issue: The `<sensor name="imu_link_1" type="imu">` block lacked an
+     `<imu>` noise definition, causing Gazebo to log
+     `[Err] [Sensor.cc:510] Get noise index not valid` six times on startup.
+   - Fix: Added Gaussian noise parameters for angular velocity and linear
+     acceleration inside the IMU sensor block.
+
+8. Non-model ROS share path added to GAZEBO_MODEL_PATH
+   - Location: testbed_gazebo/launch/spawn_playground.launch.py
+   - Issue: Appending `install/testbed_description/share` to
+     `GAZEBO_MODEL_PATH` caused `gzclient` to scan ROS metadata folders
+     (`ament_index`, `colcon-core`), logging
+     `[Err] [InsertModelWidget.cc:403] Missing model.config`.
+   - Fix: Removed `install/testbed_description/share` from
+     `GAZEBO_MODEL_PATH`, leaving only `testbed_gazebo/models`.
+
+9. Invalid Gazebo Classic material name (`Gazebo/Silver`)
+    - Location: testbed_description/urdf/testbed.gazebo
+    - Issue: `Gazebo/Silver` does not exist in Gazebo Classic's built-in
+      material library, logging `[Wrn] [Visual.cc:1056] Unable to get
+      Material[Gazebo/Silver] ... Object will appear white`.
+    - Fix: Changed `body_color` from `Gazebo/Silver` to `Gazebo/White`.
+
+10. Wheel and caster friction (`mu1`/`mu2`) configuration
+   - Location: testbed_description/urdf/testbed.gazebo
+   - Issue: Low drive-wheel friction may wheel slip during movement and
+     turning, while non-zero caster friction caused the rigid casters to
+     drag against the floor, possibly degrading odometry and path tracking.
+   - Fix: Increased drive-wheel `mu1`/`mu2` values for stable traction and
+     reduced caster `mu1`/`mu2` values to `0` so they slide freely.
