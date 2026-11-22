@@ -1,0 +1,66 @@
+import os
+
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+
+
+def generate_launch_description():
+    # Share directory paths
+    pkg_testbed_bringup = get_package_share_directory('testbed_bringup')
+    default_map_path = os.path.join(pkg_testbed_bringup, 'maps', 'testbed_world.yaml')
+
+    # Launch configuration variables
+    map_yaml_file = LaunchConfiguration('map')
+    use_sim_time = LaunchConfiguration('use_sim_time')
+
+    # Declare launch arguments
+    declare_map_yaml_cmd = DeclareLaunchArgument(
+        'map',
+        default_value=default_map_path,
+        description='Full path to map yaml file to load'
+    )
+
+    declare_use_sim_time_cmd = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Use simulation (Gazebo) clock if true'
+    )
+
+    # Nav2 Map Server Node
+    start_map_server_cmd = Node(
+        package='nav2_map_server',
+        executable='map_server',
+        name='map_server',
+        output='screen',
+        emulate_tty=True,
+        parameters=[
+            {'yaml_filename': map_yaml_file},
+            {'use_sim_time': use_sim_time}
+        ]
+    )
+
+    # Nav2 Lifecycle Manager to configure and activate the map_server node
+    start_lifecycle_manager_cmd = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_map_server',
+        output='screen',
+        emulate_tty=True,
+        parameters=[
+            {'use_sim_time': use_sim_time},
+            {'autostart': True},
+            {'node_names': ['map_server']}
+        ]
+    )
+
+    ld = LaunchDescription()
+
+    ld.add_action(declare_map_yaml_cmd)
+    ld.add_action(declare_use_sim_time_cmd)
+    ld.add_action(start_map_server_cmd)
+    ld.add_action(start_lifecycle_manager_cmd)
+
+    return ld
