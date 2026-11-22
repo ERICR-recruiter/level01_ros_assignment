@@ -14,7 +14,7 @@ Fixed code:
 ament_package()
 
 Result:
-Corrected the CMake syntax. Build verification pending.
+Corrected the CMake syntax. Verified: Workspace builds successfully with colcon build.
 
 Bug 2: Map files not installed
 File: testbed_bringup/CMakeLists.txt
@@ -26,7 +26,7 @@ Bug 3: Incorrect map image filename
 File: testbed_bringup/maps/testbed_world.yaml
 Issue: The YAML file referenced wrong_path_testbed_world.pgm instead of the actual testbed_world.pgm.
 Fix: Changed the image field to testbed_world.pgm.
-Verification: Pending successful map-server activation.
+Verification: Map server activated successfully and map displayed in RViz.
 
 Bug 4: Legacy control plugin and stray character in the Gazebo description
 File: testbed_description/urdf/testbed.gazebo
@@ -41,3 +41,16 @@ Issue: The robot state publisher lacked use_sim_time while Gazebo and Nav2
 used the simulation clock.
 Fix: Set use_sim_time for the robot state publisher.
 Verification: Check the robot transform tree while Gazebo is running.
+
+Additional simulation troubleshooting:
+- Gazebo Classic crashed with the ODE physics engine.
+- Changed the world physics engine to Bullet, allowing Gazebo to run.
+- Verified that the differential-drive plugin subscribes to /cmd_vel.
+- Tested wheel torque and self-collision settings.
+
+Remaining limitation:
+- The robot remains stationary when commanded through /cmd_vel.
+- Nav2 map loading, localization, and action servers run successfully.
+- A nearby NavigateToPose goal returned SUCCEEDED.
+- Longer-distance navigation goals abort with "Failed to make progress".
+- Physical autonomous navigation has not been verified.
