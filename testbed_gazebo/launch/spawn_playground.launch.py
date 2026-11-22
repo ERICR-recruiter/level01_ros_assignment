@@ -7,7 +7,6 @@ from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_prefix
-from launch.actions import ExecuteProcess
 
 def generate_launch_description():
 
@@ -22,12 +21,10 @@ def generate_launch_description():
     # Set the path to the WORLD model files - Used to find the models inside the models folder in testbed_gazebo package
     gazebo_models_path = os.path.join(pkg_testbed_gazebo, 'models')
     # os.environ["GAZEBO_MODEL_PATH"] = gazebo_models_path
-
     if 'GAZEBO_MODEL_PATH' in os.environ:
-        os.environ['GAZEBO_MODEL_PATH'] =  os.environ['GAZEBO_MODEL_PATH'] + ':' + install_dir + '/share' + ':' + gazebo_models_path
+        os.environ['GAZEBO_MODEL_PATH'] = os.environ['GAZEBO_MODEL_PATH'] + ':' + gazebo_models_path
     else:
-        os.environ['GAZEBO_MODEL_PATH'] =  install_dir + "/share" + ':' + gazebo_models_path
-
+        os.environ['GAZEBO_MODEL_PATH'] = gazebo_models_path
     if 'GAZEBO_PLUGIN_PATH' in os.environ:
         os.environ['GAZEBO_PLUGIN_PATH'] = os.environ['GAZEBO_PLUGIN_PATH'] + ':' + install_dir + '/lib'
     else:
