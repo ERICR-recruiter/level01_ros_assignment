@@ -2,7 +2,7 @@
 
 The first build failed because `ament_package` was missing its `()` in `testbed_description/CMakeLists.txt`. I changed it to `ament_package()` and built the workspace again. Once the robot could spawn in Gazebo, I set up map loading, localization, and navigation in separate launch files so I could check each stage on its own.
 
-[Localization screenshot](../localization.png) · [Navigation video](../navigation_video.mp4) · [Starter code fixes](../errors.txt)
+[Navigation video](../navigation_video.mp4) · [Starter code fixes](../errors.txt)
 
 ## How I built it
 
@@ -63,6 +63,8 @@ ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose \
 I added RViz displays for the map, the global and local costmaps, and both paths. The map shows the room, the costmaps show the buffers around obstacles, `/plan` shows the route, and `/local_plan` shows the controller's chosen trajectory. The map display uses **Reliable** and **Transient Local** so RViz can receive the map even if it subscribes after the map server starts.
 
 ## Test results
+
+![Testbed localization in RViz](../localization.png)
 
 In the final Gazebo run, the robot reached the approach point and crossed the same doorway in both directions. All three goals returned `SUCCEEDED`. The robot stopped 20 to 25 cm from the requested positions in Gazebo, and the AMCL estimate was within 7 cm of the Gazebo position at those stops.
 
