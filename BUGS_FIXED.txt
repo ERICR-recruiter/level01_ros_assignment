@@ -59,7 +59,7 @@ testbed_description
     Fix: added libgazebo_ros_joint_state_publisher.so for both wheels and set publish_wheel_tf false.
 
 14. File: testbed_description/urdf/testbed.gazebo
-    Problem: wheel_separation 0.35 m (inner wheel faces), so turns came out about 8% short.
+    Problem: wheel_separation 0.35 m (inner wheel faces), so the robot turned about 7% less than commanded and encoder odometry did not notice.
     Fix: 0.376 m, the distance between tread centres from the wheel STLs.
 
 15. File: testbed_description/urdf/testbed.gazebo

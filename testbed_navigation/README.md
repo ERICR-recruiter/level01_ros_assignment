@@ -35,10 +35,13 @@ The list of bugs I fixed in the starter packages is in `BUGS_FIXED.txt` in the r
 
 ## 3. How to run
 
+Requirements: Ubuntu 22.04, ROS 2 Humble, Gazebo 11, Nav2.
+
 Build:
 
 ```bash
 cd ~/assignment_ws
+rosdep install --from-paths src --ignore-src -r -y
 colcon build
 source install/setup.bash
 ```
@@ -99,11 +102,13 @@ does not stop the others. I do not use `nav2_bringup`; every node is declared di
 | Goal checker | xy 0.15 m, yaw 0.15 rad | Yaw 0.25 left 10-14 deg final heading error |
 | Obstacle height | `min_obstacle_height` 0.0, `max_obstacle_height` 2.0 | The Humble default max is 0.0, which drops every lidar point (lidar at z = 0.228 m) |
 | `inf_is_valid` | true | Lets no-return rays clear old obstacles in open space |
-| Behaviors | spin, backup, drive_on_heading, wait | What the stock recovery tree uses |
+| Behaviors | spin, backup, drive_on_heading, wait | spin, backup and wait are used by the recovery tree; drive_on_heading is loaded but unused |
 
 ## 5. Results
 
-All numbers are against Gazebo ground truth (model pose from `/gazebo/default/pose/info`).
+All numbers are against Gazebo ground truth, the robot's model pose in the simulator. The square
+loop tests read it with `gz model -m testbed -p`; the goal and obstacle tests read the
+`/gazebo/default/pose/info` stream (`gz topic -e`).
 
 **Odometry vs AMCL, 2 m square loop**
 
@@ -115,7 +120,8 @@ All numbers are against Gazebo ground truth (model pose from `/gazebo/default/po
 | After side 4 | 0.327 m, 10.2 deg | 0.034 m, 0.0 deg |
 | End | 0.326 m, 13.1 deg | 0.048 m, 1.7 deg |
 
-Odometry drifts mostly in heading (wheel slip while turning). AMCL stays under 5 cm.
+Odometry drifts mostly in heading (wheel slip while turning). AMCL ends within 5 cm;
+the worst error was 0.095 m during turns, before the next filter update.
 
 **Wrong initial pose**
 
@@ -155,9 +161,11 @@ only part of its window. I ruled out duplicate processes, Wayland and the RViz c
 Qt HiDPI scaling on my 200% laptop screen. Setting `QT_AUTO_SCREEN_SCALE_FACTOR=0`,
 `QT_SCALE_FACTOR=1` and `QT_SCREEN_SCALE_FACTORS=1` fixed it.
 
-**World vs encoder odometry.** While reading the diff drive plugin options I saw that the
-default `odometry_source` (1) publishes Gazebo ground truth as `/odom`. That would hide all
-drift. I set it to 0 (wheel encoders) so the test is realistic and AMCL has drift to correct.
+**World vs encoder odometry.** In my first odometry tests /odom matched Gazebo ground
+truth exactly, even during turns, which is not possible with real wheels. That led me to
+the diff drive's odometry_source parameter: its default (1) publishes the simulator's true
+pose as /odom. I set it to 0 (wheel encoders), so odometry drifts like a real robot and
+AMCL has something to correct.
 
 **base_footprint not at the rotation centre.** Checking the URDF against the wheel STLs, I found that
 base_link is 5 cm (x) and 3.8 cm (y) from the axle midpoint, so base_footprint was not the
