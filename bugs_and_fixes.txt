@@ -1,5 +1,4 @@
 Bugs Identified and Fixed in Starter Code
-=========================================
 
 1. CMake syntax error in testbed_description/CMakeLists.txt
    - File: testbed_description/CMakeLists.txt (line 23)
