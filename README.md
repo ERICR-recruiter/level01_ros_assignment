@@ -31,6 +31,6 @@ ros2 launch testbed_navigation navigation.launch.py
 ```
 
 ## Contact Info
-- Name: Shashank
-- Contact number: [9449913019]
-- Email Address: [shashankrpatil077@gmail.com]
+- Name: Shashank Patil
+- Contact number: 9449913019
+- Email Address: shashankrpatil077@gmail.com
