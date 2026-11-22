@@ -1,0 +1,60 @@
+Bugs Identified and Fixed in Starter Code
+=========================================
+
+1. CMake syntax error in testbed_description/CMakeLists.txt
+   - File: testbed_description/CMakeLists.txt (line 23)
+   - Issue: `ament_package` was written without parentheses, causing `colcon build` to fail during CMake configuration of `testbed_description` (and blocking `testbed_gazebo` and `testbed_bringup`).
+   - Fix: Updated `ament_package` to `ament_package()`.
+
+2. Maps directory not installed in testbed_bringup/CMakeLists.txt
+   - File: testbed_bringup/CMakeLists.txt (lines 25-30)
+   - Issue: The `install(DIRECTORY ...)` command only installed `launch` and omitted `maps`. Because of this, `testbed_world.yaml` and `testbed_world.pgm` were missing from `install/testbed_bringup/share/testbed_bringup/maps/`.
+   - Fix: Added `maps` to `install(DIRECTORY launch maps DESTINATION share/${PROJECT_NAME}/)`.
+
+3. Incorrect map image filename in testbed_bringup/maps/testbed_world.yaml
+   - File: testbed_bringup/maps/testbed_world.yaml (line 1)
+   - Issue: `image` was set to `wrong_path_testbed_world.pgm`, whereas the actual PGM file in `testbed_bringup/maps/` is `testbed_world.pgm`. This caused `nav2_map_server` to fail when loading the map.
+   - Fix: Changed `image: wrong_path_testbed_world.pgm` to `image: testbed_world.pgm`.
+
+4. Models directory not installed in testbed_gazebo/CMakeLists.txt
+   - File: testbed_gazebo/CMakeLists.txt (lines 27-33)
+   - Issue: `install(DIRECTORY ...)` only installed `launch` and `worlds`, leaving out `models`. However, `spawn_playground.launch.py` appends `share/testbed_gazebo/models` to `GAZEBO_MODEL_PATH`, so Gazebo could not resolve the custom world models from the install space.
+   - Fix: Added `models` to `install(DIRECTORY launch worlds models DESTINATION share/${PROJECT_NAME}/)`.
+
+5. Malformed XML tag in testbed_description/urdf/testbed.gazebo
+   - File: testbed_description/urdf/testbed.gazebo (line 40)
+   - Issue: The IMU plugin block had an extra closing angle bracket: `<initial_orientation_as_reference>false</initial_orientation_as_reference>>`.
+   - Fix: Removed the stray `>` character.
+
+6. Obsolete ROS1 Gazebo control plugin in testbed_description/urdf/testbed.gazebo
+   - File: testbed_description/urdf/testbed.gazebo (lines 5-7)
+   - Issue: `libgazebo_ros_control.so` is a ROS1 plugin that does not exist in ROS2 Humble, producing a plugin load error on Gazebo startup. Wheel actuation is already handled by `libgazebo_ros_diff_drive.so`.
+   - Fix: Removed the `libgazebo_ros_control.so` plugin block.
+
+7. Short LiDAR max range in testbed_description/urdf/testbed.gazebo
+   - File: testbed_description/urdf/testbed.gazebo (lines 62-64)
+   - Issue: The 2D ray sensor (`head_hokuyo_sensor` on `lidar_link_1`) had `<max>1.5</max>`, which is too short for the playground map (~20 m x 20 m). In open areas, the scanner could not reach surrounding walls, causing poor AMCL convergence and delayed obstacle detection.
+   - Fix: Increased `<max>` range from `1.5` to `12.0` m and `<samples>` from `300` to `360` for 1-degree angular resolution.
+
+8. Missing use_sim_time in testbed_description/launch/robot_description.launch.py
+   - File: testbed_description/launch/robot_description.launch.py (lines 19-25)
+   - Issue: `robot_state_publisher` did not set `use_sim_time: True`, while Gazebo, RViz2, and Nav2 run on simulation time (`/clock`). This caused TF timestamp mismatches and extrapolation errors between `odom -> base_footprint` and `base_footprint -> lidar_link_1`.
+   - Fix: Added a `use_sim_time` launch argument (default `true`, cast to bool via `ParameterValue`) and passed it to `robot_state_publisher`.
+
+9. Wheel vs. caster friction mismatch in testbed_description/urdf/testbed.gazebo
+   - File: testbed_description/urdf/testbed.gazebo (lines 93-158)
+   - Issue: Drive wheels (`left_wheel_1`, `right_wheel_1`) and all four fixed casters (`caster_1` to `caster_4`) had identical low friction (`mu1=0.2`, `mu2=0.2`), causing wheel slip and sluggish turning under Nav2 velocity commands.
+   - Fix: Increased drive wheel friction to `mu1=1.0, mu2=1.0` and lowered caster friction to `mu1=0.01, mu2=0.01`.
+
+10. Missing package dependencies in testbed_bringup/package.xml
+    - File: testbed_bringup/package.xml
+    - Issue: `testbed_bringup/CMakeLists.txt` calls `find_package(rclpy REQUIRED)` and `testbed_full_bringup.launch.py` depends on `testbed_gazebo`, `testbed_description`, and `rviz2`, but none were declared in `package.xml`.
+    - Fix: Declared `<depend>rclpy</depend>` and `<exec_depend>` entries for `testbed_gazebo`, `testbed_description`, and `rviz2`.
+
+Note on .vscode/settings.json:
+   - `.vscode/settings.json` contains a hardcoded local path (`/home/eric-ros1/level01_ros_assignment/testbed_bringup`). It does not affect `colcon build` or runtime behavior.
+
+11. Gazebo 11 ODE ray-sensor segfault in testbed_description/urdf/testbed.gazebo
+    - File: testbed_description/urdf/testbed.gazebo
+    - Issue: Using CPU ODE raycasting (`type="ray"`) at 30 Hz against the starter STL collision meshes caused `gzserver` to segfault (`exit code -11` in `ODEMultiRayShape::UpdateRays` / `dSpaceCollide2`) immediately after spawning the robot.
+    - Fix: Switched the LiDAR sensor from `type="ray"` to `type="gpu_ray"` and set `<update_rate>` to `10` Hz, keeping the same `/scan` (`sensor_msgs/LaserScan`) output while eliminating the crash.
