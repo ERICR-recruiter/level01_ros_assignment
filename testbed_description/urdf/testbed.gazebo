@@ -1,11 +1,8 @@
 <?xml version="1.0" ?>
 <robot name="testbed" xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
-<xacro:property name="body_color" value="Gazebo/Silver" />
+<xacro:property name="body_color" value="Gazebo/White" />
 
-<gazebo>
-  <plugin name="control" filename="libgazebo_ros_control.so"/>
-</gazebo>
 
   <gazebo>
     <plugin name="diff_drive_control" filename="libgazebo_ros_diff_drive.so">
@@ -96,29 +93,29 @@
 
 <gazebo reference="caster_1">
   <material>${body_color}</material>
-  <mu1>0.6</mu1>
-  <mu2>0.6</mu2>
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_2">
   <material>${body_color}</material>
-  <mu1>0.6</mu1>
-  <mu2>0.6</mu2>
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_3">
   <material>${body_color}</material>
-  <mu1>0.6</mu1>
-  <mu2>0.6</mu2>
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_4">
   <material>${body_color}</material>
-  <mu1>0.6</mu1>
-  <mu2>0.6</mu2>
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
