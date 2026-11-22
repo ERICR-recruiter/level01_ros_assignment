@@ -124,10 +124,11 @@ All Nav2 parameters were tuned specifically for the Testbed-T1.0.0 URDF geometry
 
 ## Demo
 
-[Result.webm](https://github.com/user-attachments/assets/5fa41e91-a82d-4873-ab61-047bc4bd52aa)
+[Result_with_waypoint_nav.webm](https://github.com/user-attachments/assets/e46b4551-f605-4d49-b98d-15b8b3107cde)
 
-https://github.com/GAUTHAMPSANKAR/level01_ros_assignment/blob/main/Result.webm
-
+https://github.com/GAUTHAMPSANKAR/level01_ros_assignment/blob/main/Result_with_waypoint_nav.webm
+7/7 waypoints set
+7/7 waypoints reached
 ## Contact Info
 
 - **Name:** Gautham P Sankar
