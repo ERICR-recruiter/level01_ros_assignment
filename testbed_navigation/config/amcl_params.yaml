@@ -1,0 +1,34 @@
+amcl:                       # must match the node's name in the launch file
+  ros__parameters:          # two underscores: ROS 2's marker for "parameters below"
+    use_sim_time: true      # follow Gazebo's clock, like every node here
+
+    # Frames (section A7 of the guide)
+    global_frame_id: map            # the map's frame
+    odom_frame_id: odom             # published by the diff_drive plugin
+    base_frame_id: base_footprint   # diff_drive publishes odom -> base_footprint
+    tf_broadcast: true              # AMCL publishes the map -> odom correction
+    transform_tolerance: 1.0        # how far ahead (s) the published TF is valid
+
+    # Sensor
+    scan_topic: scan                # the lidar topic
+    laser_model_type: likelihood_field   # standard, fast way to score a scan against the map
+    laser_min_range: 0.10           # = lidar <min> in testbed.gazebo
+    laser_max_range: 10.0           # = lidar <max> after my bug 5 fix
+    max_beams: 60                   # use 60 of the 300 beams per update (enough, and cheaper)
+
+    # Robot motion
+    robot_model_type: nav2_amcl::DifferentialMotionModel   # 2-wheel diff drive, can't move sideways
+
+    # Particle filter
+    min_particles: 500
+    max_particles: 2000
+    update_min_d: 0.25              # only update after moving 0.25 m...
+    update_min_a: 0.2               # ...or turning 0.2 rad (saves CPU)
+
+    # Start pose = where spawn_testbed.launch.py puts the robot
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0
