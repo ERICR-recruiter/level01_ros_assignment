@@ -1,0 +1,104 @@
+Bugs found and fixed in the starter code
+=======================================
+
+testbed_bringup
+---------------
+1. File: testbed_bringup/CMakeLists.txt
+   Problem: maps/ was not installed, so the map yaml and pgm were missing from share/.
+   Fix: added maps to install(DIRECTORY).
+
+2. File: testbed_bringup/CMakeLists.txt
+   Problem: find_package(rclpy) in a package with no Python code and no rclpy dependency.
+   Fix: removed the line.
+
+3. File: testbed_bringup/maps/testbed_world.yaml
+   Problem: image: wrong_path_testbed_world.pgm points to a file that does not exist.
+   Fix: image: testbed_world.pgm (map_server resolves it relative to the yaml).
+
+4. File: testbed_bringup/package.xml
+   Problem: runtime dependencies used by the launch file were not declared.
+   Fix: added exec_depend for launch, launch_ros, ament_index_python, rviz2, testbed_description, testbed_gazebo.
+
+5. File: testbed_bringup/launch/testbed_full_bringup.launch.py
+   Problem: use_sim_time was not passed to robot_state_publisher.
+   Fix: added a use_sim_time launch argument (default true) and passed it down.
+
+testbed_description
+-------------------
+6. File: testbed_description/CMakeLists.txt
+   Problem: "ament_package" without parentheses, so CMake failed and the package never built.
+   Fix: ament_package().
+
+7. File: testbed_description/package.xml
+   Problem: runtime dependencies used by the launch files and URDF were not declared.
+   Fix: added exec_depend for launch, launch_ros, ament_index_python, xacro, robot_state_publisher,
+        joint_state_publisher, rviz2, gazebo_plugins.
+
+8. File: testbed_description/launch/robot_description.launch.py
+   Problem: robot_state_publisher ran on wall-clock time while Gazebo and RViz use /clock.
+   Fix: use_sim_time launch argument (default true).
+
+9. File: testbed_description/launch/robot_description.launch.py
+   Problem: the xacro output was passed as a raw substitution and could be parsed as YAML.
+   Fix: wrapped it in ParameterValue(..., value_type=str).
+
+10. File: testbed_description/urdf/testbed.gazebo, testbed.xacro
+    Problem: ROS 1 plugin libgazebo_ros_control.so and ROS 1 transmissions (do not exist in Humble).
+    Fix: removed the plugin and the testbed.trans include.
+
+11. File: testbed_description/urdf/testbed.gazebo
+    Problem: stray ">" after <initial_orientation_as_reference> in the IMU plugin.
+    Fix: removed it.
+
+12. File: testbed_description/urdf/testbed.gazebo
+    Problem: lidar max range 1.5 m, so most beams returned inf in a 20 m room.
+    Fix: 12.0 m.
+
+13. File: testbed_description/urdf/testbed.gazebo
+    Problem: no /joint_states publisher, so no wheel TFs; the diff drive also published wheel TFs.
+    Fix: added libgazebo_ros_joint_state_publisher.so for both wheels and set publish_wheel_tf false.
+
+14. File: testbed_description/urdf/testbed.gazebo
+    Problem: wheel_separation 0.35 m (inner wheel faces), so the robot turned about 7% less than commanded and encoder odometry did not notice.
+    Fix: 0.376 m, the distance between tread centres from the wheel STLs.
+
+15. File: testbed_description/urdf/testbed.gazebo
+    Problem: diff drive odometry_source not set; the plugin default (1) publishes Gazebo ground truth as /odom.
+    Fix: odometry_source 0 (wheel encoders). Also removed the ROS 1-only command_topic/odometry_topic tags.
+
+16. File: testbed_description/urdf/testbed.xacro, testbed.gazebo
+    Problem: casters 1.18 kg each (4.7 kg total vs 2.05 kg chassis) with mu 0.2 dragging; wheels mu 0.2 slipping.
+    Fix: casters 0.05 kg (inertia scaled), caster mu 0.01, wheel mu 1.0.
+
+17. File: testbed_description/urdf/testbed.xacro
+    Problem: lidar, IMU and dummy inertial origins were 0.23-0.41 m away from their geometry.
+    Fix: set each inertial origin to the mesh centre in its link frame.
+
+18. File: testbed_description/urdf/testbed.xacro
+    Problem: imu_joint and dummy_joint y positions were swapped (the IMU frame sat on the dummy board).
+    Fix: moved both frames to their STL mesh centres and set visual/collision origins to match.
+
+19. File: testbed_description/urdf/testbed.xacro
+    Problem: base_footprint = base_link, which is about 5 cm (x) and 3.8 cm (y) from the wheel axle midpoint,
+             so the robot did not rotate about base_footprint.
+    Fix: fixed_base_joint origin (0.050490, 0.037759, 0) so base_footprint sits on the axle midpoint.
+
+testbed_gazebo
+--------------
+20. File: testbed_gazebo/CMakeLists.txt
+    Problem: models/ was not installed, but the launch file adds share/testbed_gazebo/models to GAZEBO_MODEL_PATH.
+    Fix: added models to install(DIRECTORY).
+
+21. File: testbed_gazebo/package.xml
+    Problem: runtime dependencies used by the launch files were not declared.
+    Fix: added exec_depend for launch, launch_ros, ament_index_python, gazebo_ros.
+
+
+Issues found while tuning my own configuration
+==============================================
+- Obstacle height filter: in Humble, obstacle_layer.<source>.max_obstacle_height defaults to 0.0, so every
+  lidar point (z = 0.228 m) was dropped. Set min 0.0 / max 2.0 in both costmaps.
+- inf_is_valid: rays with no return (open space) were ignored, so a removed obstacle stayed in the global
+  costmap. Set inf_is_valid: true in both costmaps.
+- gzserver startup crash: about 1 launch in 3 segfaulted (exit -11) in the lidar sensor thread inside ODE.
+  Started Gazebo with lockstep: true in testbed_gazebo/launch/spawn_playground.launch.py.
