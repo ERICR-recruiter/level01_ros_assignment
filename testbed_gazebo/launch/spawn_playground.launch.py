@@ -41,7 +41,8 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py'),
         ),
-    )    
+        launch_arguments={'lockstep': 'true'}.items(),  # avoids a sensor/physics race crash in ODE
+    )
 
     return LaunchDescription([
         DeclareLaunchArgument(

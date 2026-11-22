@@ -172,14 +172,43 @@ filtered out. Setting it to 2.0 fixed it.
 took the long way through the other doorway. Behind the doorway the lidar sees nothing (inf),
 and those rays were ignored. `inf_is_valid: true` lets them clear the cells.
 
+**gzserver crash on startup.** About one launch in three, gzserver died with exit code -11 a
+few seconds after the robot spawned. A gdb backtrace showed the lidar's sensor thread crashing
+inside ODE (`RaySensor::UpdateImpl` -> `dSpaceCollide2` -> `cleanGeoms`) while physics was
+stepping. I start Gazebo with `lockstep: true` (in `spawn_playground.launch.py`) so physics waits
+for the sensors. After that, 10 of 10 fresh launches came up with no crash, at real time factor 1.0.
+
 ## 7. Known limitations
 
 - Wheel odometry has about 3% heading slip from wheel contact during turns. AMCL corrects it.
-- `gzserver` sometimes segfaults on the first launch after a clean start. Relaunching works.
+- Gazebo now runs in lockstep to avoid a startup crash. If gzserver still exits with code -11
+  on startup, relaunch T1.
 - The map is about 0.1 m off the Gazebo world at the doorways, so the robot passes slightly
   off-centre in the real doorway (still at least 0.09 m from the walls in my tests).
 
 ## 8. Screenshots
+
+Taken from my demo video.
+
+Map loaded in RViz (map_server active):
+
+![Map loaded](media/map_loaded.png)
+
+AMCL particles spread out before converging:
+
+![AMCL spread](media/amcl_spread.png)
+
+AMCL converged (tight particle cloud) while following the global plan:
+
+![AMCL converged](media/amcl_converged.png)
+
+Navigating with the global plan and both costmaps:
+
+![Navigation](media/navigation.png)
+
+A box spawned in the doorway shows up in the costmap and the plan goes around it:
+
+![Obstacle avoidance](media/obstacle_avoidance.png)
 
 TF tree (`ros2 run tf2_tools view_frames`):
 

@@ -1,5 +1,12 @@
 # Level 1: ROS2 Navigation Assignment - Madhav Bangad
 
+## Submission (Madhav Bangad)
+- Demo video: https://youtu.be/XdpVcIbXU_E
+- Approach, results and challenges: [testbed_navigation/README.md](testbed_navigation/README.md)
+- Bugs found and fixed: [BUGS_FIXED.txt](BUGS_FIXED.txt)
+- Run: build, then launch testbed_full_bringup, map_loader, localization, navigation
+  (details in the package README)
+
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
 
@@ -126,5 +133,5 @@ We’re excited to see how you approach this task. Good luck, and happy coding! 
 
 ## Contact Info 
  - Name: Madhav Bangad
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Contact number: +91 8149471601
+ - Email Address: bangadmadhav@gmail.com

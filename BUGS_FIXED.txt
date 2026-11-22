@@ -100,3 +100,5 @@ Issues found while tuning my own configuration
   lidar point (z = 0.228 m) was dropped. Set min 0.0 / max 2.0 in both costmaps.
 - inf_is_valid: rays with no return (open space) were ignored, so a removed obstacle stayed in the global
   costmap. Set inf_is_valid: true in both costmaps.
+- gzserver startup crash: about 1 launch in 3 segfaulted (exit -11) in the lidar sensor thread inside ODE.
+  Started Gazebo with lockstep: true in testbed_gazebo/launch/spawn_playground.launch.py.
