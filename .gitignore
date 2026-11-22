@@ -1,0 +1,16 @@
+# ROS 2 colcon workspace artifacts (if run inside a repository)
+build/
+install/
+log/
+
+# Python caches and test outputs
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Editors and temporary backups
+*.swp
+*.swo
+*.backup
+*.bak
+.DS_Store
