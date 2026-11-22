@@ -1,0 +1,28 @@
+STARTER REPOSITORY BUGS AND FIXES
+=================================
+
+1. Missing function parentheses in testbed_description/CMakeLists.txt
+   Problem: The ament_package function call was written without parentheses.
+   Fix: Changed it to ament_package().
+
+2. Incorrect map image filename
+   File: testbed_bringup/maps/testbed_world.yaml
+   Problem: The image filename did not match the supplied map image.
+   Fix: Updated it to testbed_world.pgm.
+
+3. Invalid Gazebo URDF XML
+   File: testbed_description/urdf/testbed.gazebo
+   Problem: An extra '>' character was present after the
+   initial_orientation_as_reference element.
+   Fix: Removed the extra character.
+
+4. Missing bringup installation directories
+   File: testbed_bringup/CMakeLists.txt
+   Problem: Launch and map files were not included in installation.
+   Fix: Added launch and maps directories to the install configuration.
+
+5. Missing Gazebo installation directories
+   File: testbed_gazebo/CMakeLists.txt
+   Problem: Launch, worlds and models directories were not included
+   in installation.
+   Fix: Added launch, worlds and models directories to installation.
