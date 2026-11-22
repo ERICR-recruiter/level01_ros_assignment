@@ -1,4 +1,9 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Eyob Shimelis
+
+## My submission
+- Navigation package + how I did it: [testbed_navigation/README.md](testbed_navigation/README.md)
+- Bugs I fixed: [bugs_fixed.txt](bugs_fixed.txt)
+- Demo video: [testbed_navigation/media/demo.mp4](testbed_navigation/media/demo.mp4)
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -125,6 +130,6 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Eyob Shimelis
+ - Contact number: +971502970832
+ - Email Address: eyobshimelis00@gmail.com

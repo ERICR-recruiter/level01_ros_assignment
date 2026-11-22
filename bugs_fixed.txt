@@ -1,0 +1,68 @@
+Bugs found in the starter code and how I fixed them
+====================================================
+
+1. testbed_description/CMakeLists.txt
+   `ament_package` was missing the brackets, so the build failed.
+   Fix: changed it to `ament_package()`.
+
+2. testbed_bringup/maps/testbed_world.yaml
+   The image was `wrong_path_testbed_world.pgm`, which doesn't exist, so map_server couldn't load the map.
+   Fix: `image: testbed_world.pgm`.
+
+3. testbed_bringup/CMakeLists.txt
+   The maps folder was never installed, so it wasn't in install/share and the launch files couldn't find the map.
+   Fix: added `maps` to install(DIRECTORY ...).
+
+4. testbed_gazebo/CMakeLists.txt
+   Same problem with the models folder. spawn_playground.launch.py adds share/testbed_gazebo/models to
+   GAZEBO_MODEL_PATH, but that folder was never installed.
+   Fix: added `models` to install(DIRECTORY ...).
+
+5. testbed_description/launch/robot_description.launch.py
+   robot_state_publisher ran without use_sim_time, so its TF used wall time while gazebo/rviz/nav2 use /clock.
+   Fix: added use_sim_time: True.
+
+6. testbed_description/urdf/testbed.gazebo - lidar range
+   max range was 1.5 m. At the spawn point every beam was inf (the nearest wall is more than 3 m away),
+   so amcl and the costmaps got no data.
+   Fix: max range 12 m. After that 298/300 beams return values.
+
+7. testbed_description/urdf/testbed.gazebo - wheel TFs
+   The diff drive plugin had publish_wheel_tf: true, which publishes the wheels under base_footprint.
+   The URDF has them under base_link, and nothing published /joint_states, so robot_state_publisher
+   couldn't publish them either.
+   Fix: publish_wheel_tf: false, and added the gazebo_ros_joint_state_publisher plugin for both wheel
+   joints. Now the TF tree is odom -> base_footprint -> base_link -> wheels/lidar/imu/casters.
+
+8. testbed_description/urdf/testbed.xacro - base_footprint position
+   base_link's origin is at a corner of the CAD model. The center between the wheels (where the
+   robot turns) is at x=-0.051, y=-0.038 from base_link. I got this from the wheel joint positions
+   and the chassis mesh size. base_footprint was at base_link's origin, so the footprint was off center.
+   Fix: moved the fixed joint so base_footprint is at the wheel center (origin 0.051 0.038 0).
+
+9. testbed_description/urdf/testbed.gazebo - libgazebo_ros_control.so
+   This is the ROS 1 plugin and it doesn't exist in ROS 2. The robot is driven by the diff drive plugin anyway.
+   Fix: removed it.
+
+10. testbed_description/urdf/testbed.gazebo - typo
+    `</initial_orientation_as_reference>>` had an extra `>`.
+    Fix: removed it.
+
+11. package.xml files
+    Some run dependencies were missing (xacro, robot_state_publisher, gazebo_ros, rviz2, ...), so
+    rosdep wouldn't install everything on a clean machine.
+    Fix: added them. `rosdep check` now passes and CI installs everything through rosdep.
+
+12. testbed_description/urdf/testbed.xacro
+    base_footprint had a visual with a 0x0x0 box.
+    Fix: made it an empty link.
+
+13. .vscode/settings.json
+    Had a hardcoded path from the original developer's machine (/home/eric-ros1/...).
+    Fix: deleted it.
+
+Also noticed:
+- full_bringup.rviz uses `odom` as the fixed frame, which doesn't work for navigation. I left it as is
+  and added rviz/navigation.rviz with `map` instead.
+- The `world` argument in spawn_playground.launch.py is never passed to gazebo.launch.py. It only works
+  because launch configurations are global. Left it as is.
