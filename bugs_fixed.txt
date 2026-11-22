@@ -1,0 +1,53 @@
+Bugs found in the starter code and how I fixed them
+====================================================
+
+1. testbed_description/CMakeLists.txt (last line)
+   Found: colcon build failed with "CMake Error: Parse error. Expected '('".
+   Cause: ament_package was written without brackets.
+   Fix: changed it to ament_package().
+
+2. testbed_bringup/maps/testbed_world.yaml
+   Found: the image field pointed to wrong_path_testbed_world.pgm, which does not exist.
+   Fix: changed it to image: testbed_world.pgm (the file that is actually in maps/).
+
+3. testbed_bringup/CMakeLists.txt
+   Found: only the launch folder was installed, so the map was missing from install/share.
+   Fix: added maps to the install(DIRECTORY ...) block.
+
+4. testbed_description/urdf/testbed.gazebo (lidar)
+   Found: no laser points in RViz when the robot was in the middle of a room.
+   Cause: lidar max range was 1.5 m in a 20 m x 20 m map, so walls were out of range
+   and AMCL would have almost nothing to match.
+   Fix: set <max> to 10.0 m and used the same value for laser_max_range in AMCL.
+
+5. testbed_description/launch/robot_description.launch.py
+   Found: robot_state_publisher had no use_sim_time, while Gazebo publishes /clock.
+   ROS time and wall time in RViz were very different.
+   Cause: TF from robot_state_publisher used wall time, which breaks AMCL and Nav2
+   (transform timeout / extrapolation errors).
+   Fix: parameters=[robot_description, {'use_sim_time': True}].
+
+6. testbed_gazebo/CMakeLists.txt
+   Found: the launch file adds share/testbed_gazebo/models to GAZEBO_MODEL_PATH,
+   but the models folder was never installed.
+   Fix: added models to the install(DIRECTORY ...) block.
+
+7. testbed_description/urdf/testbed.gazebo (top)
+   Found: libgazebo_ros_control.so is a ROS 1 plugin and does not exist in Humble
+   (load error in the Gazebo log).
+   Fix: removed that <gazebo><plugin/></gazebo> block. The diff drive plugin
+   already drives the wheels.
+
+8. testbed_description/urdf/testbed.gazebo (IMU)
+   Found: an extra '>' after </initial_orientation_as_reference>.
+   Fix: removed the stray character.
+
+9. package.xml files (testbed_description, testbed_bringup)
+   Found: run-time dependencies were not declared (xacro, robot_state_publisher,
+   joint_state_publisher, rviz2, gazebo_ros, testbed_description, testbed_gazebo).
+   Fix: added <exec_depend> entries so rosdep can install everything.
+
+Also noted (not changed):
+- .vscode/settings.json has a hard-coded path from another machine (/home/eric-ros1/...).
+- The robot spawns at (0, 5) in spawn_testbed.launch.py, so the AMCL initial pose
+  is set to x=0.0, y=5.0, yaw=0.0 to match.
