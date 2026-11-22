@@ -30,6 +30,8 @@ install(
 install(
   PROGRAMS
     scripts/manual_navigation_test.py
+    scripts/report_pose_accuracy.py
+    scripts/run_navigation_regression.sh
   DESTINATION lib/${PROJECT_NAME}
 )
 
