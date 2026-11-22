@@ -126,8 +126,8 @@ We’re excited to see how you approach this task. Good luck, and happy coding! 
 
 ## My Submission
  - Bugs found in the starter code: [`BUGS_FIXED.txt`](BUGS_FIXED.txt)
- - Navigation package, approach and challenges: [`testbed_navigation/README.md`](testbed_navigation/README.md)
- - Simulation video: _link to be added_
+ - Navigation package,setup guide, approach and challenges: [`testbed_navigation/README.md`](testbed_navigation/README.md)
+ - Simulation video: https://www.youtube.com/watch?v=JyK5GZwWCyk
 
 ## Contact Info 
  - Name: Anish Deep Toppo
