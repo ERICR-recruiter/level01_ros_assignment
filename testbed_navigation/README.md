@@ -6,9 +6,7 @@ This package doesn't use `nav2_bringup`. It starts each Nav2 server itself, in t
 
 ## Demo
 
-- Video: _link to be added_
-- Screenshots: _to be added_
-
+- Video: https://youtu.be/JyK5GZwWCyk
 ## Package layout
 
 ```
@@ -49,7 +47,6 @@ Start the simulation first, in its own terminal:
 ```bash
 ros2 launch testbed_bringup testbed_full_bringup.launch.py
 ```
-
 Then start **one** of the following in a second terminal. Each file includes the layer below it.
 
 | Goal | Command | Nodes started |
@@ -59,6 +56,20 @@ Then start **one** of the following in a second terminal. Each file includes the
 | Full navigation | `ros2 launch testbed_navigation navigation.launch.py` | above + `planner_server`, `controller_server`, `behavior_server`, `bt_navigator`, `lifecycle_manager_navigation` |
 
 All three accept the same launch arguments:
+
+Map only
+```bash
+ros2 launch testbed_navigation map_loader.launch.py
+```
+Map + localization
+```bash
+ros2 launch testbed_navigation localization.launch.py
+```
+Full navigation
+```bash
+ros2 launch testbed_navigation navigation.launch.py
+```
+
 
 | Argument | Default | Meaning |
 |---|---|---|
