@@ -1,0 +1,53 @@
+ERIC ROBOTICS — LEVEL 1 ROS 2 NAVIGATION ASSIGNMENT
+BUG FIXES AND DEBUGGING REPORT
+
+1. Robot description build configuration
+   Problem: The starter package contained an incomplete
+   ament_package() invocation.
+   Fix: Corrected the CMake configuration so the package builds.
+
+2. Occupancy map loading
+   Problem: The map YAML referenced an incorrect map image path.
+   Fix: Corrected the image reference and verified map loading.
+
+3. Map installation
+   Problem: Map resources were not installed correctly.
+   Fix: Updated the bringup package's CMake installation rules.
+
+4. Simulation time configuration
+   Problem: ROS components required consistent Gazebo simulation time.
+   Fix: Configured the relevant robot and navigation nodes to use
+   use_sim_time.
+
+5. Navigation implementation
+   Implemented independent map loading, AMCL localization,
+   planner, controller, behavior server and BT navigator launch files.
+   Added explicit lifecycle management.
+
+6. Manual navigation actions
+   Implemented a ROS 2 action client that calls ComputePathToPose,
+   receives the generated path and sends it to FollowPath.
+   Added execution feedback and result handling.
+
+7. LiDAR and localization investigation
+   Verified that the original 1.5 m LiDAR produced no finite returns
+   in an open area. Confirmed obstacle detection using a temporary
+   Gazebo box. Experimentally increased the simulated LiDAR range
+   to 8 m and updated AMCL's configuration.
+
+8. Navigation lifecycle and controller debugging
+   Identified duplicate Nav2 node instances and lifecycle activation
+   problems. Investigated progress-checker aborts and DWB goal
+   convergence behavior.
+
+TESTING
+- ROS 2 packages built successfully using colcon.
+- Gazebo differential-drive movement verified.
+- Map server and AMCL lifecycle activation verified.
+- ComputePathToPose successfully generated paths.
+- FollowPath completed forward and return navigation tests.
+- Intermittent near-goal controller stalls were observed and investigated.
+
+NOTE
+The 8 m LiDAR range is an experimental change from the original
+1.5 m simulated sensor configuration.
