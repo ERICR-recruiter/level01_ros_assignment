@@ -7,6 +7,8 @@ This package doesn't use `nav2_bringup`. It starts each Nav2 server itself, in t
 ## Demo
 
 - Video: https://youtu.be/JyK5GZwWCyk
+
+
 ## Package layout
 
 ```

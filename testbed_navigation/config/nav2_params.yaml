@@ -14,7 +14,7 @@ controller_server:
     odom_topic: /odom
 
     progress_checker_plugin: "progress_checker"
-    goal_checker_plugin: ["goal_checker"]
+    goal_checker_plugins: ["goal_checker"]
     controller_plugins: ["FollowPath"]
 
     progress_checker:
