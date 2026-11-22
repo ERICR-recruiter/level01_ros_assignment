@@ -3,9 +3,6 @@
 
 <xacro:property name="body_color" value="Gazebo/Silver" />
 
-<gazebo>
-  <plugin name="control" filename="libgazebo_ros_control.so"/>
-</gazebo>
 
   <gazebo>
     <plugin name="diff_drive_control" filename="libgazebo_ros_diff_drive.so">
@@ -13,9 +10,12 @@
      
       <left_joint>left_wheel_joint</left_joint>
       <right_joint>right_wheel_joint</right_joint>
+      
 
       <wheel_separation>0.35</wheel_separation>
       <wheel_diameter>0.1</wheel_diameter>
+      <max_wheel_torque>10.0</max_wheel_torque>
+      <max_wheel_acceleration>1.0</max_wheel_acceleration>
 
       <command_topic>cmd_vel</command_topic>
 
@@ -37,7 +37,7 @@
       <update_rate>10</update_rate>
       <visualize>true</visualize>
       <plugin name="my_imu_plugin" filename="libgazebo_ros_imu_sensor.so">
-      <initial_orientation_as_reference>false</initial_orientation_as_reference>>
+      <initial_orientation_as_reference>false</initial_orientation_as_reference>
         <ros>
           <remapping>~/out:=imu</remapping>
         </ros>
@@ -90,7 +90,7 @@
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
   <gravity>true</gravity>
 </gazebo>
 
@@ -98,63 +98,63 @@
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="caster_2">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="caster_3">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="caster_4">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="lidar_link_1">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="imu_link_1">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="dummy_link_1">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="right_wheel_1">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="left_wheel_1">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide> 
+  <self_collide>false</self_collide> 
 </gazebo>
 
 </robot>
