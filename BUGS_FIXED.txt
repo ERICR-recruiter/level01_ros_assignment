@@ -1,0 +1,209 @@
+LEVEL 1 ROS 2 NAVIGATION ASSIGNMENT - BUGS FOUND IN THE STARTER CODE
+Anish Deep Toppo
+=====================================================================
+
+Environment: Ubuntu 22.04.5, ROS 2 Humble, Gazebo Classic 11.10.2,
+Nav2 1.1.20, gazebo_ros_pkgs 3.9.0.
+
+How I checked: built the workspace with colcon, launched
+testbed_full_bringup.launch.py, and inspected the result with
+ros2 topic / ros2 param / ros2 lifecycle, tf2_echo, view_frames,
+xacro + check_urdf, and the Gazebo terminal output. For each entry
+below, "Original" refers to the file as committed in the starter repo
+(git show HEAD:<file>).
+
+Entries are grouped as:
+  A. Bugs  - something failed or behaved wrongly.
+  B. Configuration fixes - wrong or inconsistent settings that I
+     corrected, even where no hard failure was visible.
+  C. Improvements - changes I made that were not bugs.
+
+
+---------------------------------------------------------------------
+A. BUGS
+---------------------------------------------------------------------
+
+A1. testbed_description/CMakeLists.txt - ament_package called without ()
+    Symptom:  colcon build failed for testbed_description:
+                CMake Error at CMakeLists.txt:24:
+                  Parse error.  Expected "(", got newline
+    Cause:    The last line was "ament_package" instead of
+              "ament_package()". CMake commands must be called with
+              parentheses.
+    Fix:      Changed it to ament_package().
+    Verified: colcon build completes for all packages.
+
+A2. testbed_bringup/maps/testbed_world.yaml - wrong image file name
+    Symptom:  map_server could not load the map. The YAML points to
+              "wrong_path_testbed_world.pgm", which does not exist; the
+              file in the folder is "testbed_world.pgm".
+    Cause:    map_server resolves "image:" relative to the YAML file's
+              folder, so the image must be named exactly as on disk.
+    Fix:      image: testbed_world.pgm
+    Verified: ros2 lifecycle get /map_server -> active, and the map is
+              drawn in RViz.
+
+A3. testbed_bringup/CMakeLists.txt - maps folder not installed
+    Symptom:  install/testbed_bringup/share/testbed_bringup/ contained
+              only launch/, so any launch file that looks up the map
+              through get_package_share_directory('testbed_bringup')
+              cannot find it.
+    Cause:    install(DIRECTORY ...) listed only "launch".
+    Fix:      Added "maps" to the install(DIRECTORY ...) list.
+    Verified: ls install/testbed_bringup/share/testbed_bringup/maps
+              shows testbed_world.yaml and testbed_world.pgm.
+
+A4. testbed_description/urdf/testbed.gazebo - ROS 1 control plugin
+    Symptom:  Gazebo reports that it cannot load libgazebo_ros_control.so
+              when the robot is spawned.
+    Cause:    libgazebo_ros_control.so is the ROS 1 gazebo_ros_control
+              plugin. It does not exist in ROS 2 Humble (only
+              libgazebo_ros2_control.so does, and that needs a
+              ros2_control setup this robot doesn't have). The robot is
+              driven by libgazebo_ros_diff_drive.so, so this plugin isn't
+              needed.
+    Fix:      Removed (commented out) the plugin block.
+    Verified: no plugin load errors in the Gazebo terminal; the robot
+              drives with teleop_twist_keyboard.
+
+A5. testbed_description/urdf/testbed.gazebo - lidar range 1.5 m
+    Symptom:  The laser only reported walls within 1.5 m. The map is
+              about 20 m x 20 m (405 x 400 cells at 0.05 m), so in most
+              positions AMCL had very few beams that hit a wall to match
+              against the map, and the costmaps could not see obstacles
+              more than 1.5 m away.
+    Cause:    <range><max>1.5</max> in the lidar sensor.
+    Fix:      Set <max>10.0</max>, and set AMCL laser_max_range and the
+              costmap obstacle_max_range / raytrace_max_range (9.5 / 10.0)
+              to match.
+    Verified: ros2 topic echo /scan --once shows range_max: 10.0;
+              the AMCL particle cloud converges while driving and the
+              scan lines up with the map walls.
+
+A6. package.xml files - missing dependencies
+    Symptom:  rosdep install would not install packages the launch files
+              need, and colcon build --packages-up-to testbed_bringup
+              would not build testbed_description or testbed_gazebo,
+              because testbed_bringup declared no dependency on them.
+    Cause:    The package.xml files only declared ament_cmake (plus
+              urdf/rclpy), while the launch files use gazebo_ros, xacro,
+              robot_state_publisher, joint_state_publisher, rviz2,
+              launch, launch_ros and ament_index_python.
+    Fix:      Added the missing <exec_depend> entries:
+                testbed_bringup:     launch, launch_ros, ament_index_python,
+                                     rviz2, testbed_gazebo,
+                                     testbed_description
+                testbed_description: xacro, robot_state_publisher,
+                                     joint_state_publisher, rviz2, launch,
+                                     launch_ros, ament_index_python
+                testbed_gazebo:      gazebo_ros, launch, launch_ros,
+                                     ament_index_python
+    Verified: workspace builds; all launch files start.
+
+
+---------------------------------------------------------------------
+B. CONFIGURATION FIXES
+---------------------------------------------------------------------
+
+B1. testbed_description/launch/robot_description.launch.py -
+    use_sim_time not set
+    Finding:  Every other node (Gazebo, RViz, Nav2) runs on simulation
+              time, but robot_state_publisher used wall-clock time.
+    Impact:   No visible error in this setup: robot_state_publisher only
+              publishes the fixed joints on /tf_static, and stamps wheel
+              transforms with the /joint_states message time. It would
+              cause TF timing errors as soon as it stamps anything with
+              its own clock, so I set it for consistency.
+    Fix:      Added {"use_sim_time": True} to its parameters.
+    Verified: ros2 param get /robot_state_publisher use_sim_time -> True.
+
+B2. testbed_description/launch/testbed_rviz_barebones.launch.py -
+    use_sim_time: True without a simulator
+    Finding:  This launch file starts only robot_state_publisher,
+              joint_state_publisher and RViz, with no Gazebo, so nothing
+              publishes /clock. Nodes set to use sim time would have no
+              time source.
+    Fix:      Set use_sim_time to False for robot_state_publisher and
+              RViz in this file only. Also renamed the node from
+              robot_state_publisher_node to robot_state_publisher to match
+              the main launch file.
+
+B3. testbed_description/urdf/testbed.gazebo - stray '>' in the IMU block
+    Finding:  "...</initial_orientation_as_reference>>" had an extra '>'.
+    Impact:   Not a parse error. A bare '>' is legal XML text, and xacro
+              and check_urdf both accept the original file. It was stray
+              text inside the <plugin> element.
+    Fix:      Removed the extra character.
+
+B4. testbed_description/urdf/testbed.gazebo - ROS 1 diff-drive tags
+    Finding:  <command_topic> and <odometry_topic> are ROS 1 tag names.
+              The ROS 2 plugin ignores them.
+    Impact:   No visible symptom, because the ROS 2 plugin already
+              defaults to cmd_vel and odom.
+    Fix:      Replaced them with the ROS 2 form:
+                <ros>
+                  <remapping>cmd_vel:=/cmd_vel</remapping>
+                  <remapping>odom:=/odom</remapping>
+                </ros>
+    Verified: Gazebo log shows "Subscribed to [/cmd_vel]" and
+              "Advertise odometry on [/odom]".
+
+B5. testbed_description/rviz/urdf_gazebo.rviz - wrong LaserScan topic
+    Finding:  The LaserScan display subscribed to /box_bot/laser_scan.
+              The robot publishes on /scan.
+    Fix:      Changed the topic to /scan.
+
+B6. testbed_description/CMakeLists.txt - unused C++ boilerplate
+    Finding:  The package installs files only (no C++), but set a C++
+              standard, compiler warnings and find_package(urdf), and
+              package.xml declared <depend>urdf</depend>.
+    Fix:      Removed the unused lines from both files, keeping
+              find_package(ament_cmake REQUIRED), install(...) and
+              ament_package().
+
+
+---------------------------------------------------------------------
+C. IMPROVEMENTS (not bugs)
+---------------------------------------------------------------------
+
+C1. testbed_gazebo/CMakeLists.txt - install models/
+    The world file defines all its models inline and never uses
+    model:// URIs, so the missing models/ folder had no visible effect.
+    I installed it anyway, because spawn_playground.launch.py adds
+    share/testbed_gazebo/models to GAZEBO_MODEL_PATH and expects it to
+    exist.
+
+C2. testbed_gazebo/launch/spawn_playground.launch.py - pass 'world'
+    explicitly
+    I tested the original: the playground world already loaded, because
+    included launch files share the parent's launch configurations in
+    Humble. I now pass world=LaunchConfiguration('world') to
+    gazebo.launch.py explicitly so the file doesn't depend on that.
+
+C3. testbed_description/urdf/testbed.gazebo - wheel joint states
+    Replaced <publish_wheel_tf> with the gazebo_ros_joint_state_publisher
+    plugin for left_wheel_joint and right_wheel_joint. The wheel joints
+    now appear on /joint_states and robot_state_publisher publishes their
+    transforms, which is the standard ROS 2 arrangement.
+
+C4. testbed_description/urdf/testbed.gazebo - wheel limits
+    Added <max_wheel_torque>20.0</max_wheel_torque> and
+    <max_wheel_acceleration>1.0</max_wheel_acceleration> to the
+    diff-drive plugin.
+
+C5. testbed_description/rviz/full_bringup.rviz
+    Fixed Frame changed from odom to map, and added Map (Transient Local),
+    ParticleCloud (Best Effort), /plan and both costmap displays for
+    navigation. Running only the simulation now shows a "frame map does
+    not exist" warning until AMCL starts; that is expected.
+
+
+---------------------------------------------------------------------
+CHECKED, NO BUG FOUND
+---------------------------------------------------------------------
+
+- Spawn pose in spawn_testbed.launch.py is (0, 5, 0), yaw 0. AMCL's
+  initial_pose matches, and the scan lines up with the map at start-up,
+  so the map frame and the Gazebo world frame agree.
+- Diff-drive wheel_separation 0.35 m and wheel_diameter 0.1 m match the
+  URDF (wheel joints at y = +0.135 / -0.211, axle height 0.05 m).
