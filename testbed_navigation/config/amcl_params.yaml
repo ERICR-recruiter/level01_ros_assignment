@@ -1,0 +1,65 @@
+# AMCL (Adaptive Monte Carlo Localization) Parameters
+# Robot: Testbed-T1.0.0 differential drive
+# Sensor: Ray sensor (LaserScan on /scan topic)
+#   - 300 rays, full 360° scan (-3.14 to 3.14 rad)
+#   - range: 0.10 m to 1.5 m
+# Robot spawns at x=0.0, y=5.0, z=0.0 (from spawn_testbed.launch.py)
+
+amcl:
+  ros__parameters:
+    use_sim_time: true
+
+    # --- Particle Filter ---
+    # Increased min particles for a small, feature-sparse indoor environment
+    min_particles: 500
+    max_particles: 2000
+
+    # Motion model noise coefficients (differential drive)
+    # alpha1: rotation noise from rotation
+    # alpha2: rotation noise from translation
+    # alpha3: translation noise from translation
+    # alpha4: translation noise from rotation
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.1  # strafe (not used for diff drive but required param)
+
+    # --- Laser Model ---
+    # likelihood_field is preferred for short-range indoor lidar (performs well at 1.5m max range)
+    laser_model_type: "likelihood_field"
+    laser_max_range: 1.5    # matches hardware: <max>1.5</max> in testbed.gazebo
+    laser_min_range: 0.10   # matches hardware: <min>0.10</min>
+    laser_likelihood_max_dist: 2.0
+    max_beams: 60           # subsampled from 300 rays for efficiency
+    sigma_hit: 0.2
+    z_hit: 0.5
+    z_rand: 0.5
+
+    # --- Odometry Model ---
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    odom_frame_id: "odom"
+    base_frame_id: "base_footprint"  # from diff drive plugin: <robot_base_frame>base_footprint</robot_base_frame>
+    global_frame_id: "map"
+    scan_topic: "scan"               # remapped in testbed.gazebo: ~/out:=scan
+
+    # --- Update Thresholds ---
+    # How much the robot must move before triggering a filter update
+    update_min_d: 0.1   # meters
+    update_min_a: 0.2   # radians (~11.5 degrees)
+
+    resample_interval: 1
+    transform_tolerance: 1.0
+    recovery_alpha_slow: 0.001
+    recovery_alpha_fast: 0.1
+
+    # --- Initial Pose ---
+    # Robot is spawned at position=[0.0, 5.0, 0.0] per spawn_testbed.launch.py
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0
+
+    save_pose_rate: 0.5
