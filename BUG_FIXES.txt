@@ -1,0 +1,31 @@
+BUG FIXES
+
+Bug 1: Missing parentheses in ament_package()
+
+File: testbed_description/CMakeLists.txt
+
+Issue:
+The CMake file contained "ament_package" without parentheses.
+This caused a CMake parsing error during colcon build.
+
+Fix:
+Changed "ament_package" to "ament_package()".
+
+Result:
+The package built successfully after the correction.
+All three existing packages built successfully using colcon build --symlink-install.
+
+Bug 2: Incorrect map image path
+
+File: testbed_bringup/maps/testbed_world.yaml
+
+Issue:
+The YAML file referenced a non-existent image:
+wrong_path_testbed_world.pgm
+
+Fix:
+Changed the image path to:
+testbed_world.pgm
+
+Result:
+The referenced PGM file exists in the same maps directory.
