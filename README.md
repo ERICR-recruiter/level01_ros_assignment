@@ -3,11 +3,17 @@
 
 # ROS 2 Navigation Assignment – Testbed T1.0.0
 
-## Project Overview
-
 This repository contains my implementation and investigation of the ROS 2 Navigation Assignment provided by ERIC Robotics.
 
 The objective is to understand the robot simulation environment, investigate the provided ROS 2 packages, identify and resolve starter-code issues, and develop a modular navigation system using individual Nav2 components.
+
+## 🎥 Project Demonstration
+
+**Watch the robot simulation and navigation demonstration:**
+
+[▶ Watch Project Demonstration Video](testbed_media/Screencast%20from%2011-23-2026%2004_34_01%20PM.mp4)
+
+The demonstration video is available in the `testbed_media` directory.
 
 ## Development Environment
 
@@ -36,85 +42,46 @@ ros_nav2_assignment_ws/
 └── .gitignore
 ```
 
-## Existing ROS 2 Packages
+## Work Completed
+- Investigated and corrected issues in the starter packages.
+- Configured robot description and Gazebo simulation.
+- Implemented map loading and AMCL localization.
+- Configured Nav2 planner, controller, behavior tree, and supporting servers.
+- Integrated navigation launch files and parameter configurations.
+- Tested robot localization and navigation in simulation.
+- Documented debugging observations and implementation details.
 
-### 1. testbed_description
-Contains the robot description, URDF/Xacro files, meshes, RViz configurations and launch files.
+## Deliverables
+- ROS 2 navigation package.
+- Configuration and launch files.
+- Documentation and debugging notes.
+- Simulation demonstration video.
 
-### 2. testbed_gazebo
-Contains Gazebo simulation worlds, robot models and simulation launch files.
+---
 
-### 3. testbed_controller
-Contains controller configurations and velocity multiplexer configurations.
+## 🔍 Debugging and Development Notes
 
-### 4. testbed_bringup
-Contains the complete robot bringup launch file and predefined environment maps.
+During development, several issues were investigated and addressed across different ROS 2 components.
 
-## Work Completed – Initial Investigation
+Some of the debugging areas included:
 
-- Inspected the provided ROS 2 package structure.
-- Investigated the robot description and launch files.
-- Identified and corrected two starter-code issues.
-- Launched and inspected the robot visualization environment.
-- Examined joint-state information using `/joint_states`.
-- Investigated the robot TF tree.
-- Saved TF tree visualizations for documentation.
-- Inspected simulation and controller configurations.
+- CMake and XML syntax corrections.
+- URDF/Xacro parameter handling.
+- TF timestamp warnings and duplicate transform publishers.
+- RViz map subscription and QoS durability configuration.
+- Circular package dependencies during Colcon builds.
+- Map server lifecycle transition failures.
+- Nav2 controller and planner parameter tuning.
+- Robot rotation and goal-reaching behaviour.
 
-## Debugging Documentation
+Detailed debugging observations, errors, and corrective actions are documented here:
 
-See [BUGS_AND_DEBUGGING.md](BUGS_AND_DEBUGGING.md) for identified source-code issues and runtime observations.
+[View BUGS_AND_DEBUGGING.md](testbed_media/BUGS_AND_DEBUGGING.md)
 
-TF tree investigation files are available under `documentation/tf_tree/`.
+---
 
-## Current Development Status
-
-| Component | Status |
-|---|---|
-| Starter package investigation | Completed |
-| Robot description inspection | Completed |
-| Initial debugging | Completed |
-| TF and joint-state investigation | In progress |
-| Map server implementation | Pending |
-| AMCL localization | Pending |
-| Nav2 planner and behavior tree setup | Pending |
-| Navigation testing | Pending |
-
-## Build Instructions
-
-Install and source the ROS 2 environment:
-
-```bash
-source /opt/ros/humble/setup.bash
-```
-
-Build the workspace:
-
-```bash
-cd ~/ros_nav2_assignment_ws
-colcon build
-```
-
-Source the workspace:
-
-```bash
-source install/setup.bash
-```
-
-## Development Objective
-
-The next development phase is to create a new ROS 2 package named `testbed_navigation` and implement the navigation workflow using individual Nav2 components, including:
-
-- Map Server
-- AMCL
-- Planner Server
-- Controller Server
-- Behavior Tree Navigator
-
-The implementation will be tested incrementally in the provided simulation environment.
-
-## Author
-
-**Saivenkat**
-
-GitHub: [svenkat934-byte](https://github.com/svenkat934-byte)
+## Contact Info
+---------
+- Name: Kadavergu Saivenkat
+- Contact number: 9398704613
+- Email Address: saivenkatkadavergu@gmail.com
