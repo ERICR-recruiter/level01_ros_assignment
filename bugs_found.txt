@@ -1,0 +1,6 @@
+Bugs found in the starter code and how they were fixed
+=======================================================
+1. File: <path>
+   Symptom: <what went wrong>
+   Cause:   <root cause>
+   Fix:     <what you changed>
