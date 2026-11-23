@@ -125,6 +125,6 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Pranav Prakash Kende
+ - Contact number: +91 7276404601
+ - Email Address: pranavkende16@gmail.com
