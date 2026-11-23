@@ -106,7 +106,7 @@ local_costmap:
           raytrace_max_range: 3.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.35         # keep paths about 0.5 m from walls
+        inflation_radius: 0.35         # keep paths about 0.35 m from walls
         cost_scaling_factor: 5.0
       always_send_full_costmap: true
 
