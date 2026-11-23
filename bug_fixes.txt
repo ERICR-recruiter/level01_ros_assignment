@@ -1,0 +1,139 @@
+
+BUG 1: Missing parentheses in ament_package() call
+
+File: testbed_description/CMakeLists.txt
+
+Issue:
+The file contained `ament_package` without parentheses.
+CMake requires function calls to use parentheses, so the build
+failed with a parsing error at the end of the file.
+
+Fix:
+Changed `ament_package` to `ament_package()`.
+
+Verification:
+Colcon build Successful
+
+BUG 2: Extra closing angle bracket in IMU sensor XML configuration
+
+File: testbed_description/urdf/testbed.gazebo
+
+Issue:
+The IMU sensor plugin configuration contained an extra closing angle bracket
+(>) in the initial_orientation_as_reference XML element.
+
+This made the XML malformed and could cause Xacro or URDF parsing errors
+when processing the robot description.
+
+Fix:
+Changed:
+<initial_orientation_as_reference>false</initial_orientation_as_reference>>
+
+To:
+<initial_orientation_as_reference>false</initial_orientation_as_reference>
+
+Verification:
+Successfully processed testbed.xacro using the xacro command.
+The command completed without XML or Xacro parsing errors.
+
+------------------------------------------------------------
+
+BUG 3: Gazebo world launch argument not forwarded
+
+File: testbed_gazebo/launch/spawn_playground.launch.py
+
+Issue:
+The launch file declared a 'world' launch argument with the default
+testbed_playground.world file path.
+
+However, the declared world argument was not forwarded to the included
+gazebo.launch.py launch description.
+
+As a result, the intended world file might not be loaded when Gazebo starts.
+
+Fix:
+Added LaunchConfiguration to the launch_arguments parameter of
+IncludeLaunchDescription to forward the world argument.
+
+Updated code:
+from launch.substitutions import LaunchConfiguration
+gazebo = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+        os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py'),
+    ),
+    launch_arguments={
+        'world': LaunchConfiguration('world')
+    }.items()
+)
+
+Verification:
+Successfully validated the updated launch file using
+python3 -m py_compile.
+
+Gazebo world loading is pending simulation testing.
+
+------------------------------------------------------------
+
+BUG 4: Missing Gazebo ROS runtime dependency
+
+File: testbed_gazebo/package.xml
+
+Issue:
+The Gazebo launch files use the gazebo_ros package to launch Gazebo
+Classic and spawn the robot into the simulation.
+
+However, gazebo_ros was not declared as a runtime dependency in
+the testbed_gazebo package.xml file.
+
+This can cause dependency issues when setting up the package in
+another environment where the required dependency is not installed.
+
+Fix:
+Added the following dependency inside package.xml:
+
+<exec_depend>gazebo_ros</exec_depend>
+
+Verification:
+
+Confirmed that gazebo_ros is declared as a runtime dependency
+in testbed_gazebo/package.xml.
+-----------------------------------------------------------------
+BUG 5: 
+
+Bug: Incorrect map image path in testbed_world.yaml
+
+File:
+testbed_bringup/maps/testbed_world.yaml
+
+Issue:
+The YAML file referenced "wrong_path_testbed_world.pgm",
+but the actual map image provided in the repository was
+"testbed_world.pgm".
+
+Fix:
+Updated the image field to:
+image: testbed_world.pgm
+
+Verification:
+Confirmed that the referenced PGM image exists in the maps
+directory and is accessible to the map server.
+
+
+---------------------------------------------------------
+BUG6 
+Bug: Map directory not installed by testbed_bringup
+
+File:
+testbed_bringup/CMakeLists.txt
+
+Issue:
+The install() directive included only the launch directory
+and omitted the maps directory. Consequently, map files were
+not available in the installed package.
+
+Fix:
+Added maps to the install() directive alongside launch.
+
+Impact:
+The Nav2 map_server could not locate the map YAML file
+from the installed package.

@@ -1,130 +1,334 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# ROS 2 Navigation Assignment -- Testbed-T1.0.0
 
-## Overview
-At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
+This repository contains my implementation of the ERIC Robotics Level 1
+ROS 2 Navigation assignment. The work focuses on setting up map loading,
+AMCL localization and Nav2 navigation for the Testbed-T1.0.0 robot in
+simulation.
 
-**Here’s what to do:**
-1. We have shared some starter code for the 'Testbed-T1.0.0', a simple open-source robot developed by the team here at ERIC Robotics. **Please note that there are some bugs intentionally left in the starter code that you will need to identify and fix. You also need to make a text file listing the bugs you were able to identify and how did you fix them and add that file in the root directory outside the navigation package** Your task is to develop a new ROS2 package called `testbed_navigation` to manage the navigation workflow for this robot.
-2. However, rather than simply calling `nav2_bringup`, in this assignment you will manually build the required action components (i.e., using the `map_server`, `amcl`, `planner` plugins, and `bt_` plugins) to run ros2 navigation, by working directly with the respective `nav2` plugins.
-3. i.e., In the `testbed_navigation` package, write individual launch files to load a map, perform localization, and navigate using the plugins provided by `nav2`.
-4. Document your process so we can see how you tackled the task.
+The navigation code is kept in a separate package, `testbed_navigation`.
+Map loading, localization and navigation each have their own launch
+file.
 
-This assignment gives you hands-on experience with ROS2’s navigation plugins, while showcasing your ability to design modular and effective robotics solutions.
+## 1. Development environment
 
-### Deadline & submissions
-1. Four days (96 hrs) from the moment you accept the assignment.
-2. All applicants should fork the repository for the assignment. To submit your code, after completion create a Pull Request (PR) back to the `main` branch. You can commit any number of times to your fork before your deadline.
+The assignment was originally written for:
 
-## Repository Structure
+-   Ubuntu 22.04
+-   ROS 2 Humble
+-   Gazebo Classic 11.10.2
+-   RViz
 
+I completed the work on:
+
+-   Ubuntu 24.04
+-   ROS 2 Jazzy
+-   Gazebo Harmonic (Gazebo Sim 8.x)
+-   RViz2
+
+### Why I used a different environment
+
+My development system runs Ubuntu 24.04. The assignment's original ROS 2
+Humble and Gazebo Classic setup is intended for Ubuntu 22.04, so I used
+ROS 2 Jazzy and Gazebo Harmonic to work with the installed operating
+system.
+
+This meant adapting parts of the starter repository to the newer ROS 2
+and Gazebo versions. The assignment objective and navigation workflow
+remained the same.
+
+## 2. Bug fixes in the starter repository
+
+I recorded the starter-code issues I found and the changes made to
+resolve them in **[`bug_fixes.txt`](bug_fixes.txt)**, located in the
+root of the repository.
+
+The main fixes are also summarised below.
+
+  ------------------------------------------------------------------------------------------------------------------
+  File / area                                          Issue found             Change made
+  ---------------------------------------------------- ----------------------- -------------------------------------
+  `testbed_description/CMakeLists.txt`                 Incorrect syntax in the Corrected the CMake syntax.
+                                                       `ament_package()` call. 
+
+  `testbed_description/urdf/testbed.gazebo`            An extra `>` character  Corrected the XML tag.
+                                                       in a Gazebo XML tag.    
+
+  `testbed_gazebo/launch/spawn_playground.launch.py`   Incorrect world launch  Corrected the launch argument used to
+                                                       argument.               start the world.
+
+  `testbed_bringup/maps/testbed_world.yaml`            The image filename did  Updated the YAML file to reference
+                                                       not match the supplied  `testbed_world.pgm`.
+                                                       map image.              
+
+  `testbed_bringup/CMakeLists.txt`                     The map directory was   Added the `maps` directory to the
+                                                       not installed with the  package installation rules.
+                                                       package.                
+
+  Gazebo--ROS communication                            The original setup      Configured `ros_gz_bridge` for
+                                                       needed a bridge         `/clock`, `/scan` and `/imu`.
+                                                       compatible with Gazebo  
+                                                       Harmonic.               
+
+  Navigation configuration                             The configured odometry Set the relevant Nav2 components to
+                                                       topic did not match the use
+                                                       robot's controller      `/diff_drive_base_controller/odom`.
+                                                       output.                 
+
+  Velocity command interface                           The Jazzy diff-drive    Configured the Nav2 velocity command
+                                                       controller uses stamped path to use
+                                                       velocity commands.      `geometry_msgs/msg/TwistStamped`.
+  ------------------------------------------------------------------------------------------------------------------
+
+The separate `bug_fixes.txt` file contains the bug list required by the
+assignment. The table above gives a quick summary of the changes
+relevant to the working simulation and navigation setup.
+
+## 3. Repository structure
+
+The workspace is `eric_robotics_ws`, and the assignment repository is
+located at `src/level01_ros_assignment`.
+
+``` text
+eric_robotics_ws/
+├── src/
+│   └── level01_ros_assignment/
+│       ├── testbed_bringup/
+│       │   ├── config/
+│       │   ├── launch/
+│       │   └── maps/
+│       ├── testbed_description/
+│       │   ├── launch/
+│       │   ├── meshes/
+│       │   ├── rviz/
+│       │   └── urdf/
+│       ├── testbed_gazebo/
+│       │   ├── launch/
+│       │   ├── models/
+│       │   └── worlds/
+│       ├── testbed_navigation/
+│       │   ├── config/
+│       │   ├── launch/
+│       │   ├── maps/
+│       │   ├── rviz/
+│       │   ├── CMakeLists.txt
+│       │   └── package.xml
+│       ├── bug_fixes.txt
+│       ├── help.md
+│       └── README.md
+├── build/
+├── install/
+└── log/
 ```
-ros_nav2_assignment/
-├── testbed_description/
-│   ├── launch/            # Launch the full base simulation
-│   ├── meshes/
-│   ├── rviz/            # RVIZ configuration files
-│   └── urdf/            # URDF files for Testbed-T1.0.0
-├── testbed_gazebo/
-│   ├── worlds/            # Simulation world files
-│   ├── launch/            # Launch files for Gazebo
-│   └── models/            # Misc. Gazebo model files
-├── testbed_bringup/
-│   ├── launch/            # Launch file for bringing up the robot
-│   └── maps/              # Predefined map of the test environment
-├── help.md                # Guidelines and FAQs
-└── README.md              # Instructions for the assignment
+
+## 4. Navigation package
+
+The `testbed_navigation` package contains the launch files and
+configuration used to run the navigation workflow.
+
+### Launch files
+
+  --------------------------------------------------------------------------------
+  Launch file                         Purpose
+  ----------------------------------- --------------------------------------------
+  `map_loader.launch.py`              Starts the Nav2 Map Server and its lifecycle
+                                      manager. It loads
+                                      `testbed_bringup/maps/testbed_world.yaml`.
+
+  `localization.launch.py`            Starts AMCL and its lifecycle manager.
+
+  `navigation.launch.py`              Starts the Nav2 navigation nodes and their
+                                      lifecycle manager.
+  --------------------------------------------------------------------------------
+
+### Configuration files
+
+-   `config/amcl_params.yaml` -- AMCL parameters, including the map,
+    odometry, base and laser frame/topic settings.
+-   `config/nav2_params.yaml` -- Nav2 parameters for the planner,
+    controller, costmaps, behavior server, BT Navigator and supporting
+    nodes.
+
+The map itself is provided by the starter repository in
+`testbed_bringup/maps/`.
+
+### Nav2 components used
+
+The navigation setup uses the following components:
+
+-   **Map Server** -- publishes the occupancy map.
+-   **AMCL** -- estimates the robot's position in the map.
+-   **Planner Server with NavFn** -- calculates a global path to the
+    goal.
+-   **Controller Server with MPPI** -- generates velocity commands to
+    follow the path.
+-   **Behavior Server** -- provides recovery behaviors.
+-   **BT Navigator** -- coordinates the navigation task.
+-   **Waypoint Follower** -- supports navigation through waypoints.
+-   **Velocity Smoother** -- smooths velocity commands before they reach
+    the robot controller.
+-   **Global and local costmaps** -- represent obstacles for planning
+    and control.
+
+The nodes are started individually from `navigation.launch.py`; the
+implementation does not rely on launching the complete stack through
+`nav2_bringup`.
+
+## 5. Build the workspace
+
+Open a terminal and run:
+
+``` bash
+cd ~/eric_robotics_ws
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install
+source install/setup.bash
 ```
 
-## Assignment Objective
-Your goals are to:
-1. Learn how to configure and use ROS2 `nav2` plugins in independent files.
-2. Set up manual map loading and localization for the given simulation environment.
-3. Implement the required navigation plugins to handle robot navigation in the `testbed_navigation` package. Only basic navigational functionality is expected in this assignment, so choose your plugins accordingly.
+If the workspace has already been built, source it in each new terminal
+before running ROS 2 commands:
 
-## Requirements
+``` bash
+source /opt/ros/jazzy/setup.bash
+source ~/eric_robotics_ws/install/setup.bash
+```
 
-To get started, you’ll need:
-- ROS2 Humble installed. (Install from [Humble Installation](https://docs.ros.org/en/humble/Installation.html)) (You will need Ubuntu 22.04/Windows 10 for this. More in the help section.)
-- Gazebo simulator (version 11.10.2 is compatible with ROS2 Humble) (Install from [Gazebo Installation](https://classic.gazebosim.org/tutorials?tut=install_ubuntu)) and Rviz simulator.
-- Basic to intermediate knowledge of ROS2 navigation concepts.
-- Familiarity with creating and managing ROS2 packages, actions, and parameter files.
-- The reference documentation for the `nav2` stack is going to be your best friend for this assignment: [Nav2 Documentation](https://navigation.ros.org/).
+## 6. Run the simulation and navigation
 
-## Instructions
+The following steps describe the modular launch sequence used for
+testing. Run each component in a separate terminal and leave it running.
 
-### 1. Setting Up the Repository
-1. Create your workspace:
-    ```bash
-    mkdir -p ~/assignment_ws/src
-    ```
-2. Fork this repository to your GitHub account, then clone your fork:
-   ```bash
-   cd ~/assignment_ws/src
-   git clone <your-fork-url>
-   ```
-2. Build the workspace:
-   ```bash
-   cd ~/assignment_ws/
-   colcon build
-   source install/setup.bash
-   ```
+### 1. Start Gazebo
 
-### 2. Launching the Simulation Environment
-1. Start the full simulation using:
-   ```bash
-   ros2 launch testbed_bringup testbed_full_bringup.launch.py
-   ```
-   This brings up the testbed environment in Gazebo and Rviz.
+``` bash
+ros2 launch testbed_gazebo spawn_playground.launch.py
+```
 
-### 3. Creating the `testbed_navigation` Package
-1. In your workspace, create a new package:
-   ```bash
-   ros2 pkg create testbed_navigation --build-type ament_cmake
-   ```
-2. Set up the necessary directories for parameters, launch files, and scripts.
-3. Write proper build commands in CMakeLists.txt for your navigation package.
+### 2. Start the robot description
 
-### 4. Map Loading
-1. Use the map provided in `testbed_bringup/maps/testbed_world.yaml`.
-2. Write actions in the launch file `testbed_navigation/launch/map_loader.launch.py` to load the map using the `map_server` plugin.
-3. Test and confirm that the map is loaded correctly in Rviz.
+``` bash
+ros2 launch testbed_description robot_description.launch.py
+```
 
-### 5. Localization
-1. Implement localization with the AMCL plugin:
-   - Write a parameter file for AMCL in `testbed_navigation/config/amcl_params.yaml`.
-   - Create actions in the launch file `testbed_navigation/launch/localization.launch.py` to run AMCL.
-   - Verify that the robot can localize itself in the simulated environment using Rviz.
+### 3. Spawn the robot
 
-### 6. Navigation
-1. Set up navigation using `nav2` plugins:
-   - Configure parameter files for the global and local planners, behaviour tree plugins and any other nav2 plugin you want to use, like 'collision_monitor' or 'velocity_smoother', in `testbed_navigation/config/nav2_params.yaml`.
-   - Write actions in the launch file `testbed_navigation/launch/navigation.launch.py` to bring up the navigation workflow.
-2. Test the navigation setup by sending goals to the robot and observing its behavior.
+``` bash
+ros2 launch testbed_gazebo spawn_testbed.launch.py
+```
 
-### 7. Deliverables
-1. Submit your completed `testbed_navigation` package with:
-   - Parameter files for map loading, localization, and navigation.
-   - Launch files for each component.
-   - A `README.md` describing your approach and any challenges you faced.
-2. Provide a short video or screenshots showing your robot performing localization and navigation.
+### 4. Start the Gazebo--ROS bridge
 
-### 8. Evaluation Criteria
-We’ll be looking for:
-- A functional manual navigation setup.
-- Clear, well-structured parameter files and launch files.
-- A modular, well-documented implementation.
-- Successful localization and navigation in the simulation.
+``` bash
+ros2 run ros_gz_bridge parameter_bridge --ros-args \
+  -p config_file:=/home/$USER/eric_robotics_ws/src/level01_ros_assignment/testbed_bringup/config/bridge.yaml
+```
 
-## Notes
-- You’re welcome to modify the robot description or simulation setup to better suit your implementation.
-- Thorough testing is encouraged to ensure everything works as expected.
-- If you have questions, check out the help section and don’t hesitate to reach out to us.
-- Lastly, we encourage you to share your code for review—even if it’s still a work in progress.
----
+### 5. Start the robot controllers
 
-We’re excited to see how you approach this task. Good luck, and happy coding! :)
+Start the ros2_control controllers using the controller-spawner commands
+configured for the Testbed robot. The controllers should be active
+before starting localization and navigation.
 
-## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+### 6. Load the map
+
+``` bash
+ros2 launch testbed_navigation map_loader.launch.py
+```
+
+### 7. Start localization
+
+``` bash
+ros2 launch testbed_navigation localization.launch.py
+```
+
+### 8. Start navigation
+
+``` bash
+ros2 launch testbed_navigation navigation.launch.py
+```
+
+### 9. Open RViz2
+
+``` bash
+rviz2
+```
+
+In RViz2:
+
+1.  Set the fixed frame to `map`.
+2.  Add the Map display and select `/map`.
+3.  Add RobotModel, TF and LaserScan displays. Set the laser topic to
+    `/scan`.
+4.  Add a Path display for `/plan` to view the global planned path.
+5.  Use **2D Pose Estimate** to set the robot's initial pose if needed.
+6.  Use **2D Goal Pose** to send a navigation goal.
+
+The controller-spawner commands are not written out here because they
+should match the controller configuration in the repository; use the
+commands already used to bring up the working robot.
+
+## 7. Testing
+
+The following parts of the workflow were tested in Gazebo Harmonic and
+RViz2:
+
+-   The supplied map loaded and appeared in RViz2.
+-   AMCL received the map and laser scan and published the estimated
+    pose and the `map` to `odom` transform.
+-   The Nav2 nodes reached the active lifecycle state.
+-   Sending a goal from RViz2 generated a global path and the robot
+    moved towards the goal.
+-   A second navigation goal was tested.
+-   Obstacle avoidance was observed during navigation.
+-   The velocity command path was checked between Nav2, the velocity
+    smoother and the diff-drive controller. The command topic uses
+    `geometry_msgs/msg/TwistStamped`.
+
+## 8. Submission files
+
+The repository includes the following assignment deliverables:
+
+-   `testbed_navigation/` -- navigation package with launch and
+    configuration files.
+-   `bug_fixes.txt` -- list of starter-code bugs identified and the
+    fixes made.
+-   `README.md` -- setup, implementation and testing notes.
+-   Video or screenshots -- demonstration of localization and
+    navigation.
+
+
+## Simulation and Navigation Results
+
+The following screenshots demonstrate the Gazebo simulation environment, RViz visualization, Nav2 costmaps, localization, autonomous navigation, and obstacle avoidance.
+
+### 1. Gazebo Simulation and RViz
+![Gazebo and RViz](screenshots/gazeboandrviz.png)
+
+### 2. Global Costmap Visualization
+![Global Costmap in RViz and Gazebo](screenshots/globalcostmaprviz&gazebo.png)
+
+### 3. RViz Visualization
+![RViz](screenshots/Rviz.png)
+
+### 4. Nav2 Autonomous Navigation Demonstration
+![Navigation Demonstration](screenshots/nav2demonstration.png)
+
+### 5. Nav2 Obstacle Layer
+![Obstacle Layer in RViz](screenshots/obstaclelayer_rviz.png)
+
+
+
+Contact Info 
+Name : Suyash Vyankatesh Desai
+email: desaisuyash2004@gmail.com
+
+
+## References
+
+-   [ROS 2 Jazzy documentation](https://docs.ros.org/en/jazzy/)
+-   [Nav2 documentation](https://docs.nav2.org/)
+-   [Gazebo documentation](https://gazebosim.org/docs/)
+
+------------------------------------------------------------------------
+
+**Assignment:** ERIC Robotics -- Level 1 ROS 2 Navigation\
+**Robot:** Testbed-T1.0.0

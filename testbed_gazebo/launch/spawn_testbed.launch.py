@@ -1,47 +1,48 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
-import random
+#!/usr/bin/env python3
 
-from launch_ros.actions import Node
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
 
 
-# this is the function launch  system will look for
 def generate_launch_description():
 
+    pkg_description = get_package_share_directory('testbed_description')
 
-    # Position and orientation
-    # [X, Y, Z]
-    position = [0.0, 5.0, 0.0]
-    # [Roll, Pitch, Yaw]
-    orientation = [0.0, 0.0, 0.0]
-    # Base Name or robot
-    robot_base_name = "testbed"
-
-
-    entity_name = robot_base_name#+"-"+str(int(random.random()*100000))
-
-    # Spawn ROBOT Set Gazebo
-    spawn_robot = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
-        name='spawn_entity',
-        output='screen',
-        arguments=['-entity',
-                   entity_name,
-                   '-x', str(position[0]), '-y', str(position[1]
-                                                     ), '-z', str(position[2]),
-                   '-R', str(orientation[0]), '-P', str(orientation[1]
-                                                        ), '-Y', str(orientation[2]),
-                   '-topic', '/robot_description'
-                   ]
+    robot_description_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                pkg_description,
+                'launch',
+                'robot_description.launch.py'
+            )
+        )
     )
 
- 
-
-    # create and return launch description object
-    return LaunchDescription(
-        [
-            spawn_robot,
+    spawn_robot = Node(
+        package='ros_gz_sim',
+        executable='create',
+        name='spawn_testbed',
+        output='screen',
+        arguments=[
+            '-name', 'testbed',
+            '-topic', 'robot_description',
+            '-x', '0.0',
+            '-y', '5.0',
+            '-z', '0.1'
         ]
     )
+
+    delayed_spawn = TimerAction(
+        period=3.0,
+        actions=[spawn_robot]
+    )
+
+    return LaunchDescription([
+        robot_description_launch,
+        delayed_spawn
+    ])
