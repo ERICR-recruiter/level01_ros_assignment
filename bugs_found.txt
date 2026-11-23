@@ -1,0 +1,10 @@
+Bugs found in the starter code and how they were fixed
+=======================================================
+
+1. File: testbed_description/CMakeLists.txt (line 23)
+   Symptom: colcon build failed for testbed_description with
+            "Parse error. Expected '(', got newline", and testbed_bringup
+            was aborted as a result.
+   Cause:   The final command was written as "ament_package" without
+            parentheses, so CMake could not parse it.
+   Fix:     Changed it to "ament_package()".

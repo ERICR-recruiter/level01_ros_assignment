@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Rithwika PG
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -126,5 +126,12 @@ We’re excited to see how you approach this task. Good luck, and happy coding! 
 
 ## Contact Info 
  - Name: Your full name
- - Contact number: Your contact number
+ - Contact number: +91 95357 23966
  - Email Address: Your email address
+
+---
+
+## Submission Summary (Rithwika PG, GitHub: RithwikaPG)
+- Navigation package: `testbed_navigation/` (map_loader, localization and navigation launch files; parameters in `config/`)
+- Bugs found in the starter code and their fixes: `bugs_found.txt` (repo root)
+- Video of localization and navigation: https://drive.google.com/drive/folders/1j8uCvCQ8kII3YWM2lFSHlv87d4A5iiQ2
