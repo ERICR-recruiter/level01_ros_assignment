@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Testbed Robot Controller</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <header>
+            <h1>TESTBED ROBOT CONTROL</h1>
+            <p>ROS 2 Humble | Gazebo Teleoperation</p>
+        </header>
+
+        <section class="connection-panel">
+
+            <div>
+                <span id="connection-indicator"></span>
+                <span id="connection-status">Disconnected</span>
+            </div>
+
+            <button id="connect-btn">Connect</button>
+
+        </section>
+
+        <section class="control-panel">
+
+            <h2>Virtual Joystick</h2>
+
+            <div id="joystick-area">
+                <div id="joystick-base">
+                    <div id="joystick-stick"></div>
+                </div>
+            </div>
+
+            <p>Drag the joystick to move the robot.</p>
+
+        </section>
+
+        <section class="velocity-panel">
+
+            <div>
+                <h3>Linear Velocity</h3>
+                <span id="linear-value">0.00 m/s</span>
+            </div>
+
+            <div>
+                <h3>Angular Velocity</h3>
+                <span id="angular-value">0.00 rad/s</span>
+            </div>
+
+        </section>
+
+        <section class="safety-panel">
+
+            <button id="emergency-btn">
+                EMERGENCY STOP
+            </button>
+
+        </section>
+
+        <footer>
+            <p>Release joystick to stop the robot.</p>
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

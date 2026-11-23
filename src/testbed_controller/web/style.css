@@ -1,0 +1,119 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #101820;
+    color: white;
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+    padding: 25px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 25px;
+    margin-bottom: 10px;
+}
+
+header p {
+    color: #9ca3af;
+}
+
+.connection-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 0;
+}
+
+#connection-indicator {
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+    background: red;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#connect-btn {
+    background: #16a34a;
+    color: white;
+}
+
+.control-panel {
+    background: #1f2937;
+    border-radius: 15px;
+    padding: 25px;
+}
+
+#joystick-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 30px auto;
+}
+
+#joystick-base {
+    height: 220px;
+    width: 220px;
+    border-radius: 50%;
+    background: #374151;
+    position: relative;
+    border: 4px solid #64748b;
+    touch-action: none;
+}
+
+#joystick-stick {
+    height: 80px;
+    width: 80px;
+    border-radius: 50%;
+    background: #22c55e;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+}
+
+.velocity-panel {
+    display: flex;
+    justify-content: space-around;
+    margin: 30px 0;
+}
+
+.velocity-panel h3 {
+    font-size: 15px;
+    color: #9ca3af;
+    margin-bottom: 10px;
+}
+
+.velocity-panel span {
+    font-size: 20px;
+}
+
+#emergency-btn {
+    background: #dc2626;
+    color: white;
+    width: 100%;
+    padding: 18px;
+}
+
+footer {
+    margin-top: 25px;
+    color: #9ca3af;
+}
