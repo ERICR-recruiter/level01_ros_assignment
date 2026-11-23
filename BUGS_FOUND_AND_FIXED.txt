@@ -1,0 +1,79 @@
+LEVEL 1 ROS2 NAVIGATION ASSIGNMENT - BUGS FOUND IN THE STARTER CODE AND HOW THEY WERE FIXED
+Candidate: DHANUSH KANNAN
+Target: ROS 2 Humble, Ubuntu 22.04, Gazebo Classic 11
+
+Bugs that stop the workspace from building or the map from loading
+-------------------------------------------------------------------
+1. testbed_bringup/maps/testbed_world.yaml
+   Problem : `image: wrong_path_testbed_world.pgm` points to a file that does not exist,
+             so map_server cannot load the map.
+   Fix     : `image: testbed_world.pgm` (the .pgm sits next to the yaml, relative path).
+
+2. testbed_bringup/CMakeLists.txt
+   Problem : install() only copied `launch/`. The `maps/` folder was never installed, so
+             share/testbed_bringup/maps/testbed_world.yaml does not exist after colcon build.
+   Fix     : added `maps` to install(DIRECTORY ...).
+
+3. testbed_description/CMakeLists.txt
+   Problem : the last line was `ament_package` (no parentheses), so the macro is never
+             called and the package is not exported/registered correctly.
+   Fix     : `ament_package()`.
+
+4. testbed_gazebo/CMakeLists.txt
+   Problem : only `launch` and `worlds` were installed, but spawn_playground.launch.py adds
+             share/testbed_gazebo/models to GAZEBO_MODEL_PATH, so that folder must exist.
+   Fix     : added `models` to install(DIRECTORY ...).
+
+Bugs in the robot description / Gazebo plugins
+-----------------------------------------------
+5. testbed_description/urdf/testbed.gazebo - ROS 1 plugin
+   Problem : `<plugin name="control" filename="libgazebo_ros_control.so"/>` is the ROS 1
+             plugin. It does not exist in ROS 2 Humble (it is libgazebo_ros2_control.so from
+             a different package), so Gazebo prints a plugin-load error on every spawn.
+             The wheels are driven by libgazebo_ros_diff_drive.so, so it is not needed.
+   Fix     : removed the plugin block.
+
+6. testbed_description/urdf/testbed.gazebo - lidar range
+   Problem : lidar `<range><max>` was 1.5 m. The map is about 20 m x 20 m with large rooms;
+             with 1.5 m the robot sees nothing in open space, so AMCL cannot localize and the
+             costmaps cannot see obstacles early enough.
+   Fix     : max range set to 10.0 m (AMCL `laser_max_range` set to the same value).
+
+7. testbed_description/urdf/testbed.gazebo - XML typo
+   Problem : `</initial_orientation_as_reference>>` (double `>`) leaves a stray ">" as text
+             inside the IMU plugin element.
+   Fix     : removed the extra ">".
+
+8. testbed_description/launch/robot_description.launch.py
+   Problem : (a) the xacro Command output was passed as the robot_description parameter
+             without ParameterValue(..., value_type=str); launch may try to parse the URDF
+             text as YAML and fail.
+             (b) robot_state_publisher did not use sim time, so TF was stamped with wall
+             time while everything else uses Gazebo's /clock; Nav2 then reports TF
+             extrapolation / "transform timeout" errors.
+   Fix     : wrapped the value in ParameterValue(value_type=str) and added
+             `use_sim_time: True`. (File also had Windows CRLF line endings; now LF.)
+
+9. testbed_description/rviz/full_bringup.rviz
+   Problem : RobotModel subscribed to /robot_description with Durability = Volatile, but
+             robot_state_publisher publishes it as Transient Local. If RViz starts after the
+             publisher, it never receives the URDF and the robot model stays empty.
+   Fix     : Durability Policy set to Transient Local.
+
+Packaging / metadata problems
+------------------------------
+10. package.xml files of testbed_bringup, testbed_gazebo and testbed_description had no
+    runtime dependencies for what their launch files actually use (testbed_description,
+    testbed_gazebo, rviz2, gazebo_ros, xacro, robot_state_publisher, joint_state_publisher).
+    Added exec_depend entries so `rosdep install` pulls everything in.
+
+Things noticed but intentionally left unchanged
+------------------------------------------------
+- .vscode/settings.json contains a hard-coded path from the author's ROS 1 machine
+  (/home/eric-ros1/...). It is an editor setting only and does not affect the build.
+- In testbed_world.pgm the round pillars and the square box are drawn in grey (205). With the
+  yaml thresholds (free_thresh 0.25) map_server loads them as free space. They are still
+  detected through the lidar by the obstacle layer of the global and local costmaps, so the
+  planner routes around them once they are seen. The map file was not modified.
+- The wheel axle is ~5 cm behind the base_footprint origin; the effect on odometry is small
+  and was not changed.
