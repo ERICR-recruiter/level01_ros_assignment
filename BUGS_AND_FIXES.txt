@@ -1,0 +1,71 @@
+Bugs found in the starter code and how they were fixed
+=======================================================
+Author: Hrutuja Kulkarni
+
+A. Bugs that break the build, the launch or the map (definite)
+--------------------------------------------------------------
+1. testbed_bringup/maps/testbed_world.yaml
+   Bug : `image: wrong_path_testbed_world.pgm` - the file does not exist, so
+         map_server fails to load the map.
+   Fix : `image: testbed_world.pgm` (path is relative to the yaml file).
+
+2. testbed_bringup/CMakeLists.txt
+   Bug : only `launch` is installed, so maps/ never reaches share/testbed_bringup
+         and the map cannot be found after `colcon build`.
+   Fix : added `maps` to the install(DIRECTORY ...) rule.
+
+3. testbed_description/CMakeLists.txt
+   Bug : the last line is `ament_package` (no parentheses) -> CMake parse error,
+         the package does not build (and neither do the packages depending on it).
+   Fix : `ament_package()`.
+
+4. testbed_gazebo/launch/spawn_playground.launch.py
+   Bug : the `world` launch argument is declared but never forwarded to
+         gazebo.launch.py, so Gazebo starts an EMPTY world instead of
+         testbed_playground.world (the map would not match anything).
+   Fix : IncludeLaunchDescription(..., launch_arguments={'world': LaunchConfiguration('world')}.items()).
+         Also replaced the unused ExecuteProcess import with LaunchConfiguration.
+
+5. testbed_description/urdf/testbed.gazebo
+   Bug : loads `libgazebo_ros_control.so` (a ROS 1 plugin). It does not exist in
+         ROS 2 Humble, so Gazebo prints a plugin-load error; nothing uses it
+         (the robot is driven by libgazebo_ros_diff_drive.so).
+   Fix : removed that <plugin> block.
+
+6. testbed_description/urdf/testbed.gazebo (IMU sensor)
+   Bug : stray extra `>` after </initial_orientation_as_reference> (malformed
+         markup inside the plugin).
+   Fix : removed the extra `>`.
+
+7. testbed_description/urdf/testbed.gazebo (lidar)
+   Bug : lidar <range><max> was 1.5 m. In a 20 m x 20 m map almost every beam
+         returns "no hit", so AMCL cannot localise reliably and the costmaps
+         see very little.
+   Fix : max range set to 12.0 m (and laser_max_range: 12.0 in amcl_params.yaml).
+
+B. Missing dependencies / robustness (fixed, low risk)
+------------------------------------------------------
+8.  testbed_gazebo/package.xml     : added exec_depend gazebo_ros (launch files use it).
+9.  testbed_bringup/package.xml    : added exec_depend testbed_description, testbed_gazebo, rviz2.
+10. testbed_description/package.xml: added exec_depend xacro, robot_state_publisher.
+11. testbed_description/launch/robot_description.launch.py:
+    robot_state_publisher now gets use_sim_time=True (everything else runs on
+    the Gazebo clock; mixing wall time and sim time breaks TF lookups).
+
+C. Physical-parameter corrections (measured from the meshes)
+------------------------------------------------------------
+12. diff-drive <wheel_separation> was 0.35 m. The wheel meshes are centred at
+    y = +0.150 m and y = -0.226 m in base_link, i.e. 0.376 m apart (wheel
+    diameter 0.100 m is correct). Set to 0.376 so odometry rotation is right.
+13. Wheel friction mu1/mu2 raised from 0.2 to 1.0 (wheels were nearly as
+    slippery as the passive casters, which causes wheel slip and odometry drift).
+
+D. Map tweak
+------------
+14. testbed_world.yaml free_thresh 0.25 -> 0.196. The map's "unknown" pixels have
+    value 205, i.e. occupancy 0.196; with 0.25 they were loaded as FREE space.
+    With 0.196 they stay "unknown" as intended.
+
+Known limitation (not changed): base_footprint sits ~4 cm off the midpoint
+between the wheels (the CAD export origin), which adds a small odometry offset
+during rotation. AMCL absorbs it at this scale.

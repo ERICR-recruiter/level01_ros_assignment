@@ -1,0 +1,9 @@
+# Parameters for nav2_map_server (loaded by launch/map_loader.launch.py).
+# yaml_filename is injected by the launch file (launch argument `map`), so the
+# map can be swapped without editing this file.
+map_server:
+  ros__parameters:
+    use_sim_time: True
+    yaml_filename: ""
+    topic_name: "map"
+    frame_id: "map"
