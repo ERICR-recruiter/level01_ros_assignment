@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Ashutosh Kumar Dwivedi
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -124,7 +124,22 @@ We’ll be looking for:
 
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
+## My Submission
+
+All work is in this fork and is submitted as a pull request to `main`.
+
+| What | Where |
+|---|---|
+| Navigation package (map server, AMCL, planner/controller/BT) | `testbed_navigation/` |
+| Package README (design, parameters, challenges) | `testbed_navigation/README.md` |
+| Step-by-step run instructions | `testbed_navigation/WORKFLOW.md` |
+| Bugs found in the starter code and their fixes | `BUGS.txt` (repo root) |
+| Demo videos (localization and navigation) | `final_run_vid/` |
+
+Quick run order: simulation -> `localization.launch.py` -> set initial pose -> `navigation.launch.py` -> send a goal.
+Details are in `testbed_navigation/WORKFLOW.md`.
+
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Ashutosh Kumar Dwivedi
+ - Contact number: +91 7880967947
+ - Email Address: ak.dwivedi.1105@gmail.com
