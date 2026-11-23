@@ -7,8 +7,6 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclpy REQUIRED)
-find_package(testbed_description REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -29,6 +27,7 @@ install(
   DIRECTORY
     launch
     worlds
+    models
   DESTINATION
     share/${PROJECT_NAME}/
 )

@@ -1,0 +1,164 @@
+Bugs identified in the Testbed-T1.0.0 starter code and how they were fixed
+==========================================================================
+
+Environment: ROS 2 Humble, Gazebo Classic 11, Nav2 (Humble), Cyclone DDS.
+Each item lists: file -> symptom -> root cause -> fix.
+
+
+A. BUILD / INSTALL BUGS
+-----------------------
+
+1. testbed_description/CMakeLists.txt
+   Symptom : `colcon build` fails for testbed_description (and therefore for
+             every package that depends on it).
+   Cause   : last line was `ament_package` - the CMake command was missing
+             its parentheses.
+   Fix     : `ament_package()`.
+
+2. testbed_bringup/maps/testbed_world.yaml
+   Symptom : map_server fails to load the map ("Failed to load image file").
+   Cause   : `image: wrong_path_testbed_world.pgm` - that file does not exist.
+   Fix     : `image: testbed_world.pgm` (relative to the yaml, as map_server
+             expects).
+
+3. testbed_bringup/CMakeLists.txt
+   Symptom : get_package_share_directory('testbed_bringup')/maps does not
+             exist after building, so the map cannot be loaded from the
+             installed package.
+   Cause   : only the `launch` directory was installed.
+   Fix     : also install the `maps` directory. Removed the unused
+             `find_package(rclpy)` (it was not declared in package.xml).
+
+4. testbed_gazebo/CMakeLists.txt
+   Symptom : spawn_playground.launch.py adds share/testbed_gazebo/models to
+             GAZEBO_MODEL_PATH, but that directory was never installed.
+   Cause   : only `launch` and `worlds` were installed.
+   Fix     : also install `models`. Removed unused find_package() calls.
+
+5. package.xml files (testbed_description, testbed_gazebo, testbed_bringup)
+   Symptom : `rosdep install` cannot resolve the runtime dependencies; the
+             launch files fail on a fresh machine (xacro, gazebo_ros, rviz2,
+             robot_state_publisher ... missing).
+   Cause   : run-time dependencies were not declared.
+   Fix     : added the missing <exec_depend> entries (xacro,
+             robot_state_publisher, joint_state_publisher, rviz2, gazebo_ros,
+             gazebo_plugins, testbed_description, testbed_gazebo).
+
+
+B. LAUNCH BUGS
+--------------
+
+6. testbed_description/launch/robot_description.launch.py
+   Symptom : TF from robot_state_publisher is stamped with wall-clock time
+             while Gazebo / Nav2 use simulation time -> TF extrapolation
+             errors, costmaps / AMCL drop data.
+   Cause   : robot_state_publisher was started without `use_sim_time`.
+   Fix     : added a `use_sim_time` launch argument (default true) and pass
+             it to the node. Also wrapped the xacro output in
+             ParameterValue(..., value_type=str) so it is never parsed as YAML.
+
+
+C. ROBOT MODEL / GAZEBO PLUGIN BUGS (testbed_description/urdf)
+--------------------------------------------------------------
+
+7. testbed.gazebo - libgazebo_ros_control.so
+   Symptom : Gazebo prints "Failed to load plugin libgazebo_ros_control.so".
+   Cause   : that is the ROS 1 plugin, it does not exist in ROS 2 Humble.
+             The robot is driven by gazebo_ros_diff_drive anyway.
+   Fix     : removed the plugin.
+
+8. testbed.gazebo - diff drive `wheel_separation`
+   Symptom : odometry rotates by a different amount than the robot really
+             does; AMCL has to keep correcting heading.
+   Cause   : wheel_separation was 0.35 m. From the wheel meshes, the wheel
+             contact centres are at y = +0.150 m and y = -0.226 m
+             -> separation = 0.376 m.
+   Fix     : wheel_separation = 0.376 (wheel_diameter 0.1 m was verified as
+             correct from the mesh: wheel z-extent 0.0 - 0.1 m).
+
+9. testbed.gazebo - lidar maximum range
+   Symptom : very poor / failing localization in the 20 m x 20 m world;
+             the local costmap sees almost nothing.
+   Cause   : the ray sensor `<max>` range was 1.5 m - in most of the map no
+             wall is within 1.5 m, so AMCL has nothing to match against.
+   Fix     : max range = 12.0 m (AMCL laser_max_range set to match).
+
+10. testbed.gazebo - wheel / caster friction
+    Symptom : the robot barely moves / slips when commanded.
+    Cause   : drive wheels and the four fixed casters all had mu = 0.2.
+              The casters carry most of the mass (4 x 1.18 kg), so the
+              low-friction wheels could not drag the high-friction casters.
+    Fix     : wheels mu = 1.0 (with kp/kd/minDepth contact parameters),
+              casters mu = 0.0 (they behave as frictionless ball casters).
+
+11. testbed.gazebo - self_collide = true on every link
+    Cause   : the base_link collision mesh slightly overlaps the wheel
+              meshes, so self-collision makes the wheels fight the chassis.
+    Fix     : self_collide = false on all links.
+
+12. testbed.gazebo - stray character
+    Cause   : `</initial_orientation_as_reference>>` (extra `>`).
+    Fix     : removed the extra character.
+
+13. testbed.gazebo - wheel joint states (improvement)
+    Cause   : nothing published /joint_states for the two continuous wheel
+              joints (only the diff-drive's own wheel TF existed), so
+              robot_state_publisher logged the joints as unknown.
+    Fix     : added libgazebo_ros_joint_state_publisher.so for both wheel
+              joints and let robot_state_publisher publish the wheel TF
+              (diff-drive publish_wheel_tf disabled to avoid duplicates).
+
+14. testbed.xacro - base_footprint position
+    Symptom : when the robot spins in place, base_footprint moves on a small
+              circle; Nav2's rotate-to-heading and AMCL see a translating
+              frame.
+    Cause   : base_footprint coincided with base_link's CAD origin, which is
+              not the drive axle. The axle centre (midpoint of the wheel
+              contacts) is at x = -0.050, y = -0.038 in base_link.
+    Fix     : fixed_base_joint origin = (0.050, 0.038, 0). With this, the
+              chassis is symmetric about base_footprint
+              (x: -0.176..0.174, y: -0.203..0.203), which also gives a clean
+              rectangular Nav2 footprint.
+
+15. testbed.xacro - robot drifting/rotating while standing still
+    Symptom : with zero cmd_vel the robot slowly rotated (~0.06 rad/s, seen
+              as yaw creeping from 0 to 0.8 rad in odom).
+    Cause   : the casters used their CAD meshes for collision; all six
+              contacts (2 wheels + 4 casters) were at exactly z = 0 so the
+              robot rested on an arbitrary subset, and the slanted mesh
+              contact normals on the frictionless casters pushed it sideways.
+    Fix     : caster collisions replaced by 25 mm spheres whose bottom sits
+              2 mm above the ground (the drive wheels always carry the load);
+              wheel collisions replaced by exact cylinders (r 0.05, w 0.03).
+              After the fix the yaw stays at 0.0000 while idle.
+
+16. testbed.xacro - lidar inertial origin
+    Cause   : the 0.26 kg lidar's centre of mass was placed 0.21 m to the
+              side of the lidar body (bad CAD export), shifting the robot's
+              centre of mass.
+    Fix     : inertial origin moved to the lidar body centre
+              (-0.006, 0.002, 0.010).
+
+17. testbed.xacro - zero-size box visual on base_footprint
+    Cause   : `<box size="0 0 0"/>` produces warnings in RViz/Gazebo.
+    Fix     : base_footprint is now an empty link.
+
+
+D. OBSERVED BUT NOT CHANGED
+---------------------------
+
+- imu_link_1 / dummy_link_1: the imu_joint origin (y = +0.05) places the IMU
+  frame where the *dummy* mesh is drawn and vice versa, and their inertial
+  origins are inconsistent. The IMU is not used by the navigation stack, so
+  this was left unchanged to avoid altering the hardware description.
+- .vscode/settings.json contains an absolute path from the author's machine
+  (harmless, IDE-only).
+
+
+Verification
+------------
+Headless run (gzserver + full testbed_navigation stack, Cyclone DDS):
+  * map_server, AMCL and all Nav2 lifecycle nodes reach the ACTIVE state.
+  * 5-goal tour through both doorways of the test world
+    (ros2 run testbed_navigation send_goal.py --tour): 5/5 goals SUCCEEDED.
+  * AMCL vs. Gazebo ground truth after the ~40 m tour: ~8 cm position error.

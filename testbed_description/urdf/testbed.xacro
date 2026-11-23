@@ -6,14 +6,7 @@
 <xacro:include filename="$(find testbed_description)/urdf/testbed.gazebo" />
 
 
-<link name="base_footprint">
-  <visual>
-    <origin xyz="0 0 0" rpy="0 0 0" />
-    <geometry>
-      <box size="0.0 0.0 0.0" />
-    </geometry>
-  </visual>
-</link>
+<link name="base_footprint"/>
 
 <link name="base_link">
   <inertial>
@@ -50,9 +43,10 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.050476 -0.135241 -0.050004" rpy="0 0 0"/>
+    <!-- exact cylinder (r = 0.05 m, w = 0.03 m) instead of the faceted STL -->
+    <origin xyz="0 0.015 0" rpy="1.5708 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/left_wheel_1.stl" scale="0.001 0.001 0.001"/>
+      <cylinder radius="0.05" length="0.03"/>
     </geometry>
   </collision>
 </link>
@@ -71,9 +65,11 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.175703 -0.108591 -0.084004" rpy="0 0 0"/>
+    <!-- simple sphere instead of the CAD mesh: stable, single contact point,
+         bottom sits 2 mm above ground so the drive wheels always carry the load -->
+    <origin xyz="0 0 -0.057" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/caster_1.stl" scale="0.001 0.001 0.001"/>
+      <sphere radius="0.025"/>
     </geometry>
   </collision>
 </link>
@@ -92,9 +88,11 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.175703 0.184109 -0.084004" rpy="0 0 0"/>
+    <!-- simple sphere instead of the CAD mesh: stable, single contact point,
+         bottom sits 2 mm above ground so the drive wheels always carry the load -->
+    <origin xyz="0 0 -0.057" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/caster_2.stl" scale="0.001 0.001 0.001"/>
+      <sphere radius="0.025"/>
     </geometry>
   </collision>
 </link>
@@ -113,9 +111,11 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="-0.074297 -0.108591 -0.084004" rpy="0 0 0"/>
+    <!-- simple sphere instead of the CAD mesh: stable, single contact point,
+         bottom sits 2 mm above ground so the drive wheels always carry the load -->
+    <origin xyz="0 0 -0.057" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/caster_3.stl" scale="0.001 0.001 0.001"/>
+      <sphere radius="0.025"/>
     </geometry>
   </collision>
 </link>
@@ -134,16 +134,18 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="-0.074297 0.184109 -0.084004" rpy="0 0 0"/>
+    <!-- simple sphere instead of the CAD mesh: stable, single contact point,
+         bottom sits 2 mm above ground so the drive wheels always carry the load -->
+    <origin xyz="0 0 -0.057" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/caster_4.stl" scale="0.001 0.001 0.001"/>
+      <sphere radius="0.025"/>
     </geometry>
   </collision>
 </link>
 
 <link name="lidar_link_1">
   <inertial>
-    <origin xyz="-0.04570340676333076 -0.21275884889245775 -0.06900465054505728" rpy="0 0 0"/>
+    <origin xyz="-0.006 0.002 0.010" rpy="0 0 0"/> <!-- fixed: was 0.21 m off the lidar body -->
     <mass value="0.26337542011370024"/>
     <inertia ixx="0.000153" iyy="0.000153" izz="0.000267" ixy="0.0" iyz="0.0" ixz="-0.0"/>
   </inertial>
@@ -218,17 +220,22 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.050503 0.210759 -0.050004" rpy="0 0 0"/>
+    <!-- exact cylinder (r = 0.05 m, w = 0.03 m) instead of the faceted STL -->
+    <origin xyz="0 -0.015 0" rpy="1.5708 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/right_wheel_1.stl" scale="0.001 0.001 0.001"/>
+      <cylinder radius="0.05" length="0.03"/>
     </geometry>
   </collision>
 </link>
 
+<!-- base_footprint must sit on the ground at the centre of the drive-wheel axle
+     (wheel contact centre is at x=-0.050, y=-0.038 in base_link coordinates),
+     otherwise the robot does not rotate about base_footprint and nav2 / AMCL
+     see a frame that translates while spinning in place. -->
 <joint name="fixed_base_joint" type="fixed">
   <parent link="base_footprint" />
   <child link="base_link" />
-  <origin xyz="0 0 0" rpy="0 0 0" />
+  <origin xyz="0.050 0.038 0" rpy="0 0 0" />
 </joint>
 
 <joint name="left_wheel_joint" type="continuous">
