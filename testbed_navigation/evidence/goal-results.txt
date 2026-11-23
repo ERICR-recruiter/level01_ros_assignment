@@ -1,0 +1,75 @@
+Final clean-build check on ROS 2 Humble
+
+Summary: 4 packages finished [2.80s]
+
+Lifecycle states
+map_server active [3]
+amcl active [3]
+controller_server active [3]
+planner_server active [3]
+behavior_server active [3]
+bt_navigator active [3]
+
+Goal (1.50, 5.00) in map coordinates. Last feedback and terminal result:
+Feedback:
+    current_pose:
+  header:
+    stamp:
+      sec: 25
+      nanosec: 435000000
+    frame_id: map
+  pose:
+    position:
+      x: 1.2730235363515532
+      y: 4.993334867952102
+      z: -0.00012785838333051035
+    orientation:
+      x: -0.00011863665685886834
+      y: 5.933099697989081e-05
+      z: -0.012302570910150516
+      w: 0.9999243117127303
+navigation_time:
+  sec: 5
+  nanosec: 300000000
+estimated_time_remaining:
+  sec: 1
+  nanosec: 870621308
+number_of_recoveries: 0
+distance_remaining: 0.23500022292137146
+
+Result:
+    result: {}
+
+Goal finished with status: SUCCEEDED
+
+Goal (2.50, 5.50) in map coordinates. Last feedback and terminal result:
+Feedback:
+    current_pose:
+  header:
+    stamp:
+      sec: 35
+      nanosec: 865000000
+    frame_id: map
+  pose:
+    position:
+      x: 2.3859030284798037
+      y: 5.413311493037261
+      z: -3.266799102730428e-05
+    orientation:
+      x: 0.0003218696751701201
+      y: -0.0002504701462220408
+      z: 0.11817801538792644
+      w: 0.9929923415332009
+navigation_time:
+  sec: 7
+  nanosec: 500000000
+estimated_time_remaining:
+  sec: 0
+  nanosec: 0
+number_of_recoveries: 0
+distance_remaining: 0.1347416341304779
+
+Result:
+    result: {}
+
+Goal finished with status: SUCCEEDED
