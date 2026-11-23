@@ -12,6 +12,8 @@
 | 4 | `testbed_gazebo/CMakeLists.txt` | `models/` not installed, but added to `GAZEBO_MODEL_PATH` | Added `models` to `install(DIRECTORY)` | Minor |
 | 5 | `testbed_description/urdf/testbed.gazebo` | Loads ROS 1 plugin `libgazebo_ros_control.so` | Removed the plugin block | Minor |
 | 6 | `testbed_description/launch/robot_description.launch.py` | `robot_state_publisher` runs on wall time | Added `use_sim_time: True` | Functional |
+| 7 | `testbed_bringup/maps/testbed_world.yaml` | `image:` points to non-existent `wrong_path_testbed_world.pgm` | `image: testbed_world.pgm` | Runtime |
+| 8 | `package.xml` (all 3 packages) | Runtime dependencies not declared; unused `rclpy` | Added `exec_depend`s, removed `rclpy` | Minor |
 
 **Severity:** Build = `colcon build` fails · Runtime = node/launch crashes · Functional = runs but misbehaves · Minor = cleanup
 
@@ -60,6 +62,20 @@
 - **Cause:** `robot_description.launch.py` passes only `robot_description` to the node, so it defaults to wall time. The impact is small today because all of its joints are fixed (static TFs are timeless), but any moving joint would get stamps ~56 years ahead of sim time and cause TF extrapolation errors in Nav2 and AMCL.
 - **Fix:** `parameters=[robot_description, {'use_sim_time': True}]`
 - **Verified:** `use_sim_time` is now `True` and `/tf_static` is no longer stamped with wall-clock time.
+
+### 7. Wrong image path in map YAML
+- **Symptom:** map_server can't load the map: the YAML references `wrong_path_testbed_world.pgm`, which doesn't exist. The actual file is `testbed_world.pgm`.
+- **Found by:** Read `testbed_world.yaml` and compared the `image:` entry with the files in `maps/`.
+- **Cause:** The `image:` path is resolved relative to the YAML file, and the file name was wrong.
+- **Fix:** `image: wrong_path_testbed_world.pgm` → `image: testbed_world.pgm`
+- **Verified:** `ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=<installed yaml>` configures successfully: `Read map .../testbed_world.pgm: 405 X 400 map @ 0.05 m/cell`.
+
+### 8. Missing dependencies in `package.xml`
+- **Symptom:** No immediate failure on this machine, because everything happens to be installed. But on a clean system `rosdep install` wouldn't pull in what the launch files need. colcon also built `testbed_bringup` in parallel with `testbed_description` instead of after it.
+- **Found by:** Listed every package, executable and plugin referenced in each package's launch and URDF files, and compared that list with its `package.xml`.
+- **Cause:** `testbed_description` used `xacro`, `robot_state_publisher`, `joint_state_publisher`, `rviz2` and the `gazebo_plugins` libraries without declaring them. `testbed_gazebo` used `gazebo_ros` without declaring it. `testbed_bringup` declared nothing, although it launches the other two packages and `rviz2`. `rclpy` was declared or `find_package`d in two launch-only packages that contain no Python nodes.
+- **Fix:** Added the missing `<exec_depend>` entries. Removed `rclpy` from `testbed_gazebo/package.xml` and from both `CMakeLists.txt` files.
+- **Verified:** `rosdep check --from-paths src --ignore-src` → "All system dependencies have been satisfied". `colcon build` succeeds, and `colcon list -t` now orders the packages as `testbed_description` → `testbed_gazebo` → `testbed_bringup`.
 
 ---
 
