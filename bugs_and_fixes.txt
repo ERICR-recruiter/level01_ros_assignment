@@ -1,0 +1,63 @@
+LEVEL 1 ROS2 NAV2 ASSIGNMENT - BUGS FOUND IN THE STARTER CODE AND HOW THEY WERE FIXED
+Name: Pranav Prakash Kende
+
+Found by reading every file of the starter repo. Items 1-8 stop the stack from building or
+running correctly; items 9-12 are correctness/robustness fixes.
+
+ 1. testbed_bringup/maps/testbed_world.yaml
+    `image: wrong_path_testbed_world.pgm` points to a file that does not exist, so map_server
+    cannot load the map.  Fix: `image: testbed_world.pgm` (relative to the yaml).
+
+ 2. testbed_bringup/CMakeLists.txt
+    Only `launch/` was installed, so `maps/` never reached share/testbed_bringup and the map could
+    not be found after `colcon build`.  Fix: install `maps` as well.
+
+ 3. testbed_description/CMakeLists.txt
+    The last line was `ament_package` (no parentheses) - CMake configure fails, so the package
+    (and everything depending on it) does not build.  Fix: `ament_package()`.
+
+ 4. testbed_gazebo/CMakeLists.txt
+    `models/` was not installed, yet spawn_playground.launch.py puts share/testbed_gazebo/models on
+    GAZEBO_MODEL_PATH; the world's models (walls, fences, room) were not found.
+    Fix: install `models` too.
+
+ 5. testbed_gazebo/launch/spawn_playground.launch.py
+    A `world` DeclareLaunchArgument was declared but never forwarded to gazebo.launch.py, so Gazebo
+    started an empty world instead of testbed_playground.world.
+    Fix: `launch_arguments={'world': LaunchConfiguration('world')}.items()`.
+
+ 6. testbed_description/launch/robot_description.launch.py
+    robot_state_publisher (used by testbed_full_bringup) ran without use_sim_time while everything
+    else uses the Gazebo clock -> TF timestamp mismatches (extrapolation errors in RViz/Nav2).
+    Fix: add `{"use_sim_time": True}`.
+
+ 7. testbed_description/urdf/testbed.gazebo - lidar range
+    Ray sensor max range was 1.5 m in a 20 m x 20 m map, far too short for AMCL scan matching and
+    for costmap raytracing.  Fix: max range 10.0 m.
+
+ 8. testbed_description/urdf/testbed.gazebo - ros_control plugin
+    `libgazebo_ros_control.so` is a ROS 1 plugin that does not exist in ROS2 Humble (Gazebo logs a
+    plugin-load error, and no controller config exists anyway; the diff-drive plugin does the job).
+    Fix: removed it.
+
+ 9. testbed_description/urdf/testbed.gazebo - IMU plugin XML typo
+    `</initial_orientation_as_reference>>` had a stray `>` (junk text node inside <plugin>).
+    Fix: removed.
+
+10. testbed_description/urdf/testbed.gazebo - wheel_separation
+    Diff-drive used 0.35 m, but the wheel meshes' centres are 0.375 m apart (left wheel centre
+    y=+0.150, right y=-0.225 in base_link, measured from the STL bounding boxes), which gave ~7%
+    angular odometry error.  Fix: 0.375.
+
+11. testbed_description/urdf/testbed.xacro - base_footprint position
+    base_footprint sat at base_link's origin, but the wheel mid-point is at (-0.05, -0.0375).  The
+    diff-drive plugin integrates odometry about the wheel mid-point and publishes it as
+    base_footprint, so odom drifted sideways when turning.  Fix: fixed_base_joint origin
+    `0.05 0.0375 0` so base_footprint sits at the wheel mid-point (nav footprint and AMCL use it).
+
+12. Package manifests
+    testbed_description / testbed_bringup / testbed_gazebo lacked exec_depend on xacro,
+    robot_state_publisher, joint_state_publisher, rviz2, gazebo_ros, testbed_description/gazebo.
+    Fix: added.
+
+Not a code bug, but needed on some machines (help.md Q2): export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
