@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - MD Akmal
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -125,6 +125,14 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Mohammed Akmal
+ - GitHub: [akmalbaquar](https://github.com/akmalbaquar)
+
+## Deliverables Summary
+1. **Bug Fix Report**: Documented in [`BUGS_IDENTIFIED_AND_FIXED.txt`](BUGS_IDENTIFIED_AND_FIXED.txt) and [`BUGS.md`](BUGS.md).
+2. **`testbed_navigation` Package**: Fully implemented manual Nav2 modular pipeline:
+   - Map Loading: [`testbed_navigation/launch/map_loader.launch.py`](testbed_navigation/launch/map_loader.launch.py) & [`config/map_server_params.yaml`](testbed_navigation/config/map_server_params.yaml)
+   - Localization: [`testbed_navigation/launch/localization.launch.py`](testbed_navigation/launch/localization.launch.py) & [`config/amcl_params.yaml`](testbed_navigation/config/amcl_params.yaml)
+   - Navigation Action Servers: [`testbed_navigation/launch/navigation.launch.py`](testbed_navigation/launch/navigation.launch.py) & [`config/nav2_params.yaml`](testbed_navigation/config/nav2_params.yaml)
+   - Unified Bringup + RViz: [`testbed_navigation/launch/full_navigation.launch.py`](testbed_navigation/launch/full_navigation.launch.py)
+   - Package Guide & Architecture: [`testbed_navigation/README.md`](testbed_navigation/README.md)
