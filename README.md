@@ -18,21 +18,37 @@ This assignment gives you hands-on experience with ROS2’s navigation plugins, 
 ## Repository Structure
 
 ```
-ros_nav2_assignment/
-├── testbed_description/
-│   ├── launch/            # Launch the full base simulation
-│   ├── meshes/
-│   ├── rviz/            # RVIZ configuration files
-│   └── urdf/            # URDF files for Testbed-T1.0.0
-├── testbed_gazebo/
-│   ├── worlds/            # Simulation world files
-│   ├── launch/            # Launch files for Gazebo
-│   └── models/            # Misc. Gazebo model files
-├── testbed_bringup/
-│   ├── launch/            # Launch file for bringing up the robot
-│   └── maps/              # Predefined map of the test environment
-├── help.md                # Guidelines and FAQs
-└── README.md              # Instructions for the assignment
+assignment_ws/
+└──src
+    ├── testbed_description/
+    │   ├── launch/            # Launch the full base simulation
+    │   ├── meshes/
+    │   ├── rviz/            # RVIZ configuration files
+    │   └── urdf/            # URDF files for Testbed-T1.0.0
+    ├── testbed_gazebo/
+    │   ├── worlds/            # Simulation world files
+    │   ├── launch/            # Launch files for Gazebo
+    │   └── models/            # Misc. Gazebo model files
+    ├── testbed_bringup/
+    │   ├── launch/            # Launch file for bringing up the robot
+    │   └── maps/              # Predefined map of the test environment
+    └── testbed_navigation      
+    |   ├── CMakeLists.txt
+    |   ├── config                # navigation configuration files
+    |   │   ├── map_params.yaml    # parameter file for map loading from testbed_bringup/map
+    |   │   ├── amcl_params.yaml   # parameter file for amcl 
+    |   │   └── nav2_params.yaml   # parameter file for navigation stack
+    |   ├── include
+    |   │   └── testbed_navigation
+    |   ├── launch                      # launch navigation files
+    |   │   ├── localization.launch.py   # launch amcl
+    |   │   ├── map_loader.launch.py     # launch map in rviz
+    |   │   └── navigation.launch.py     # launch navigation stack for poses
+    |   ├── package.xml
+    |   └── src
+    ├── help.md                # Guidelines and FAQs
+    ├── debug.txt              # added debugging documents  
+    └── README.md              # Instructions for the assignment
 ```
 
 ## Assignment Objective
