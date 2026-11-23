@@ -15,7 +15,8 @@ testbed_navigation/
 │   ├── navigation.launch.py     # planner / controller / behavior / bt_navigator / waypoint_follower + lifecycle manager
 │   ├── rviz.launch.py           # RViz with a navigation layout (optional)
 │   └── bringup_all.launch.py    # includes the 3 launch files above (+ RViz)
-└── rviz/navigation.rviz
+├── rviz/navigation.rviz
+└── media/                       # screenshots + demo video
 ```
 
 ## Build and run
@@ -43,6 +44,19 @@ Send a goal with the **2D Goal Pose** tool in RViz, or from the CLI:
 ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose \
   "{pose: {header: {frame_id: map}, pose: {position: {x: 3.0, y: 5.0}, orientation: {w: 1.0}}}}"
 ```
+
+## Demo and results
+
+Screenshots and a screen recording from my run are in [`media/`](media/):
+
+| File | What it shows |
+|------|---------------|
+| [`media/map.png`](media/map.png) | Map loaded by `map_loader.launch.py` in RViz, with the robot localized by AMCL (laser scan on the walls, particle cloud around the robot). |
+| [`media/navigation.png`](media/navigation.png) | Navigation to a goal set with *2D Goal Pose*: global plan, local plan and costmaps. |
+| [`media/demo.mp4`](media/demo.mp4) | Short recording of the robot localizing and driving to a goal. |
+
+![Map and localization](media/map.png)
+![Navigation](media/navigation.png)
 
 ## Approach
 
