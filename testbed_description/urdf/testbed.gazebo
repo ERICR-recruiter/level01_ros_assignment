@@ -14,7 +14,7 @@
       <left_joint>left_wheel_joint</left_joint>
       <right_joint>right_wheel_joint</right_joint>
 
-      <wheel_separation>0.35</wheel_separation>
+      <wheel_separation>0.386</wheel_separation>
       <wheel_diameter>0.1</wheel_diameter>
 
       <command_topic>cmd_vel</command_topic>
@@ -62,7 +62,7 @@
         </scan>
         <range>
           <min>0.10</min>
-          <max>1.5</max>
+          <max>8.5</max>
           <resolution>0.01</resolution>
         </range>
         <noise>
@@ -96,29 +96,29 @@
 
 <gazebo reference="caster_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_2">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_3">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_4">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
@@ -145,15 +145,15 @@
 
 <gazebo reference="right_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>1.0</mu1>
+  <mu2>1.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="left_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>1.0</mu1>
+  <mu2>1.0</mu2>
   <self_collide>true</self_collide> 
 </gazebo>
 

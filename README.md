@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Vipin Pratap
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -18,21 +18,37 @@ This assignment gives you hands-on experience with ROS2’s navigation plugins, 
 ## Repository Structure
 
 ```
-ros_nav2_assignment/
-├── testbed_description/
-│   ├── launch/            # Launch the full base simulation
-│   ├── meshes/
-│   ├── rviz/            # RVIZ configuration files
-│   └── urdf/            # URDF files for Testbed-T1.0.0
-├── testbed_gazebo/
-│   ├── worlds/            # Simulation world files
-│   ├── launch/            # Launch files for Gazebo
-│   └── models/            # Misc. Gazebo model files
-├── testbed_bringup/
-│   ├── launch/            # Launch file for bringing up the robot
-│   └── maps/              # Predefined map of the test environment
-├── help.md                # Guidelines and FAQs
-└── README.md              # Instructions for the assignment
+assignment_ws/
+└──src
+    ├── testbed_description/
+    │   ├── launch/            # Launch the full base simulation
+    │   ├── meshes/
+    │   ├── rviz/            # RVIZ configuration files
+    │   └── urdf/            # URDF files for Testbed-T1.0.0
+    ├── testbed_gazebo/
+    │   ├── worlds/            # Simulation world files
+    │   ├── launch/            # Launch files for Gazebo
+    │   └── models/            # Misc. Gazebo model files
+    ├── testbed_bringup/
+    │   ├── launch/            # Launch file for bringing up the robot
+    │   └── maps/              # Predefined map of the test environment
+    └── testbed_navigation      
+    |   ├── CMakeLists.txt
+    |   ├── config                # navigation configuration files
+    |   │   ├── map_params.yaml    # parameter file for map loading from testbed_bringup/map
+    |   │   ├── amcl_params.yaml   # parameter file for amcl 
+    |   │   └── nav2_params.yaml   # parameter file for navigation stack
+    |   ├── include
+    |   │   └── testbed_navigation
+    |   ├── launch                      # launch navigation files
+    |   │   ├── localization.launch.py   # launch amcl
+    |   │   ├── map_loader.launch.py     # launch map in rviz
+    |   │   └── navigation.launch.py     # launch navigation stack for poses
+    |   ├── package.xml
+    |   └── src
+    ├── help.md                # Guidelines and FAQs
+    ├── debug.txt              # added debugging documents  
+    └── README.md              # Instructions for the assignment
 ```
 
 ## Assignment Objective
@@ -125,6 +141,6 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Vipin Pratap
+ - Contact number: 8218120174
+ - Email Address: s.pvimalpratap9458@gmail.com
