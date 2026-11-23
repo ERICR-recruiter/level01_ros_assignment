@@ -126,7 +126,7 @@ We’re excited to see how you approach this task. Good luck, and happy coding! 
 
 ## Contact Info 
  - Name: Your full name
- - Contact number: Your contact number
+ - Contact number: +91 95357 23966
  - Email Address: Your email address
 
 ---
