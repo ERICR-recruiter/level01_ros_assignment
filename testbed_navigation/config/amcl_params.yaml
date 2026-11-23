@@ -1,0 +1,50 @@
+
+amcl:
+  ros__parameters:
+    use_sim_time: true
+
+    # Motion model
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+
+    # Coordinate frames
+    base_frame_id: "base_footprint"
+    global_frame_id: "map"
+    odom_frame_id: "odom"
+    tf_broadcast: true
+    transform_tolerance: 1.0
+
+    # Laser scanner
+    scan_topic: "/scan"
+    laser_model_type: "likelihood_field"
+    laser_max_range: 10.0
+    laser_min_range: 0.1
+    max_beams: 60
+
+    # Particle filter
+    min_particles: 500
+    max_particles: 2000
+    update_min_d: 0.25
+    update_min_a: 0.2
+    resample_interval: 1
+    pf_err: 0.05
+    pf_z: 0.99
+
+    # Initial robot pose (Gazebo spawn position)
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0
+
+    # Map settings
+    first_map_only: false
+    use_map_topic: true
+
+    # Pose saving
+    save_pose_rate: 0.5

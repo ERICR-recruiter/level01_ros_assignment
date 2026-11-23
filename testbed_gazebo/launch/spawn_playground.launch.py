@@ -1,52 +1,61 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+
 import os
+
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.actions import IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from ament_index_python.packages import get_package_prefix
-from launch.actions import ExecuteProcess
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
+
 
 def generate_launch_description():
 
-    pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
     pkg_testbed_gazebo = get_package_share_directory('testbed_gazebo')
+    pkg_testbed_description = get_package_share_directory('testbed_description')
+    pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
-    # We get the whole install dir
-    # We do this to avoid having to copy or softlink manually the packages so that gazebo can find them
-    description_package_name = "testbed_description"
-    install_dir = get_package_prefix(description_package_name)
+    default_world = os.path.join(
+        pkg_testbed_gazebo,
+        'worlds',
+        'testbed_playground.world'
+    )
 
-    # Set the path to the WORLD model files - Used to find the models inside the models folder in testbed_gazebo package
-    gazebo_models_path = os.path.join(pkg_testbed_gazebo, 'models')
-    # os.environ["GAZEBO_MODEL_PATH"] = gazebo_models_path
+    models_path = os.path.join(pkg_testbed_gazebo, 'models')
+    description_share = os.path.dirname(pkg_testbed_description)
 
-    if 'GAZEBO_MODEL_PATH' in os.environ:
-        os.environ['GAZEBO_MODEL_PATH'] =  os.environ['GAZEBO_MODEL_PATH'] + ':' + install_dir + '/share' + ':' + gazebo_models_path
-    else:
-        os.environ['GAZEBO_MODEL_PATH'] =  install_dir + "/share" + ':' + gazebo_models_path
+    existing_resource_path = os.environ.get('GZ_SIM_RESOURCE_PATH', '')
 
-    if 'GAZEBO_PLUGIN_PATH' in os.environ:
-        os.environ['GAZEBO_PLUGIN_PATH'] = os.environ['GAZEBO_PLUGIN_PATH'] + ':' + install_dir + '/lib'
-    else:
-        os.environ['GAZEBO_PLUGIN_PATH'] = install_dir + '/lib'
+    resource_paths = [
+        models_path,
+        description_share,
+        existing_resource_path
+    ]
 
-    print("GAZEBO MODELS PATH=="+str(os.environ["GAZEBO_MODEL_PATH"]))
-    print("GAZEBO PLUGINS PATH=="+str(os.environ["GAZEBO_PLUGIN_PATH"]))
+    gz_resource_path = ':'.join(path for path in resource_paths if path)
 
-    # Gazebo launch
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py'),
+            os.path.join(pkg_ros_gz_sim, 'launch', 'gz_sim.launch.py')
         ),
-    )    
+        launch_arguments={
+            'gz_args': [
+                '-r -v 4 ',
+                LaunchConfiguration('world')
+            ]
+        }.items()
+    )
 
     return LaunchDescription([
         DeclareLaunchArgument(
-          'world',
-          default_value=[os.path.join(pkg_testbed_gazebo, 'worlds', 'testbed_playground.world'), ''],
-          description='SDF world file'),
-        gazebo,
+            'world',
+            default_value=default_world,
+            description='SDF world file'
+        ),
+        SetEnvironmentVariable(
+            name='GZ_SIM_RESOURCE_PATH',
+            value=gz_resource_path
+        ),
+        gazebo
     ])
