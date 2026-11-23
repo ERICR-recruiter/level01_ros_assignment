@@ -1,0 +1,92 @@
+Testbed starter fixes and simulation tuning
+
+1. Register the description package
+   File: testbed_description/CMakeLists.txt
+   Before: ament_package
+   After:  ament_package()
+
+   The last line was an incomplete CMake command. Calling the macro lets
+   colcon configure the package and install its package metadata.
+
+2. Load the supplied map from the installation
+   Files: testbed_bringup/maps/testbed_world.yaml and testbed_bringup/CMakeLists.txt
+   Before: image: wrong_path_testbed_world.pgm      Installed: launch/
+   After:  image: testbed_world.pgm                 Installed: launch/ and maps/
+
+   map_server resolves the image relative to the map YAML. Both files must
+   travel together. The clean-build test read 405 x 400 cells at 0.05 m/cell.
+
+3. Install Gazebo models
+   File: testbed_gazebo/CMakeLists.txt
+   Before: install directories launch, worlds
+   After:  install directories launch, worlds, models
+
+   spawn_playground.launch.py adds the installed models directory to
+   GAZEBO_MODEL_PATH. The install rule now puts the assets there.
+
+4. Fix the Gazebo plugin configuration
+   File: testbed_description/urdf/testbed.gazebo
+   Before: libgazebo_ros_control.so and libgazebo_ros_diff_drive.so
+   After:  libgazebo_ros_diff_drive.so handles the drive
+   Before: </initial_orientation_as_reference>>
+   After:  </initial_orientation_as_reference>
+
+   The model tried to load a ROS 1 control plugin alongside the ROS 2 drive.
+   The differential-drive plugin already accepts /cmd_vel and publishes /odom.
+   The IMU setting also contained an extra literal '>' after its closing tag.
+
+5. Use one clock and allow Gazebo time to start
+   Files: testbed_description/launch/robot_description.launch.py,
+          testbed_gazebo/worlds/testbed_playground.world,
+          testbed_gazebo/launch/spawn_testbed.launch.py
+   Before: parameters=[robot_description]
+   After:  parameters=[robot_description, {'use_sim_time': True}]
+   Before: world resumed at 149.177 s, iteration 149177; spawn wait default 30 s
+   After:  world starts at 0 s, iteration 0; spawn arguments include '-timeout', '120'
+
+   The robot transforms and scans need compatible timestamps. On the VM the
+   spawn client once timed out even though the drive plugin subsequently
+   loaded. The saved world poses were retained when resetting the clock.
+
+6. Declare the launch-time dependencies
+   Files: package.xml in testbed_bringup, testbed_description and testbed_gazebo
+   Before: the starter manifests omitted packages used by the launch files.
+   After:  bringup declares the description and Gazebo packages; description
+           declares xacro, the state publishers and RViz; Gazebo declares
+           gazebo_ros and gazebo_plugins. All three declare their launch imports.
+
+   These declarations let rosdep discover runtime dependencies on a fresh machine.
+
+7. Tune sensing, traction and timing for this world
+   Files: testbed_description/urdf/testbed.gazebo,
+          testbed_gazebo/worlds/testbed_playground.world
+   Setting                         Starter       Final
+   Lidar maximum range             1.5 m         12 m
+   Drive update rate               100 Hz        30 Hz
+   Lidar update rate               30 Hz         10 Hz
+   Physics step / target rate      1 ms/1000 Hz  5 ms/200 Hz
+   Drive-wheel friction (mu1,mu2)  0.2, 0.2      1.0, 1.0
+   Fixed-caster friction           0.2, 0.2      0.01, 0.01
+   Wheel separation                0.350 m       0.376 m
+
+   The longer scan reaches walls from open parts of the playground. The
+   lower update rates reduce VM load. During an early goal test the robot
+   made little angular progress despite a turning command. More traction at
+   the driven wheels and less friction at the fixed casters help it turn.
+   The lateral tire centers are about +0.150 and -0.226 m apart from the
+   base origin, giving 0.376 m between them.
+
+New navigation code
+
+The starter had three packages for description, simulation and bringup.
+testbed_navigation adds the map_loader, localization and navigation launch
+files. Each starts its nodes directly and uses a separate lifecycle manager.
+The corresponding YAML files hold map-server, AMCL and Nav2 settings. Links
+to all six files are in the root README.
+
+During testing the planner missed the four-second lifecycle bond deadline.
+The launch files allow 30 s. The final progress checker requires 0.12 m
+within 20 s. DWB's final-rotation distance is 0.16 m, inside the 0.25 m
+goal-checker tolerance. The full bringup also accepts rviz:=false so the
+same goal can be tested headlessly. The package README records the measured
+results and screenshots from the goal tests.
