@@ -1,0 +1,16 @@
+## for robot priority movements 
+twist_mux:
+  ros__parameters:
+    use_stamped : false
+
+    topics: 
+      navigation:  ## automatic by plugins
+        topic   : /nav/cmd_vel
+        timeout : 0.5
+        priority: 70
+      
+   
+      website:
+        topic: /web/cmd_vel
+        timeout: 0.5
+        priority: 99

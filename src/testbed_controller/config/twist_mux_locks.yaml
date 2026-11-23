@@ -1,0 +1,20 @@
+# a safety controller for testbed robot 
+twist_mux:
+  ros__parameters:
+
+
+    locks:
+      safety_stop:
+        topic     : safety_stop
+        timeout   : 0.0
+        priority  : 255
+
+      pause_navigation:
+        topic: /lock_navigation
+        timeout: 0.0
+        priority: 10
+
+      emergency_stop:
+        topic: /web/emergency_stop
+        timeout: 0.0
+        priority: 255
