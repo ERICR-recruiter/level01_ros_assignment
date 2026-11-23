@@ -1,0 +1,7 @@
+map_server:
+  ros__parameters:
+    use_sim_time: true      # follow Gazebo's clock like every other node
+    topic_name: map         # publish the map on /map
+    frame_id: map           # the map's coordinate frame
+    # yaml_filename is set in map_loader.launch.py using get_package_share_directory,
+    # so the path works on any machine (no absolute /home/... paths)

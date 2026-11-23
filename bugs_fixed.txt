@@ -1,0 +1,124 @@
+Bugs I found and fixed
+Level 1 ROS2 Navigation Assignment - Sannidhi D Math
+
+Everything below was tested on ROS 2 Humble, Ubuntu 22.04. For each one I've
+written where it was, what I actually saw, what I changed, and how I checked it.
+
+
+1. testbed_description/CMakeLists.txt - ament_package without brackets
+
+   This was the first thing I hit. The very first colcon build stopped straight
+   away with:
+     CMake Error at CMakeLists.txt:24: Parse error. Expected "(", got newline.
+   and testbed_bringup was aborted along with it.
+
+   Fix: changed "ament_package" to "ament_package()".
+   Checked: colcon build now finishes for all packages.
+
+
+2. testbed_bringup/maps/testbed_world.yaml - wrong image name
+
+   The YAML pointed to "wrong_path_testbed_world.pgm", but the image in the
+   folder is called testbed_world.pgm, so map_server had nothing to load.
+
+   Fix: image: testbed_world.pgm
+   I kept it as a plain file name because map_server looks for it next to the
+   YAML, so it works on any computer.
+   Checked: map_server prints "Read map ... 405 X 400 map @ 0.05 m/cell" and the
+   map shows up in RViz.
+
+
+3. testbed_bringup/CMakeLists.txt - maps folder never installed
+
+   The install rule only listed "launch". I only noticed this when my map launch
+   file couldn't find the map: the maps folder simply wasn't in
+   install/testbed_bringup/share/testbed_bringup/, so get_package_share_directory()
+   had nothing to point to.
+
+   Fix: install "launch maps".
+   Checked: after rebuilding, both map files are in the installed share folder.
+
+
+4. testbed_description/launch/robot_description.launch.py - not using sim time
+
+   "ros2 param get /robot_state_publisher use_sim_time" came back False. So the
+   robot's TF was stamped with the computer's clock, while Gazebo, AMCL and Nav2
+   all run on simulation time. That mismatch causes TF "extrapolation" errors
+   once localization starts. The other launch file in the same folder
+   (testbed_rviz_barebones.launch.py) does set it, so it looked like a slip.
+
+   Fix: parameters=[robot_description, {'use_sim_time': True}]
+   Checked: the same command now returns True.
+
+
+5. testbed_description/urdf/testbed.gazebo - lidar range of only 1.5 m
+
+   "ros2 topic echo /scan --once --field range_max" gave 1.5. The world is
+   roughly 20 m x 20 m, so from most spots the lidar couldn't see a single wall,
+   and AMCL would have almost nothing to match against the map.
+
+   Fix: <max>10.0</max>. I picked 10 m because it's realistic for a Hokuyo-style
+   2D lidar (the UST-10LX, for example) and it sees the walls from most of the
+   map. AMCL's laser_max_range is set to the same value.
+   Checked: range_max now reads 10.0, and the scan lines up with the walls once
+   localization is running.
+
+
+6. testbed_description/urdf/testbed.gazebo - stray ">" in the IMU block
+
+   "</initial_orientation_as_reference>>" had one ">" too many. Nothing broke
+   because of it, but it isn't valid XML.
+
+   Fix: removed the extra ">".
+   Checked: the simulation still starts normally.
+
+
+7. testbed_description/urdf/testbed.gazebo - leftover ROS 1 plugin
+
+   There was a <gazebo> block loading libgazebo_ros_control.so. That's a ROS 1
+   plugin and doesn't exist in ROS 2 Humble; the robot is actually driven by the
+   diff drive plugin. I didn't see an error from it in my runs, so it was just
+   dead code.
+
+   Fix: removed the block.
+   Checked: the simulation still starts and the robot still drives.
+
+
+8. package.xml files - no run dependencies listed
+
+   testbed_bringup, testbed_description and testbed_gazebo didn't declare a
+   single <exec_depend>, even though their launch files rely on other packages.
+   It works on a machine that already has everything installed, but rosdep
+   couldn't set up a fresh machine from these files.
+
+   Fix: added exec_depend entries:
+     testbed_bringup:      testbed_description, testbed_gazebo, gazebo_ros, rviz2
+     testbed_description:  robot_state_publisher, xacro, joint_state_publisher
+     testbed_gazebo:       gazebo_ros
+   Checked: everything still builds.
+
+
+9. testbed_gazebo/CMakeLists.txt - models folder not installed (minor)
+
+   The launch file adds <share>/testbed_gazebo/models to GAZEBO_MODEL_PATH, but
+   CMakeLists only installs launch and worlds, so that folder never existed.
+   I couldn't see any effect, because the world file doesn't use model://
+   references, but it was still a path to nowhere.
+
+   Fix: added "models" to the install list.
+   Checked: install/testbed_gazebo/share/testbed_gazebo/models now exists.
+
+
+ONE I SUSPECTED, BUT IT WASN'T A BUG
+
+The IMU sensor has <always_on>true</always_on> and the lidar doesn't, so I
+wondered if that was why I wasn't getting scans at one point. I tested it both
+ways on Ubuntu 22.04 (x86): /scan published at about 29 Hz either way. So I put
+it back the way it was and didn't count it.
+
+
+SMALL THINGS I NOTICED BUT LEFT ALONE
+
+- .vscode/settings.json has a path from another computer (/home/eric-ros1/...).
+  It only affects the editor, not the build.
+- testbed_description/rviz/urdf_vis_rviz is missing its .rviz extension.
