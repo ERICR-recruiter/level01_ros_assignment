@@ -124,6 +124,11 @@ We’ll be looking for:
 
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
+## Submission Summary
+- Package: [`testbed_navigation/`](testbed_navigation/) (launch files, parameter files, README)
+- Bugs found in the starter code and their fixes: [`BUGS_AND_FIXES.txt`](BUGS_AND_FIXES.txt)
+- Screenshots and demo video: [`testbed_navigation/media/`](testbed_navigation/media/)
+
 ## Contact Info 
  - Name: Hrutuja Kulkarni
  - Contact number: +91 9892709632
