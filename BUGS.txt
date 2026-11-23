@@ -1,0 +1,53 @@
+Bugs I found in the starter code, and what I did about them
+============================================================
+
+I went through the description, bringup and gazebo packages, the map and the world file.
+Most of these I spotted by reading the files; a couple I only noticed when the
+simulation misbehaved.
+
+Things that stopped it from building or loading
+
+1. testbed_description/CMakeLists.txt ended with "ament_package" without the
+   brackets, so the package would not build. Changed it to ament_package().
+
+2. testbed_bringup/CMakeLists.txt only installed the launch folder, so the map
+   never made it into the install space and map_server couldn't find it.
+   Added maps to the install rule.
+
+3. maps/testbed_world.yaml pointed at "wrong_path_testbed_world.pgm", which doesn't
+   exist. Changed it to testbed_world.pgm.
+
+4. testbed_gazebo/CMakeLists.txt didn't install the models folder (only launch and
+   worlds). Added it.
+
+Things that made the robot or the sensors behave wrong
+
+5. The lidar max range was 1.5 m in testbed.gazebo, way too short for AMCL or the
+   costmaps to do anything useful. Set it to 10 m.
+
+6. The diff-drive plugin had wheel_separation 0.35, but the wheel joints in the URDF
+   are 0.346 apart. Fixed it so odometry matches the real geometry.
+
+7. testbed.gazebo loaded libgazebo_ros_control.so, which is a ROS1 plugin and doesn't
+   exist in Humble. Nothing was using it, so I removed it.
+
+8. There was a stray ">" after the IMU's initial_orientation_as_reference tag. Removed.
+
+9. robot_description.launch.py started robot_state_publisher without use_sim_time,
+   so it was on wall-clock time while everything else used sim time. Added a
+   use_sim_time argument (default true).
+
+The world and the map didn't match
+
+10. In testbed_playground.world the test_room model was placed at (-0.08, -1.23), but
+    the map was clearly made with the room at about (0, 0), about 1.2 m off. I checked
+    by drawing the world's walls over the map: roughly half of the map's walls
+    lined up before, almost all after. The file also had a leftover <state> block with
+    a different pose for the room. I set the pose to 0 0 0 and deleted the state block.
+
+Smaller changes (not sure all of these were intentional bugs)
+
+- Wheel friction was 0.2, which makes the wheels slip. Raised it to 1.0 for the drive wheels.
+- self_collide was on for every link; I turned it off.
+- Added the missing dependencies to the package.xml files (gazebo_ros, xacro,
+  robot_state_publisher, rviz2 and so on).
