@@ -11,8 +11,8 @@ The project follows a modular package architecture, separating robot description
 ## 🎥 Project Demonstration
 
 **Watch the robot simulation and navigation demonstration:**
-(https://youtu.be/SvJPw2QtG_k)
-[▶ Watch Project Demonstration Video] (src/testbed_media/Screencast%20from%2011-23-2026%2004_34_01%20PM.mp4)
+
+[▶ Watch Project Demonstration Video] (https://youtu.be/SvJPw2QtG_k))
 
 The demonstration video is available in the `testbed_media` directory.
 
