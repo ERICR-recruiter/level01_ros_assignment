@@ -1,0 +1,157 @@
+================================================================================
+ERIC Robotics - Level 1 ROS 2 Navigation Assignment: Bugs Identification Report
+================================================================================
+
+This document details all intentional and environmental bugs identified in the
+starter codebase (`level01_ros_assignment`) and explains the root causes along
+with the exact fixes applied.
+
+--------------------------------------------------------------------------------
+BUG 1: Missing Parentheses on ament_package in testbed_description/CMakeLists.txt
+--------------------------------------------------------------------------------
+- File Path: testbed_description/CMakeLists.txt (Line 23)
+- Root Cause:
+  The macro was invoked as `ament_package` without trailing parentheses `()`. In
+  CMake, macro/function calls strictly require parentheses, causing `colcon build`
+  to fail immediately with a fatal CMake parse error:
+  `Parse error. Expected "(", got newline with text ""`.
+- Fix Applied:
+  Changed line 23 from `ament_package` to `ament_package()`.
+
+--------------------------------------------------------------------------------
+BUG 2: Missing Maps Directory in testbed_bringup/CMakeLists.txt Install Rule
+--------------------------------------------------------------------------------
+- File Path: testbed_bringup/CMakeLists.txt (Lines 27-32)
+- Root Cause:
+  The `install(DIRECTORY ...)` directive only installed the `launch` directory to
+  `share/testbed_bringup`. The `maps/` directory containing `testbed_world.yaml`
+  and `testbed_world.pgm` was omitted from installation. When downstream
+  navigation and map server launch files attempt to locate the map using
+  `get_package_share_directory('testbed_bringup')`, the path failed because `maps/`
+  did not exist in the install prefix.
+- Fix Applied:
+  Updated `install(DIRECTORY ...)` in `testbed_bringup/CMakeLists.txt` to include `maps`:
+  ```cmake
+  install(
+    DIRECTORY
+      launch
+      maps
+    DESTINATION
+      share/${PROJECT_NAME}/
+  )
+  ```
+
+--------------------------------------------------------------------------------
+BUG 3: Erroneous PGM Image Path in testbed_bringup/maps/testbed_world.yaml
+--------------------------------------------------------------------------------
+- File Path: testbed_bringup/maps/testbed_world.yaml (Line 1)
+- Root Cause:
+  Line 1 had `image: wrong_path_testbed_world.pgm`. The actual map image in the
+  same directory is `testbed_world.pgm`. When `nav2_map_server` loaded this YAML
+  file, it threw an image file not found error and aborted lifecycle activation.
+- Fix Applied:
+  Corrected Line 1 in `testbed_bringup/maps/testbed_world.yaml` to:
+  `image: testbed_world.pgm`.
+
+--------------------------------------------------------------------------------
+BUG 4: Missing Models Directory in testbed_gazebo/CMakeLists.txt Install Rule
+--------------------------------------------------------------------------------
+- File Path: testbed_gazebo/CMakeLists.txt (Lines 28-34)
+- Root Cause:
+  The `install(DIRECTORY ...)` directive only installed `launch` and `worlds`,
+  omitting the `models/` directory (which holds mesh assets such as `box_room`,
+  `eric`, and `wooden_fence`). In Gazebo, models could not be resolved when
+  launched from the colcon install workspace.
+- Fix Applied:
+  Updated `install(DIRECTORY ...)` in `testbed_gazebo/CMakeLists.txt` to include `models`:
+  ```cmake
+  install(
+    DIRECTORY
+      launch
+      worlds
+      models
+    DESTINATION
+      share/${PROJECT_NAME}/
+  )
+  ```
+
+--------------------------------------------------------------------------------
+BUG 5: Deprecated ROS 1 Control Plugin in testbed_description/urdf/testbed.gazebo
+--------------------------------------------------------------------------------
+- File Path: testbed_description/urdf/testbed.gazebo (Lines 6-8)
+- Root Cause:
+  The URDF included:
+  `<plugin name="control" filename="libgazebo_ros_control.so"/>`.
+  `libgazebo_ros_control.so` is a legacy ROS 1 plugin that does not exist in
+  ROS 2 Humble Gazebo. It caused Gazebo error logs upon world initialization:
+  `[ERROR] [gazebo_ros]: Failed to load system plugin: libgazebo_ros_control.so`.
+- Fix Applied:
+  Removed the deprecated ROS 1 control plugin block. Differential drive actuation
+  is properly handled by `libgazebo_ros_diff_drive.so`.
+
+--------------------------------------------------------------------------------
+BUG 6: Malformed XML Syntax in IMU Sensor Plugin in testbed.gazebo
+--------------------------------------------------------------------------------
+- File Path: testbed_description/urdf/testbed.gazebo (Line 40)
+- Root Cause:
+  Line 40 contained a duplicate closing bracket:
+  `<initial_orientation_as_reference>false</initial_orientation_as_reference>>`
+  This stray `>` character corrupted the XML structure and produced parser
+  warnings/errors during URDF processing.
+- Fix Applied:
+  Removed the extra `>` character.
+
+--------------------------------------------------------------------------------
+BUG 7: Extremely Restrictive LiDAR Sensor Range in testbed.gazebo
+--------------------------------------------------------------------------------
+- File Path: testbed_description/urdf/testbed.gazebo (Line 65)
+- Root Cause:
+  The ray sensor range was configured with `<max>1.5</max>`. In a 20m x 20m arena,
+  a 1.5-meter maximum detection cutoff blinded the robot to all walls and obstacles
+  further than 1.5 meters away. Consequently, AMCL could never observe features to
+  converge its particle filter, and the global/local costmaps remained blank.
+- Fix Applied:
+  Increased `<max>` range in `testbed_description/urdf/testbed.gazebo` from `1.5`
+  to `12.0` meters (realistic for standard 2D planar LiDARs like RPLIDAR/Hokuyo),
+  allowing reliable AMCL localization and costmap raytracing.
+
+--------------------------------------------------------------------------------
+BUG 8: Simulation Timestamp Desynchronization in robot_description.launch.py
+--------------------------------------------------------------------------------
+- File Path: testbed_description/launch/robot_description.launch.py (Line 26)
+- Root Cause:
+  `robot_state_publisher` was started without `'use_sim_time': True`. In Gazebo,
+  simulation time advances via `/clock`. Because `robot_state_publisher` was using
+  system wall-clock time while Gazebo published odometry with simulation clock time,
+  TF frames had conflicting timestamps, causing Nav2 TF buffer extrapolation errors
+  and dropping scan transformations.
+- Fix Applied:
+  Added a `use_sim_time` launch argument defaulting to `true` and passed
+  `{'use_sim_time': use_sim_time}` to `robot_state_publisher`.
+
+--------------------------------------------------------------------------------
+BUG 9: Robot Spawn Height Clipping at Z=0.0 in spawn_testbed.launch.py
+--------------------------------------------------------------------------------
+- File Path: testbed_gazebo/launch/spawn_testbed.launch.py (Line 15)
+- Root Cause:
+  The initial spawn position was hardcoded to `position = [0.0, 5.0, 0.0]`.
+  Spawning at $Z=0.0$ placed the collision geometries of the wheels and base
+  directly inside the Gazebo ground plane ($Z=0$), causing ODE solver collision
+  explosions where the robot would jitter or flip. Additionally, $Y=5.0$ placed
+  the robot dangerously close to boundary fence models.
+- Fix Applied:
+  Introduced configurable launch arguments (`x_pose`, `y_pose`, `z_pose`, `yaw_pose`)
+  with safe defaults: $X=0.0, Y=0.0, Z=0.05, Yaw=0.0$. Spawning with $Z=0.05$
+  allows the robot to drop gently onto the ground plane without collision glitches.
+
+--------------------------------------------------------------------------------
+BUG 10: Inefficient/Fragile Substitution in testbed_full_bringup.launch.py
+--------------------------------------------------------------------------------
+- File Path: testbed_bringup/launch/testbed_full_bringup.launch.py (Lines 35-37)
+- Root Cause:
+  `FindPackageShare(package='testbed_description').find('testbed_description')`
+  was used to locate the RViz configuration file, despite `pkg_testbed_description`
+  already being resolved at the top of the function.
+- Fix Applied:
+  Simplified to `os.path.join(pkg_testbed_description, 'rviz', 'full_bringup.rviz')`.
+================================================================================
