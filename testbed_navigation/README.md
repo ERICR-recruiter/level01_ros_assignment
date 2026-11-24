@@ -175,4 +175,4 @@ ros2 launch testbed_navigation testbed_navigation_bringup.launch.py
 | **Stray XML tokens** | IMU sensor plugin had extra `>` character in `testbed.gazebo`. | Cleaned XML syntax. |
 | **Robot slip in Gazebo vs RViz** | Fixed casters had $\mu=0.2$ acting as brakes while drive wheels slipped in Gazebo. | Set caster friction to $\mu=0.001$ and drive wheels to $\mu=10.0$ with adequate torque. |
 | **Doorway navigation blocked** | Inflation radius $0.55\text{ m}$ overlapping in $0.85\text{ m}$ doorways. | Reduced inflation to $0.25\text{ m}$ with exponential decay (`cost_scaling_factor: 8.0`). |
-| **TF extrapolation into past** | RViz Fixed Frame was `odom`, stamping 2D Goal Poses with outdated timestamps. | Changed RViz Fixed Frame to `map` and set `transform_tolerance: 1.0s`. |
+| **TF extrapolation into past** | Tight default transform tolerances (0.1s) under simulation load caused TF lookup failures. | Increased transform tolerance to $1.0\text{ s}$ across planners, costmaps, and controllers. |
