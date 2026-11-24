@@ -62,7 +62,7 @@
         </scan>
         <range>
           <min>0.10</min>
-          <max>1.5</max>
+          <max>6.0</max>
           <resolution>0.01</resolution>
         </range>
         <noise>
@@ -90,71 +90,71 @@
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
   <gravity>true</gravity>
 </gazebo>
 
 <gazebo reference="caster_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="caster_2">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="caster_3">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="caster_4">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="lidar_link_1">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="imu_link_1">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="dummy_link_1">
   <material>${body_color}</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="right_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <mu1>1.0</mu1>
+  <mu2>1.0</mu2>
+  <self_collide>false</self_collide>
 </gazebo>
 
 <gazebo reference="left_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide> 
+  <mu1>1.0</mu1>
+  <mu2>1.0</mu2>
+  <self_collide>false</self_collide> 
 </gazebo>
 
 </robot>

@@ -31,4 +31,11 @@ install(
     share/${PROJECT_NAME}/
 )
 
+
+# Install map files
+install(
+  DIRECTORY maps/
+  DESTINATION share/${PROJECT_NAME}/maps
+)
+
 ament_package()
