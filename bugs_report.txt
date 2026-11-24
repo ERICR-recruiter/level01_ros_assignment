@@ -193,4 +193,24 @@ BUG 12: Costmap Doorway Pinch / Inflation Blocking Multi-Room Navigation
   - Increased progress checker allowance `movement_time_allowance: 20.0s`.
   This opens wide, safe traversable passages through all 0.85m doorways, enabling
   reliable multi-room navigation.
+
+--------------------------------------------------------------------------------
+BUG 13: RViz Fixed Frame Set to 'odom' Causing Stale TF Extrapolation Errors
+--------------------------------------------------------------------------------
+- File Path: testbed_description/rviz/full_bringup.rviz (Line 230)
+- Root Cause:
+  The default RViz configuration had `Fixed Frame: odom`. When the user placed a
+  nav goal using the "2D Goal Pose" tool in RViz, the goal PoseStamped was stamped
+  in the `odom` frame with the timestamp of the click. When `planner_server`
+  attempted to transform the goal from `odom` to the costmap global frame (`map`),
+  any replan occurring more than 10 seconds after the click required looking up the
+  `odom -> map` transform at the old click timestamp. Since the TF buffer only retains
+  a 10-second rolling history, this resulted in an extrapolation into the past error:
+  `Extrapolation Error looking up target frame: Lookup would require extrapolation into the past. Requested time X but the earliest data is at time Y, when looking up transform from frame [odom] to frame [map]`.
+- Fix Applied:
+  - Changed `Fixed Frame: map` in `testbed_description/rviz/full_bringup.rviz` so
+    nav goals are natively created in the global `map` frame.
+  - Set `transform_tolerance: 1.0` across `planner_server`, `dwb_core::DWBLocalPlanner`,
+    `local_costmap`, `global_costmap`, and `behavior_server` to robustly handle
+    simulation clock latency and prevent transform lookup timeouts.
 ================================================================================

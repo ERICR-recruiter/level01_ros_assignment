@@ -93,29 +93,29 @@
 
 <gazebo reference="caster_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_2">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_3">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_4">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
@@ -142,15 +142,15 @@
 
 <gazebo reference="right_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>10.0</mu1>
+  <mu2>10.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="left_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>10.0</mu1>
+  <mu2>10.0</mu2>
   <self_collide>true</self_collide> 
 </gazebo>
 
