@@ -12,7 +12,7 @@ The project follows a modular package architecture, separating robot description
 
 **Watch the robot simulation and navigation demonstration:**
 
-[▶ Watch Project Demonstration Video](testbed_media/Screencast%20from%2011-23-2026%2004_34_01%20PM.mp4)
+[▶ Watch Project Demonstration Video](src/testbed_media/Screencast%20from%2011-23-2026%2004_34_01%20PM.mp4)
 
 The demonstration video is available in the `testbed_media` directory.
 
@@ -181,7 +181,7 @@ Some of the debugging areas included:
 
 Detailed debugging observations, errors, and corrective actions are documented here:
 
-[View BUGS_AND_DEBUGGING.md](testbed_media/BUGS_AND_DEBUGGING.md)
+[View BUGS_AND_DEBUGGING.md](src/testbed_media/BUGS_AND_DEBUGGING.md)
 
 ---
 
