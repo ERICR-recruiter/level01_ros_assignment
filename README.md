@@ -10,9 +10,13 @@ The project follows a modular package architecture, separating robot description
 
 ## 🎥 Project Demonstration
 
-**Watch the robot simulation and navigation demonstration:**
+**Watch the ROS 2 Autonomous Mobile Robot simulation and navigation demonstration.**
 
-[▶ Watch Project Demonstration Video] (https://youtu.be/SvJPw2QtG_k))
+[![ROS 2 AMR Project Demonstration](https://img.youtube.com/vi/SvJPw2QtG_k/maxresdefault.jpg)](https://www.youtube.com/watch?v=SvJPw2QtG_k)
+
+▶ **[Watch Full Project Demonstration on YouTube](https://youtu.be/SvJPw2QtG_k)**
+
+---
 
 The demonstration video is available in the `testbed_media` directory.
 
