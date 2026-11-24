@@ -1,0 +1,11 @@
+Bug list
+1. testbed_description/CMakeLists.txt: `ament_package` was missing its parentheses, so CMake failed to parse the file. Fixed: `ament_package()`.
+2. testbed_bringup/maps/testbed_world.yaml: `image:` pointed at the non-existent `wrong_path_testbed_world.pgm`. Fixed: `testbed_world.pgm`.
+3. testbed_bringup/CMakeLists.txt: the `maps` directory was not installed, so the map was missing from the installed package. Fixed: added `maps` to install(DIRECTORY ...).
+4. testbed_description/urdf/testbed.gazebo: stray `>` after `</initial_orientation_as_reference>` in the IMU plugin (malformed XML). Fixed.
+5. testbed_description/urdf/testbed.gazebo: lidar max range was 1.5 m, too short for AMCL/costmaps. Raised to 12.0 m.
+6. testbed_gazebo/launch/spawn_playground.launch.py: a `world` launch argument was declared but never passed to gazebo.launch.py, so the playground world was never loaded (Gazebo opened its default world). Fixed: added launch_arguments={'world': LaunchConfiguration('world')}.items() to the Gazebo include.
+
+Notes (not bugs)
+- Checked: wheel separation in the diff-drive plugin (0.35 m) matches the URDF (left y=0.1352, right y=-0.2108, i.e. 0.346 m).
+- Checked: the robot spawn point (0, 5) is free space on the map.
