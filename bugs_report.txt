@@ -155,3 +155,42 @@ BUG 10: Inefficient/Fragile Substitution in testbed_full_bringup.launch.py
 - Fix Applied:
   Simplified to `os.path.join(pkg_testbed_description, 'rviz', 'full_bringup.rviz')`.
 ================================================================================
+
+--------------------------------------------------------------------------------
+BUG 11: Caster Wheel High Friction Anchor Lock in testbed.gazebo
+--------------------------------------------------------------------------------
+- File Path: testbed_description/urdf/testbed.gazebo (Lines 96-155)
+- Root Cause:
+  The 4 passive caster wheels are fixed rigid joints (`type="fixed"` in URDF) and
+  collectively hold 4.7 kg of the robot's mass. In `testbed.gazebo`, their friction
+  was set to `<mu1>0.2</mu1>` and `<mu2>0.2</mu2>`—identical to the drive wheels!
+  Because the fixed casters could not rotate and bore most of the robot weight,
+  they acted as mechanical brake pads against the floor. When Nav2 commanded
+  velocities, the drive wheels slipped in place: Gazebo integrated the wheel
+  rotation into odometry (causing the robot to appear to move in RViz), but the
+  physical robot remained anchored to the floor in Gazebo simulation.
+- Fix Applied:
+  - Reduced caster wheel friction to nearly frictionless gliding contacts:
+    `<mu1>0.001</mu1>`, `<mu2>0.001</mu2>`, `<kp>1000000.0</kp>`, `<kd>100.0</kd>`.
+  - Increased drive wheel traction: `<mu1>2.0</mu1>`, `<mu2>2.0</mu2>`.
+  - Added `<max_wheel_torque>30.0</max_wheel_torque>` and `<max_wheel_acceleration>3.0</max_wheel_acceleration>`
+    in `diff_drive_control` so motors have sufficient torque to propel the robot in Gazebo.
+
+--------------------------------------------------------------------------------
+BUG 12: Costmap Doorway Pinch / Inflation Blocking Multi-Room Navigation
+--------------------------------------------------------------------------------
+- File Path: testbed_navigation/config/nav2_params.yaml
+- Root Cause:
+  The doorway openings between rooms in the playground world (`testbed_world.pgm`)
+  are only 0.85 meters wide. With `inflation_radius: 0.55m`, the inflation cost
+  from both sides of the door (0.55m + 0.55m = 1.10m) overlapped and completely
+  blocked the doorway with lethal/high obstacle cost. The global planner and local
+  controller (DWB) rejected paths passing through narrow doors into other rooms.
+- Fix Applied:
+  - Reduced `inflation_radius` to `0.35m` with an increased exponential decay
+    `cost_scaling_factor: 5.0`.
+  - Tuned `robot_radius: 0.20m` to match actual chassis half-width.
+  - Increased progress checker allowance `movement_time_allowance: 20.0s`.
+  This opens wide, safe traversable passages through all 0.85m doorways, enabling
+  reliable multi-room navigation.
+================================================================================

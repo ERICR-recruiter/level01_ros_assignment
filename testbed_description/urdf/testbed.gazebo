@@ -16,6 +16,8 @@
 
       <wheel_separation>0.35</wheel_separation>
       <wheel_diameter>0.1</wheel_diameter>
+      <max_wheel_torque>30.0</max_wheel_torque>
+      <max_wheel_acceleration>3.0</max_wheel_acceleration>
 
       <publish_odom>true</publish_odom>
       <publish_odom_tf>true</publish_odom_tf>
@@ -93,30 +95,42 @@
 
 <gazebo reference="caster_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
+  <kp>1000000.0</kp>
+  <kd>100.0</kd>
+  <minDepth>0.001</minDepth>
+  <maxVel>1.0</maxVel>
 </gazebo>
 
 <gazebo reference="caster_2">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
+  <kp>1000000.0</kp>
+  <kd>100.0</kd>
+  <minDepth>0.001</minDepth>
+  <maxVel>1.0</maxVel>
 </gazebo>
 
 <gazebo reference="caster_3">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
+  <kp>1000000.0</kp>
+  <kd>100.0</kd>
+  <minDepth>0.001</minDepth>
+  <maxVel>1.0</maxVel>
 </gazebo>
 
 <gazebo reference="caster_4">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
+  <mu1>0.001</mu1>
+  <mu2>0.001</mu2>
+  <kp>1000000.0</kp>
+  <kd>100.0</kd>
+  <minDepth>0.001</minDepth>
+  <maxVel>1.0</maxVel>
 </gazebo>
 
 <gazebo reference="lidar_link_1">
@@ -142,15 +156,23 @@
 
 <gazebo reference="right_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>2.0</mu1>
+  <mu2>2.0</mu2>
+  <kp>1000000.0</kp>
+  <kd>100.0</kd>
+  <minDepth>0.001</minDepth>
+  <maxVel>1.0</maxVel>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="left_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <mu1>2.0</mu1>
+  <mu2>2.0</mu2>
+  <kp>1000000.0</kp>
+  <kd>100.0</kd>
+  <minDepth>0.001</minDepth>
+  <maxVel>1.0</maxVel>
   <self_collide>true</self_collide> 
 </gazebo>
 
