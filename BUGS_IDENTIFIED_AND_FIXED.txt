@@ -1,0 +1,175 @@
+================================================================================
+LEVEL 1: ROS 2 NAVIGATION ASSIGNMENT - BUGS IDENTIFIED AND FIXED
+Candidate: MD Akmal
+Role: ROS Intern - ERIC Robotics
+Target Environment: ROS 2 Humble / Gazebo Classic 11 / Ubuntu 22.04
+================================================================================
+
+This document details all intentional bugs and defects identified within the starter
+codebase of the 'Testbed-T1.0.0' robot, along with the root causes, corrective actions,
+and verification methods.
+
+--------------------------------------------------------------------------------
+1. Build Failure: Missing Parentheses in ament_package Macro
+--------------------------------------------------------------------------------
+- Location: testbed_description/CMakeLists.txt (Line 23)
+- Problem: The file ended with `ament_package` without closing parentheses `()`.
+- Root Cause: In CMake, macros and functions require argument parentheses. Omitting
+  them causes a CMake parse error during `colcon build`:
+  "Parse error. Expected "(", got newline with text "ament_package"".
+- Fix: Updated `ament_package` to `ament_package()`.
+- Verification: Clean build using `colcon build --packages-select testbed_description`.
+
+--------------------------------------------------------------------------------
+2. Map Server Crash: Incorrect Map Image Filename in YAML
+--------------------------------------------------------------------------------
+- Location: testbed_bringup/maps/testbed_world.yaml (Line 1)
+- Problem: The map image key referenced `wrong_path_testbed_world.pgm`.
+- Root Cause: The actual image file inside the directory is `testbed_world.pgm`.
+  When `nav2_map_server` attempts to load the occupancy grid, it fails with:
+  "Failed to load image file wrong_path_testbed_world.pgm: No such file or directory",
+  causing the lifecycle transition to error state.
+- Fix: Corrected line 1 to `image: testbed_world.pgm`.
+- Verification: `nav2_map_server` successfully loads the 405x400 occupancy grid and
+  publishes to `/map`.
+
+--------------------------------------------------------------------------------
+3. Runtime Missing Files: Maps Directory Omitted from CMake Installation
+--------------------------------------------------------------------------------
+- Location: testbed_bringup/CMakeLists.txt (Lines 27-32)
+- Problem: The `install(DIRECTORY ...)` directive only installed `launch/`.
+- Root Cause: The `maps/` directory containing `testbed_world.yaml` and `testbed_world.pgm`
+  was never copied to the installation share folder (`install/testbed_bringup/share/testbed_bringup/`).
+  Consequently, launch files referencing `get_package_share_directory('testbed_bringup') / 'maps'`
+  failed to locate the map after workspace installation.
+- Fix: Added `maps` to the install target:
+  ```cmake
+  install(
+    DIRECTORY
+      launch
+      maps
+    DESTINATION
+      share/${PROJECT_NAME}/
+  )
+  ```
+- Verification: Verified presence of `share/testbed_bringup/maps/testbed_world.yaml` after build.
+
+--------------------------------------------------------------------------------
+4. Simulation Asset Loading Failure: Models Directory Omitted from Installation
+--------------------------------------------------------------------------------
+- Location: testbed_gazebo/CMakeLists.txt (Lines 28-34)
+- Problem: `install(DIRECTORY ...)` installed only `launch` and `worlds`, omitting `models`.
+- Root Cause: `spawn_playground.launch.py` dynamically appends
+  `os.path.join(pkg_testbed_gazebo, 'models')` to `GAZEBO_MODEL_PATH`. Because `models`
+  was missing from the install tree, Gazebo could not find custom models
+  (e.g., `wooden_fence`, `test_room`, `box_room`), leading to missing geometry or spawn failures.
+- Fix: Added `models` to the install target:
+  ```cmake
+  install(
+    DIRECTORY
+      launch
+      worlds
+      models
+    DESTINATION
+      share/${PROJECT_NAME}/
+  )
+  ```
+- Verification: Checked that all model SDF and mesh files exist under `share/testbed_gazebo/models/`.
+
+--------------------------------------------------------------------------------
+5. XML Parser Syntax Error: Stray Character in Gazebo IMU Sensor Tag
+--------------------------------------------------------------------------------
+- Location: testbed_description/urdf/testbed.gazebo (Line 40)
+- Problem: XML tag had duplicate closing angle brackets:
+  `<initial_orientation_as_reference>false</initial_orientation_as_reference>>`
+- Root Cause: The second `>` is parsed as stray text node directly under `<plugin>`,
+  which causes XML and SDF parsing errors when processed by `xacro` and Gazebo.
+- Fix: Removed the extra `>` to produce well-formed XML:
+  `<initial_orientation_as_reference>false</initial_orientation_as_reference>`
+- Verification: `xacro` parses the URDF without throwing any XML parsing exceptions.
+
+--------------------------------------------------------------------------------
+6. Legacy ROS 1 Plugin Incompatibility in Gazebo Description
+--------------------------------------------------------------------------------
+- Location: testbed_description/urdf/testbed.gazebo (Line 7)
+- Problem: The URDF loaded `<plugin name="control" filename="libgazebo_ros_control.so"/>`.
+- Root Cause: `libgazebo_ros_control.so` is the ROS 1 Gazebo plugin. In ROS 2 Humble,
+  this library does not exist (ROS 2 uses `libgazebo_ros2_control.so` or standalone plugins).
+  Its presence produces a fatal Gazebo plugin loading error at spawn time. Furthermore,
+  differential drive control is already handled independently by `libgazebo_ros_diff_drive.so`.
+- Fix: Removed the obsolete ROS 1 plugin declaration.
+- Verification: Gazebo loads and spawns the robot entity cleanly without plugin library errors.
+
+--------------------------------------------------------------------------------
+7. Lidar Sensor Range Inadequate for Localization and Costmap
+--------------------------------------------------------------------------------
+- Location: testbed_description/urdf/testbed.gazebo (Line 65)
+- Problem: Lidar maximum detection range was set to `<max>1.5</max>` meters.
+- Root Cause: The simulated playground environment spans over 20 m x 20 m. With a
+  1.5 m maximum range, the robot's laser scanner cannot detect any boundary walls or
+  obstacles when operating in open space. AMCL particles cannot converge because
+  likelihood-field matching fails, and Nav2 costmaps remain blind to upcoming obstacles
+  until collision is imminent.
+- Fix: Increased lidar max range to `<max>12.0</max>` meters, and configured AMCL
+  `laser_max_range: 12.0` and costmap `obstacle_max_range: 10.0` / `raytrace_max_range: 12.0`.
+- Verification: AMCL particle cloud rapidly converges upon receiving the 12m scan.
+
+--------------------------------------------------------------------------------
+8. Surface Friction Mismatch on Wheels and Casters Causing Drive Stall / Slip
+--------------------------------------------------------------------------------
+- Location: testbed_description/urdf/testbed.gazebo (Lines 98-158)
+- Problem: All four passive casters and both differential drive wheels were set to
+  `mu1 = 0.2` and `mu2 = 0.2`.
+- Root Cause: In a differential drive robot with four rigid passive casters, casters
+  must have near-zero friction (`mu1 ~ 0.001`) to allow omnidirectional sliding. Having
+  `mu1 = 0.2` on four casters induces severe lateral friction and drag, while the drive
+  wheels (with only `0.2` friction) lack the traction required to overcome caster drag.
+  This causes the robot to slip in place, spin erratically, or fail to move when commanded.
+- Fix:
+  - Casters (`caster_1` to `caster_4`): Reduced `mu1` and `mu2` to `0.001`.
+  - Drive wheels (`left_wheel_1`, `right_wheel_1`): Increased `mu1` and `mu2` to `1.0`.
+- Verification: Robot accurately tracks `/cmd_vel` velocity commands with smooth forward,
+  reverse, and rotational kinematics.
+
+--------------------------------------------------------------------------------
+9. Simulation Clock Desynchronization in Robot State Publisher
+--------------------------------------------------------------------------------
+- Location: testbed_description/launch/robot_description.launch.py
+- Problem: `robot_state_publisher` was started without `use_sim_time: True`.
+- Root Cause: Gazebo publishes time over the `/clock` topic. If `robot_state_publisher`
+  runs on system wall-clock time while Gazebo and Nav2 run on simulation time, TF frames
+  (`base_link`, `lidar_link_1`, `imu_link_1`) are stamped with timestamps ahead of
+  `/odom` and `/map`. Nav2 subsequently rejects incoming transforms due to TF extrapolation
+  and "Lookup would require extrapolation into the future" errors.
+- Fix: Declared and passed `use_sim_time: True` to `robot_state_publisher`, and wrapped
+  the URDF xacro command output using `ParameterValue(..., value_type=str)`.
+- Verification: `tf2_ros tf2_echo odom base_footprint` reports synchronized timestamps.
+
+--------------------------------------------------------------------------------
+10. RViz RobotModel Display Blank Due to Volatile QoS Durability Policy
+--------------------------------------------------------------------------------
+- Location: testbed_description/rviz/full_bringup.rviz (Line 61)
+- Problem: RobotModel display durability policy was set to `Volatile`.
+- Root Cause: `robot_state_publisher` in ROS 2 publishes the `/robot_description` topic
+  with `Transient Local` durability QoS (latched topic). When RViz is launched with
+  `Durability Policy: Volatile`, late-joining RViz nodes do not receive previously
+  published URDF messages, resulting in an empty or unrendered robot model.
+- Fix: Changed `Durability Policy: Volatile` to `Durability Policy: Transient Local`.
+- Verification: Robot 3D model immediately appears and renders upon starting RViz.
+
+--------------------------------------------------------------------------------
+11. Incomplete Package Metadata and Runtime Dependencies
+--------------------------------------------------------------------------------
+- Location: package.xml files across all starter packages
+- Problem: `testbed_bringup`, `testbed_gazebo`, and `testbed_description` lacked runtime
+  execution dependencies (`<exec_depend>`) for essential tools used by their launch files
+  (e.g., `xacro`, `robot_state_publisher`, `joint_state_publisher`, `gazebo_ros`, `rviz2`).
+- Root Cause: When building on clean environments via `rosdep install`, required
+  runtime packages would not be installed automatically.
+- Fix: Added missing `<exec_depend>` declarations across all `package.xml` files.
+- Verification: Clean dependency resolution via `rosdep`.
+
+================================================================================
+Summary: 11 distinct bugs identified and fixed. All components build, run, and
+localize predictably.
+================================================================================
