@@ -4,7 +4,7 @@ Manual Nav2 bringup for the Testbed-T1.0.0 robot. Instead of using `nav2_bringup
 
 | Step | Launch file | Parameters | Status |
 |------|-------------|------------|--------|
-| Map loading | `launch/map_loader.launch.py` | `config/map_server_params.yaml` | In progress |
+| Map loading | `launch/map_loader.launch.py` | inline (launch arguments) | Done |
 | Localization | `launch/localization.launch.py` | `config/amcl_params.yaml` | To do |
 | Navigation | `launch/navigation.launch.py` | `config/nav2_params.yaml` | To do |
 
@@ -17,8 +17,12 @@ Manual Nav2 bringup for the Testbed-T1.0.0 robot. Instead of using `nav2_bringup
 cd ~/assignment_ws
 colcon build --symlink-install
 source install/setup.bash
-ros2 launch testbed_bringup testbed_full_bringup.launch.py   # simulation
+ros2 launch testbed_bringup testbed_full_bringup.launch.py   # terminal 1: simulation
+ros2 launch testbed_navigation map_loader.launch.py         # terminal 2: map
 ```
+`map_loader.launch.py` arguments: `use_sim_time` (default `True`), `map` (default `testbed_bringup/maps/testbed_world.yaml`).
+
+To see the map in RViz: set Fixed Frame to `map` (type it in, it is not in the list until AMCL runs), add a **Map** display on `/map` and set its Durability Policy to **Transient Local**.
 
 ---
 
@@ -46,8 +50,16 @@ I had used Nav2 about a year ago, so I re-read the [Nav2 concepts docs](https://
 - An `ament_cmake` package with only `launch/`, `config/` and `rviz/`. It has no source code, because Nav2's executables already exist. The job is to start them with the right parameters and connect them.
 - There is one launch file and one parameter file per step, and each step has its own lifecycle manager, so every step can be started and tested on its own.
 
-### 4. Map loading *(in progress)*
-`map_loader.launch.py` starts map_server and its lifecycle manager, with `use_sim_time` and the map path as launch arguments.
+### 4. Map loading
+`map_loader.launch.py` starts two nodes:
+- **map_server**, which reads `testbed_world.yaml` and publishes `/map`
+- **lifecycle_manager_map** (`autostart: True`, `node_names: ['map_server']`), which configures and activates map_server
+
+`use_sim_time` and the map path are launch arguments, so a different map can be loaded without editing the file. I did not make a YAML file for map_server: its only two parameters (`yaml_filename`, `use_sim_time`) both come from the launch arguments, so the file would have been empty.
+
+Verified with `ros2 lifecycle get /map_server` → `active [3]`, and in RViz:
+
+![Map loaded in RViz](docs/map_loaded_rviz.png)
 
 ---
 
@@ -59,3 +71,5 @@ I had used Nav2 about a year ago, so I re-read the [Nav2 concepts docs](https://
 | **A ROS 1 plugin left in the URDF.** `libgazebo_ros_control.so` doesn't exist in ROS 2, and it only shows up in the Gazebo log. | I read the Gazebo server log, then removed the plugin, since `diff_drive` already drives the robot. |
 | **Wrong clock.** robot_state_publisher used wall time while Gazebo used sim time, which causes TF timing errors in Nav2. | I checked every node with `ros2 param get <node> use_sim_time`. |
 | **My own XML mistake.** I wrote `<exec_depend/>` instead of `</exec_depend>` in `package.xml`, and the build failed with `mismatched tag`. | Fixed the tags. I now run `xmllint --noout package.xml` before building. |
+| **Wrong parameter names fail silently.** My first launch file used `map` instead of `yaml_filename` and `node_name` instead of `node_names`. ROS 2 just ignores unknown parameters, so there was no error. | Checked the names against the Nav2 docs, then confirmed with `ros2 param get /map_server yaml_filename` and `ros2 lifecycle get /map_server`. |
+| **Map not visible in RViz.** `map` was missing from the Fixed Frame list, and the map did not show. | The list only shows TF frames, and `map` only exists in TF once AMCL runs, so I typed it in. The map topic is *Transient Local* (sent once, kept for late subscribers), so the RViz Map display must use the same durability. |
