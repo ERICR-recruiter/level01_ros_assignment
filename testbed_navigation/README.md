@@ -181,7 +181,7 @@ Once Nav2 is active and the robot is localized:
 
 A demonstration of the complete ROS 2 navigation workflow is available here:
 
-📹 [`ros2_navigation_demo.webm`](ros2_navigation_demo.webm)
+[ros2_navigation_demo.webm](https://github.com/user-attachments/assets/b2ac0686-f602-4c8e-a129-3b30c4a3b6d8)
 
 ---
 
