@@ -6,29 +6,33 @@ Manual Nav2 bringup for the Testbed-T1.0.0 robot. Instead of using `nav2_bringup
 |------|-------------|------------|--------|
 | Map loading | `launch/map_loader.launch.py` | inline (launch arguments) | Done |
 | Localization | `launch/localization.launch.py` | `config/amcl_params.yaml` | Done |
-| Navigation | `launch/navigation.launch.py` | `config/nav2_params.yaml` | To do |
+| Navigation | `launch/navigation.launch.py` | `config/nav2_params.yaml` | Done |
 
 ---
 
 ## How to run
-*(filled in as each launch file is finished)*
 
 ```bash
 cd ~/assignment_ws
 colcon build --symlink-install
 source install/setup.bash
-ros2 launch testbed_bringup testbed_full_bringup.launch.py   # terminal 1: simulation
+# terminal 1: simulation, with this package's RViz config
+ros2 launch testbed_bringup testbed_full_bringup.launch.py \
+  rvizconfig:=$(ros2 pkg prefix testbed_navigation)/share/testbed_navigation/rviz/navigation.rviz
 ros2 launch testbed_navigation map_loader.launch.py         # terminal 2: map
 ros2 launch testbed_navigation localization.launch.py       # terminal 3: AMCL
+ros2 launch testbed_navigation navigation.launch.py         # terminal 4: Nav2 servers
 ```
+Then click **2D Goal Pose** in RViz.
 Each launch file is one layer, so start them in this order and run each only once (running two copies would start two nodes with the same name).
 
 | Launch file | Arguments (default) |
 |---|---|
 | `map_loader.launch.py` | `use_sim_time` (`True`), `map` (`testbed_bringup/maps/testbed_world.yaml`) |
 | `localization.launch.py` | `use_sim_time` (`True`), `params_file` (`config/amcl_params.yaml`) |
+| `navigation.launch.py` | `use_sim_time` (`True`), `params_file` (`config/nav2_params.yaml`) |
 
-RViz: Fixed Frame `map`; **Map** display on `/map` with Durability **Transient Local**; **ParticleCloud** display on `/particle_cloud` with Reliability **Best Effort**.
+**RViz:** `testbed_full_bringup.launch.py` already has an `rvizconfig` argument, so I pass my config through it instead of starting a second RViz. `rviz/navigation.rviz` uses Fixed Frame `map` and shows the robot, scan, global and local costmaps and the planned path. (`rviz/map_server.rviz` is the simpler config I used while testing map loading.)
 
 ---
 
@@ -85,6 +89,23 @@ Verified: `ros2 lifecycle get /amcl` → `active [3]`, the TF tree now starts at
 
 ![AMCL localization in RViz](docs/localization_amcl_rviz.png)
 
+### 6. Navigation
+`navigation.launch.py` starts **controller_server**, **planner_server**, **behavior_server** and **bt_navigator**, plus **lifecycle_manager_navigation** for those four. All of them read their section of `nav2_params.yaml`; each node's `name` must match its top-level YAML key, otherwise it silently runs on defaults. I started from Humble's own `nav2_bringup/params/nav2_params.yaml` and kept only these sections.
+
+**Robot size.** The reference file uses `robot_radius: 0.22`, which is a TurtleBot3. The robot body here is a mesh, so I measured it in RViz (TopDown view, Measure tool, Fixed Frame `base_footprint`): 0.405 m wheel to wheel, and 0.315 m from `base_footprint` to the farthest corner. `base_footprint` is not at the centre of the robot, so the radius has to reach the farthest corner. Both costmaps use `robot_radius: 0.315` with `footprint_padding: 0.02`.
+
+| Width (wheels only) | Farthest corner from `base_footprint` |
+|---|---|
+| ![](docs/robot_measure_width.png) | ![](docs/robot_measure_radius.png) |
+
+Plugin and parameter choices:
+- **Planner: NavFn with `use_astar: true`.** A* and Dijkstra both return the shortest path; A* searches towards the goal, so it explores fewer cells and plans faster.
+- **Controller: DWB** (Humble's default). Every cycle it simulates 400 candidate velocities 1.7 s ahead and scores them with critics (stay on path, head to goal, avoid obstacles). Changes from the reference: `vy_samples: 1` (diff drive can't move sideways), `debug_trajectory_details: False`. Speed stays at 0.26 m/s, slow and safe for testing.
+- **Costmaps:** global = static map + obstacle layer + inflation, in `map`; local = 3 x 3 m rolling window with obstacle layer + inflation, in `odom`. I replaced the reference's `voxel_layer` with `obstacle_layer`, because a voxel layer is for 3D sensors and this robot has a 2D lidar.
+- **Behaviors:** only spin, backup and wait, because those are the only ones Humble's default behaviour trees call.
+
+Verified: all four servers reach `active`, and a **2D Goal Pose** sent across the map ends with `Goal succeeded`. The robot drove from the start room through the doorway into the next room.
+
 ---
 
 ## Challenges
@@ -100,3 +121,5 @@ Verified: `ros2 lifecycle get /amcl` → `active [3]`, the TF tree now starts at
 | **`initial_pose` silently ignored.** I first wrote `initial_pose: (0.0, 5.0, 0.0, 0.0)`. YAML reads that as one string, so `initial_pose.x`/`.y` kept their default of 0 and AMCL would have started 5 m away from the real robot, with no error. | Wrote it as a nested block (`initial_pose:` → `x:`, `y:`, `z:`, `yaw:`), which becomes the parameters `initial_pose.x` etc. Checked with `ros2 param get /amcl initial_pose.y` → `5.0`. |
 | **Docs for the wrong ROS version.** Some AMCL parameters I found (`random_seed`, `introspection_mode`) come from newer Nav2 releases and do not exist in Humble, so they would be silently ignored. | Compared against Humble's own `nav2_bringup/params/nav2_params.yaml` and now use the Humble version of the Nav2 docs. |
 | **Particle cloud not showing in RViz.** The display said "Error subscribing". | AMCL was publishing (`ros2 topic info /particle_cloud -v`), but the display's topic was empty. Set it to `/particle_cloud` with Best Effort reliability, which matches AMCL's publisher. |
+| **Navigation goals failed with "extrapolation into the past".** The planner could not transform the goal from `odom` to `map`, and recoveries kept running. | RViz stamps 2D Goal Pose in its Fixed Frame, and the bringup RViz config uses `odom`. The goal kept its original timestamp, so after TF's 10 s buffer every replan failed. Goals belong in `map`, so I set Fixed Frame to `map` and saved it in `rviz/navigation.rviz`. |
+| **Default parameters belong to another robot.** The reference `nav2_params.yaml` is tuned for a TurtleBot3 (`robot_radius: 0.22`, comments about TurtleBot issues). | Measured my own robot in RViz and checked each section against this robot: frames, size, sensor type (2D, so no voxel layer), drive type (no sideways samples). |
