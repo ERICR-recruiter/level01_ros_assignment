@@ -1,13 +1,5 @@
-BUGS FOUND AND FIXED - Level 1 ROS2 Navigation Assignment
-=========================================================
-
-Environment used: Ubuntu 26.04, ROS 2 Lyrical, Gazebo Sim 10.5.0
-The starter code targets ROS 2 Humble and Gazebo Classic 11. Section B lists
-the changes needed only because of this different environment.
-
-
-A. BUGS IN THE STARTER CODE
----------------------------
+BUGS FOUND AND FIXED IN THE STARTER CODE - Level 1 ROS2 Navigation Assignment
+=============================================================================
 
 1. testbed_description/CMakeLists.txt
    Bug:   "ament_package" was written without parentheses.
@@ -84,32 +76,3 @@ Items 10, 11 and 12 may not be intentional bugs, but they affect odometry,
 planning and visualization.
 
 
-B. CHANGES FOR ROS 2 LYRICAL AND GAZEBO SIM
--------------------------------------------
-
-1. testbed.gazebo: replaced the Gazebo Classic plugins, including the ROS 1
-   plugin libgazebo_ros_control.so, with Gazebo Sim diff drive, joint state,
-   IMU and lidar. The lidar rate was lowered from 30 Hz to 10 Hz.
-2. testbed.xacro: removed the zero-size box on base_footprint. Gazebo Sim
-   replaces it with a 1 m cube.
-3. testbed_playground.world: added the Gazebo Sim system plugins and moved the
-   test_room pose out of the saved state block into the model. The two poses
-   differed by about 1.25 m in y, and the state block pose matches the map.
-4. spawn_playground.launch.py and spawn_testbed.launch.py: use ros_gz_sim and
-   ros_gz_bridge. Added a "headless" option.
-5. testbed_gazebo/config/bridge.yaml: new file. cmd_vel uses TwistStamped, the
-   Nav2 default on Lyrical.
-6. testbed_full_bringup.launch.py: added "rviz_hidpi_fix" (default false), for
-   RViz jitter on a high-DPI screen.
-
-
-C. SUSPICIOUS ITEMS LEFT UNCHANGED
-----------------------------------
-
-1. The IMU and dummy joint frames look swapped relative to their meshes (IMU
-   frame y = +0.05, IMU mesh y = -0.12). Navigation here does not use the IMU.
-2. The lidar centre of mass is at y = -0.25, outside the robot body.
-3. The wooden fence links have zero mass, which gives physics warnings.
-4. AMCL poses differ from Gazebo poses by a steady offset of about
-   (+0.06, -0.05) m, which suggests that the map and the world are not
-   perfectly aligned. The scans match the map, so the origin was not changed.
