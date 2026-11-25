@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Chandana Napa
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -125,6 +125,13 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Chandana Napa
+ - Contact number: 7075669601
+ - Email Address: napachandana23@gmail.com
+
+## Demo Videos
+
+The following videos demonstrate the robot's localization and autonomous navigation:
+
+1. [Demo Video 1](https://drive.google.com/file/d/1puRJOdfq9gMlEF8R2PE5zJ0q8bWKfkc0/view?usp=sharing)
+2. [Demo Video 2](https://drive.google.com/file/d/140XW0kFRzUFRyaeh3NuE_Xij-bJsJ8QH/view?usp=sharing)

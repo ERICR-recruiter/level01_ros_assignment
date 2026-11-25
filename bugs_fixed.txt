@@ -1,0 +1,26 @@
+Bugs Fixed in the Testbed ROS 2 Assignment
+
+1. Incorrect ament_package() declaration
+   File: testbed_description/CMakeLists.txt
+   Issue: Missing parentheses in the ament_package command.
+   Fix: Changed ament_package to ament_package().
+   Result: The package builds successfully with colcon.
+
+2. Invalid XML syntax in the Gazebo IMU plugin
+   File: testbed_description/urdf/testbed.gazebo
+   Issue: An extra '>' character was present after the
+          initial_orientation_as_reference closing tag.
+   Fix: Removed the extra character.
+   Result: The robot description has valid XML syntax.
+
+3. Incorrect map image filename
+   File: testbed_bringup/maps/testbed_world.yaml
+   Issue: The YAML referenced a nonexistent map image.
+   Fix: Changed the filename to testbed_world.pgm.
+   Result: The map server successfully loads the map.
+
+4. Map files missing from package installation
+   File: testbed_bringup/CMakeLists.txt
+   Issue: The maps directory was not included in installation.
+   Fix: Added maps to the CMake install DIRECTORY list.
+   Result: Map files are available from the installed package.

@@ -7,7 +7,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     robot_description_content = Command([
-        PathJoinSubstitution([FindExecutable(name="xacro")]),
+        FindExecutable(name="xacro"),
         " ",
         PathJoinSubstitution([
             FindPackageShare("testbed_description"),
