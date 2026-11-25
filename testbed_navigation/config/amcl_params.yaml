@@ -1,0 +1,48 @@
+amcl:
+  ros__parameters:
+    # Frames and topics (must match the URDF and diff_drive plugin)
+    global_frame_id: "map"
+    odom_frame_id: "odom"
+    base_frame_id: "base_footprint"
+    scan_topic: scan
+    tf_broadcast: true
+    transform_tolerance: 1.0
+
+    # Motion model: two driven wheels + casters
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+
+    # Laser model (matches the lidar in testbed.gazebo: 0.10-12.0 m, 300 samples)
+    laser_model_type: "likelihood_field"
+    laser_min_range: 0.10
+    laser_max_range: 12.0
+    max_beams: 60
+    z_hit: 0.5
+    z_rand: 0.5
+    sigma_hit: 0.2
+    laser_likelihood_max_dist: 2.0
+    do_beamskip: false
+
+    # Particle filter
+    min_particles: 500
+    max_particles: 2000
+    pf_err: 0.05
+    pf_z: 0.99
+    resample_interval: 1
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
+
+    # Update only after the robot moves this much (m / rad)
+    update_min_d: 0.25
+    update_min_a: 0.2
+    save_pose_rate: 0.5
+
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0
