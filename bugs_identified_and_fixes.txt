@@ -1,0 +1,65 @@
+================================================================================
+ERIC ROBOTICS - LEVEL 1 ROS2 NAVIGATION ASSIGNMENT
+IDENTIFIED BUGS AND FIXES REPORT
+================================================================================
+
+1. Map Configuration Path Error (testbed_bringup/maps/testbed_world.yaml)
+   - Bug: The map image filename was intentionally set to `wrong_path_testbed_world.pgm` 
+     instead of the existing map file `testbed_world.pgm`.
+   - Effect: Nav2 Map Server failed to find and load the map image.
+   - Fix: Updated `image: wrong_path_testbed_world.pgm` to `image: testbed_world.pgm`.
+
+2. CMake Syntax Error (testbed_description/CMakeLists.txt)
+   - Bug: Missing invocation parentheses on the final macro call: `ament_package` 
+     instead of `ament_package()`.
+   - Effect: CMake failed during the configure/build stage (`colcon build`).
+   - Fix: Corrected line to `ament_package()`.
+
+3. Missing Maps Installation in CMake (testbed_bringup/CMakeLists.txt)
+   - Bug: The `install(DIRECTORY ...)` directive only installed `launch/`, omitting `maps/`.
+   - Effect: Once built and installed, `get_package_share_directory('testbed_bringup')` 
+     did not contain the `maps` folder, causing runtime map lookup failures.
+   - Fix: Added `maps` directory to `install(DIRECTORY launch maps DESTINATION share/${PROJECT_NAME}/)`.
+
+4. Missing Models Installation in CMake (testbed_gazebo/CMakeLists.txt)
+   - Bug: The `install(DIRECTORY ...)` directive only installed `launch/` and `worlds/`, 
+     omitting the `models/` directory.
+   - Effect: In installed environments, Gazebo could not find the custom playground 
+     models referenced in `testbed_playground.world`.
+   - Fix: Added `models` directory to `install(DIRECTORY launch worlds models DESTINATION share/${PROJECT_NAME}/)`.
+
+5. ROS 1 Plugin Incompatibility (testbed_description/urdf/testbed.gazebo)
+   - Bug: The file contained `<plugin name="control" filename="libgazebo_ros_control.so"/>`.
+   - Effect: `libgazebo_ros_control.so` is a legacy ROS 1 plugin. In ROS 2 Humble Gazebo, 
+     it threw errors/warnings trying to load a non-existent shared library.
+   - Fix: Removed the obsolete `libgazebo_ros_control.so` plugin.
+
+6. XML Syntax Error in IMU Plugin (testbed_description/urdf/testbed.gazebo)
+   - Bug: Trailing angle bracket in tag: 
+     `<initial_orientation_as_reference>false</initial_orientation_as_reference>>`
+   - Effect: Potential XML/SDF parser syntax warning/error during model parsing.
+   - Fix: Removed the duplicate `>` bracket.
+
+7. Unrealistic LiDAR Max Range Setting (testbed_description/urdf/testbed.gazebo)
+   - Bug: The Hokuyo LiDAR ray sensor range was set to `<max>1.5</max>` meters.
+   - Effect: In the ~15x15m playground environment, a 1.5m max range meant the LiDAR 
+     scanned into empty space throughout most of the world. AMCL particles could not 
+     converge, and both global and local costmaps failed to register room walls and obstacles.
+   - Fix: Increased `<max>12.0</max>` meters and set horizontal samples to 360 for full coverage.
+
+8. Caster Wheel Friction Causing Turning Drag (testbed_description/urdf/testbed.gazebo)
+   - Bug: All 4 fixed caster wheels (`caster_1` to `caster_4`) had `mu1=0.2` and `mu2=0.2`.
+   - Effect: In Gazebo ODE physics, non-zero friction on fixed omnidirectional casters 
+     caused severe lateral resistance, making differential drive rotation slip or freeze.
+   - Fix: Set caster friction to `mu1=0.001` and `mu2=0.001` (virtually frictionless contact), 
+     and drive wheel friction to `mu1=1.0, mu2=1.0` for solid traction.
+
+9. Missing use_sim_time in Robot State Publisher (testbed_description/launch/robot_description.launch.py)
+   - Bug: `robot_state_publisher` was started with only `robot_description`, without 
+     `'use_sim_time': True`.
+   - Effect: TF frames were published with wall-clock timestamps rather than the simulation 
+     clock (`/clock`). Nav2 costmaps and AMCL rejected TF data due to timestamp discrepancies.
+   - Fix: Added `use_sim_time` launch argument (default `true`) and passed `'use_sim_time': use_sim_time` 
+     into `robot_state_publisher` node parameters.
+
+================================================================================
