@@ -38,32 +38,32 @@ In adherence to ERIC Robotics' modular software design principles, this package 
 
 2. **Localization (`nav2_amcl`)**:
    - Motion Model: `nav2_amcl::DifferentialMotionModel` matching the two-wheeled differential drive kinematics of Testbed-T1.0.0.
-   - Sensor Model: `likelihood_field` with 60 beams and 500–2000 particle dynamic filter size.
+   - Sensor Model: `likelihood_field` with 120 beams and 500–2000 particle dynamic filter size (`update_min_d: 0.05`, `update_min_a: 0.05`).
    - Laser Range: 0.1 m to 12.0 m, tuned to detect the 20m x 20m simulated playground arena.
    - Lifecycle: Managed independently by `lifecycle_manager_localization` (`node_names: ['amcl']`).
 
 3. **Global Planner (`nav2_planner`)**:
-   - Plugin: `nav2_navfn_planner/NavfnPlanner`
-   - Uses Dijkstra wave-expansion to compute smooth, global optimal collision-free paths from the robot's current pose to the goal pose across the global costmap.
+   - Plugin: `nav2_navfn_planner/NavfnPlanner` (`use_astar: false`)
+   - Uses Dijkstra wave-expansion to reliably compute smooth, global optimal collision-free paths from the robot's current pose to the goal pose across the global costmap.
 
-4. **Local Controller / Trajectory Generator (`nav2_controller`)**:
-   - Plugin: `dwb_core::DWBLocalPlanner` (Dynamic Window Approach)
-   - Velocity limits: Max forward speed $0.35\text{ m/s}$, rotational speed $1.0\text{ rad/s}$.
-   - Critics enabled:
-     - `RotateToGoal`: Orients the robot towards the target heading upon reaching goal vicinity.
-     - `Oscillation`: Prevents limit cycles / rapid back-and-forth steering.
-     - `BaseObstacle`: Heavily penalizes trajectories colliding with costmap obstacles.
-     - `PathAlign` & `GoalAlign`: Guides trajectories towards global path and final goal orientation.
-     - `PathDist` & `GoalDist`: Balances path adherence against distance progress.
+4. **Local Controller (`nav2_controller`)**:
+   - Plugin: `nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController`
+   - Velocity limits: Desired forward speed $0.35\text{ m/s}$, rotational speed $1.0\text{ rad/s}$.
+   - Features enabled:
+     - Arc-length velocity-scaled lookahead (`0.30 m` – `0.80 m`) ensuring the controller stays strictly on the path without being misled by U-turns behind walls.
+     - `use_regulated_linear_velocity_scaling` & `use_cost_regulated_linear_velocity_scaling`: Smoothly slows down around tight doorway turns and near wall inflation.
+     - `use_rotate_to_heading`: Rotates cleanly in place when angular heading error exceeds `0.785 rad`.
+     - `use_collision_detection`: Validates forward arc clearance against `local_costmap`.
 
-5. **Behavior Trees & Recovery (`nav2_bt_navigator` & `nav2_behaviors`)**:
+5. **Behavior Trees, Goal Relay & Recovery (`nav2_bt_navigator` & `nav2_behaviors`)**:
    - Behavior Tree Engine: `nav2_bt_navigator/NavigateToPoseNavigator` executing `navigate_to_pose_w_replanning_and_recovery.xml`.
-   - Recovery Behaviors: `spin` (`Spin`), `backup` (`BackUp`), and `wait` (`Wait`) via `behavior_server` to untangle the robot if localized obstacles block all paths.
+   - `goal_pose_relay.py`: Transforms incoming `/goal_pose` goals (e.g., clicked in RViz under `odom` Fixed Frame) into `map` frame once on receipt so multi-room plans never trigger 10-second TF extrapolation timeouts.
+   - Recovery Behaviors: `spin` (`Spin`), `backup` (`BackUp`), and `wait` (`Wait`) via `behavior_server`.
 
 6. **Costmaps (`nav2_costmap_2d`)**:
-   - Robot Physical Radius: $0.25\text{ m}$ ($25\text{ cm}$), accurately enveloping the robot chassis and caster wheel base.
-   - Local Costmap: $3\text{m} \times 3\text{m}$ rolling window on `odom` frame using voxel and inflation layers.
-   - Global Costmap: Full map static layer + dynamic obstacle marking/clearing from `/scan` + inflation layer ($0.55\text{ m}$ radius).
+   - Robot Physical Radius: $0.24\text{ m}$ ($24\text{ cm}$), enveloping the asymmetric right wheel (`-0.241 m`) and rear chassis while maintaining ~0.37 m clearance inside 0.85–0.90 m doorways.
+   - Local Costmap: $4\text{m} \times 4\text{m}$ rolling window on `odom` frame (`obstacle_layer` + `inflation_layer`, `inflation_radius: 0.40 m`, `cost_scaling_factor: 4.0`).
+   - Global Costmap: Full map static layer + dynamic obstacle marking/clearing from `/scan` + inflation layer (`0.40 m` radius, `cost_scaling_factor: 4.0`).
 
 ---
 
@@ -77,6 +77,8 @@ testbed_navigation/
 ├── config/
 │   ├── amcl_params.yaml              # Tuned AMCL localization parameters
 │   └── nav2_params.yaml              # Planners, controllers, costmaps, BT parameters
+├── scripts/
+│   └── goal_pose_relay.py            # Converts /goal_pose from odom to map frame once
 └── launch/
     ├── map_loader.launch.py          # Module 1: map_server + lifecycle manager
     ├── localization.launch.py        # Module 2: amcl + lifecycle manager
@@ -173,6 +175,6 @@ ros2 launch testbed_navigation testbed_navigation_bringup.launch.py
 | **TF timestamp rejection** | `robot_description.launch.py` omitted `use_sim_time: True`. | Added `use_sim_time: true` to synchronize TF with Gazebo clock. |
 | **Ground collision on spawn** | Robot spawned at $Z=0.0$ sinking into ground plane. | Set default spawn elevation to $Z=0.05$ with configurable arguments. |
 | **Stray XML tokens** | IMU sensor plugin had extra `>` character in `testbed.gazebo`. | Cleaned XML syntax. |
-| **Robot slip in Gazebo vs RViz** | Fixed casters had $\mu=0.2$ acting as brakes while drive wheels slipped in Gazebo. | Set caster friction to $\mu=0.001$ and drive wheels to $\mu=10.0$ with adequate torque. |
-| **Doorway navigation blocked** | Inflation radius $0.55\text{ m}$ overlapping in $0.85\text{ m}$ doorways. | Reduced inflation to $0.25\text{ m}$ with exponential decay (`cost_scaling_factor: 8.0`). |
-| **TF extrapolation into past** | Tight default transform tolerances (0.1s) under simulation load caused TF lookup failures. | Increased transform tolerance to $1.0\text{ s}$ across planners, costmaps, and controllers. |
+| **Robot slip in Gazebo vs RViz** | Fixed casters had $\mu=0.2$ acting as brakes; `wheel_separation` was $0.35\text{ m}$ instead of $0.376\text{ m}$. | Set caster friction to $\mu=0.001$, drive wheels to $\mu=10.0$, corrected separation to $0.376\text{ m}$ with $20\text{ N}\cdot\text{m}$ torque. |
+| **Doorway & U-turn stalls** | Inflation $0.55\text{ m}$ closed $0.9\text{ m}$ doors; DWB `GoalDist` locked onto paths behind walls. | Set `robot_radius: 0.24 m`, `inflation_radius: 0.40 m` (`cost_scaling_factor: 4.0`), and switched to `RegulatedPurePursuitController`. |
+| **TF extrapolation into past** | RViz `2D Goal Pose` under `odom` Fixed Frame exceeded 10s TF history on multi-room routes. | Added `goal_pose_relay.py` to convert goals into `map` frame on receipt and set `transform_tolerance: 1.0 s`. |

@@ -23,6 +23,8 @@
   <depend>nav2_costmap_2d</depend>
   <depend>nav2_util</depend>
   <depend>tf2_ros</depend>
+  <exec_depend>nav2_rotation_shim_controller</exec_depend>
+  <exec_depend>nav2_regulated_pure_pursuit_controller</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

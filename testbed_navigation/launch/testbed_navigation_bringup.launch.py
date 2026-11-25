@@ -122,6 +122,16 @@ def generate_launch_description():
         name='bt_navigator',
         output='screen',
         parameters=[nav2_params_file, {'use_sim_time': use_sim_time}],
+        remappings=[('goal_pose', 'goal_pose_map')]
+    )
+
+    # 6b. Goal Pose Frame Relay (transforms RViz /goal_pose from odom to map)
+    start_goal_relay_cmd = Node(
+        package='testbed_navigation',
+        executable='goal_pose_relay.py',
+        name='goal_pose_relay',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time}]
     )
 
     # 7. Coordinated Lifecycle Manager
@@ -150,5 +160,6 @@ def generate_launch_description():
         start_planner_server_cmd,
         start_behavior_server_cmd,
         start_bt_navigator_cmd,
+        start_goal_relay_cmd,
         start_lifecycle_manager_cmd,
     ])

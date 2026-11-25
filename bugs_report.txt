@@ -171,48 +171,60 @@ BUG 11: Caster Wheel High Friction Anchor Lock in testbed.gazebo
   physical robot remained anchored to the floor in Gazebo simulation.
 - Fix Applied:
   - Reduced caster wheel friction to nearly frictionless gliding contacts:
-    `<mu1>0.001</mu1>`, `<mu2>0.001</mu2>`, `<kp>1000000.0</kp>`, `<kd>100.0</kd>`.
-  - Increased drive wheel traction: `<mu1>2.0</mu1>`, `<mu2>2.0</mu2>`.
-  - Added `<max_wheel_torque>30.0</max_wheel_torque>` and `<max_wheel_acceleration>3.0</max_wheel_acceleration>`
-    in `diff_drive_control` so motors have sufficient torque to propel the robot in Gazebo.
+    `<mu1>0.001</mu1>`, `<mu2>0.001</mu2>`.
+  - Increased drive wheel traction: `<mu1>10.0</mu1>`, `<mu2>10.0</mu2>`.
+  - Corrected `<wheel_separation>0.376</wheel_separation>` (measured center-to-center
+    between `left_wheel_1` and `right_wheel_1` STL meshes, replacing `0.35`) and
+    added `<max_wheel_torque>20.0</max_wheel_torque>` and
+    `<max_wheel_acceleration>3.0</max_wheel_acceleration>` in `diff_drive_control` so
+    odometry and actuation match physical motion cleanly.
 
 --------------------------------------------------------------------------------
-BUG 12: Costmap Doorway Pinch / Inflation Blocking Multi-Room Navigation
+BUG 12: Costmap Doorway Pinch & Asymmetric Chassis Radius Blocking Navigation
 --------------------------------------------------------------------------------
 - File Path: testbed_navigation/config/nav2_params.yaml
 - Root Cause:
-  The doorway openings between rooms in the playground world (`testbed_world.pgm`)
-  are only 0.85 meters wide. With `inflation_radius: 0.55m`, the inflation cost
-  from both sides of the door (0.55m + 0.55m = 1.10m) overlapped and completely
-  blocked the doorway with lethal/high obstacle cost. The global planner and local
-  controller (DWB) rejected paths passing through narrow doors into other rooms.
+  1) The doorway openings between rooms (`testbed_world.pgm`) are 0.85–0.90 meters
+     wide. With `inflation_radius: 0.55m`, the inflation cost from both sides of
+     the door overlapped (`1.10m > 0.90m`), blocking doorways in the costmap.
+  2) Conversely, shrinking `robot_radius` too small (`0.18m`) under-approximated the
+     asymmetric robot geometry (whose `right_wheel_1` extends to `Y = -0.241m` from
+     `base_footprint`), causing paths to clip doorframes, while DWB's `GoalDistCritic`
+     locked onto the U-turn re-entry point on the opposite side of walls inside the
+     3x3m local costmap.
 - Fix Applied:
-  - Reduced `inflation_radius` to `0.35m` with an increased exponential decay
-    `cost_scaling_factor: 5.0`.
-  - Tuned `robot_radius: 0.20m` to match actual chassis half-width.
-  - Increased progress checker allowance `movement_time_allowance: 20.0s`.
-  This opens wide, safe traversable passages through all 0.85m doorways, enabling
-  reliable multi-room navigation.
+  - Set `robot_radius: 0.24m` to cover the true right-wheel extent (`0.241m`) while
+    leaving a generous ~0.37m traversable gap in 0.85–0.90m doorways.
+  - Tuned `inflation_radius: 0.40m` with `cost_scaling_factor: 4.0` across local (`4m x 4m`)
+    and global costmaps to guide paths smoothly through doorway centerlines.
+  - Switched controller to `nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController`
+    (with arc-length lookahead, curvature/cost velocity scaling, and in-place heading rotation),
+    eliminating DWB wall-tunnel U-turn stalls, and set `use_astar: false` in `NavfnPlanner`
+    to eliminate potential-gradient extraction errors.
 
 --------------------------------------------------------------------------------
-BUG 13: Stale TF Extrapolation Timeouts During Nav2 Replanning Under Sim Time
+BUG 13: Stale TF Extrapolation Timeouts on Cross-Room Goals Under Sim Time
 --------------------------------------------------------------------------------
-- File Path: testbed_navigation/config/nav2_params.yaml
+- File Paths:
+  - testbed_description/rviz/full_bringup.rviz
+  - testbed_navigation/config/nav2_params.yaml
+  - testbed_navigation/scripts/goal_pose_relay.py
 - Root Cause:
-  The default Nav2 transform tolerance across `planner_server`, `costmap_2d`, and
-  `behavior_server` was 0.1 seconds (or unconfigured). Under Gazebo simulation load,
-  slight clock latencies and goal replan ticks caused TF lookup requests to miss
-  the buffer window, throwing fatal extrapolation errors:
-  `Extrapolation Error looking up target frame: Lookup would require extrapolation into the past... Requested time X but earliest data is at time Y`.
-  Additionally, keeping RViz's Fixed Frame set to `map` during initial robot bringup
-  (`testbed_full_bringup`) caused RViz to drop all LiDAR scans and hide TF/robot models
-  because `map` does not exist until AMCL/map_server is launched.
+  When launching `testbed_full_bringup.launch.py`, RViz starts with `Fixed Frame: odom`
+  (because `map` does not exist until `map_server`/`amcl` start—setting `map` prematurely
+  drops `/scan` messages and hides robot TF). When a user clicks "2D Goal Pose" in RViz
+  while `Fixed Frame` is `odom`, RViz publishes `/goal_pose` stamped in `odom` at the
+  click timestamp. During multi-room routes exceeding the 10-second TF buffer history,
+  1 Hz replanning in `planner_server` fails with:
+  `Extrapolation Error looking up target frame: Lookup would require extrapolation into the past... when looking up transform from frame [odom] to frame [map]`.
 - Fix Applied:
-  - Kept `Fixed Frame: odom` in `full_bringup.rviz` so the robot model, TF coordinate
-    frames, and 360-degree LiDAR pointclouds render immediately upon simulation bringup.
+  - Kept `Fixed Frame: odom` in `full_bringup.rviz` and added pre-configured Map,
+    Global/Local Costmap, and Global/Local Plan displays so robot TF, LiDAR scans, and
+    Nav2 overlays all render seamlessly.
+  - Added `testbed_navigation/scripts/goal_pose_relay.py` (with `bt_navigator` remapping
+    `goal_pose:=goal_pose_map`) to transform incoming `/goal_pose` messages into the
+    global `map` frame once on receipt.
   - Configured `transform_tolerance: 1.0` (and `transform_timeout: 1.0`) across
-    `planner_server`, `FollowPath` (DWB), `local_costmap`, `global_costmap`, and
+    `planner_server`, `FollowPath`, `local_costmap`, `global_costmap`, and
     `behavior_server` in `nav2_params.yaml`.
-  - Configured `expected_planner_frequency: 1.0` to avoid over-subscribing the global
-    planner TF lookup queue.
 ================================================================================
