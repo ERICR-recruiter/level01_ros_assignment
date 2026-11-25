@@ -8,6 +8,8 @@ Manual Nav2 bringup for the Testbed-T1.0.0 robot. Instead of using `nav2_bringup
 | Localization | `launch/localization.launch.py` | `config/amcl_params.yaml` | Done |
 | Navigation | `launch/navigation.launch.py` | `config/nav2_params.yaml` | Done |
 
+**Demo video:** [docs/navigation_demo.mp4](docs/navigation_demo.mp4) (2 min, recorded on a clean build). It shows RViz and Gazebo side by side with the four launch terminals: AMCL localizing the robot, then Nav2 goals sent with 2D Goal Pose, with the robot planning and driving through the doorways to each goal.
+
 ---
 
 ## How to run
