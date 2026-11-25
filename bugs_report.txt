@@ -218,9 +218,9 @@ BUG 13: Stale TF Extrapolation Timeouts on Cross-Room Goals Under Sim Time
   1 Hz replanning in `planner_server` fails with:
   `Extrapolation Error looking up target frame: Lookup would require extrapolation into the past... when looking up transform from frame [odom] to frame [map]`.
 - Fix Applied:
-  - Kept `Fixed Frame: odom` in `full_bringup.rviz` and added pre-configured Map,
-    Global/Local Costmap, and Global/Local Plan displays so robot TF, LiDAR scans, and
-    Nav2 overlays all render seamlessly.
+  - Kept `Fixed Frame: odom` in `full_bringup.rviz` with Global/Local Plan displays
+    alongside RobotModel, TF, and `/scan` so robot TF, LiDAR scans, and planned
+    navigation paths render cleanly.
   - Added `testbed_navigation/scripts/goal_pose_relay.py` (with `bt_navigator` remapping
     `goal_pose:=goal_pose_map`) to transform incoming `/goal_pose` messages into the
     global `map` frame once on receipt.
