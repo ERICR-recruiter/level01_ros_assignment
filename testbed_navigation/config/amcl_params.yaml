@@ -1,0 +1,56 @@
+amcl:
+  ros__parameters:
+    base_frame_id: base_footprint
+    odom_frame_id: odom
+    global_frame_id: map
+    scan_topic: scan
+    map_topic: map
+    tf_broadcast: true
+    transform_tolerance: 1.0
+
+    robot_model_type: nav2_amcl::DifferentialMotionModel
+    alpha1: 0.1
+    alpha2: 0.1
+    alpha3: 0.1
+    alpha4: 0.1
+    alpha5: 0.1
+
+    min_particles: 500
+    max_particles: 2000
+    pf_err: 0.05
+    pf_z: 0.99
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
+    resample_interval: 1
+    update_min_a: 0.1
+    update_min_d: 0.1
+
+    laser_model_type: likelihood_field
+    laser_likelihood_max_dist: 2.0
+    laser_min_range: 0.1
+    laser_max_range: 12.0
+    max_beams: 60
+    sigma_hit: 0.2
+    z_hit: 0.5
+    z_rand: 0.5
+    z_max: 0.05
+    z_short: 0.05
+    lambda_short: 0.1
+    do_beamskip: false
+
+    save_pose_rate: 0.5
+    set_initial_pose: true
+    always_reset_initial_pose: false
+    first_map_only: false
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0
+
+lifecycle_manager_localization:
+  ros__parameters:
+    bond_timeout: 4.0
+    attempt_respawn_reconnection: true
+    node_names:
+      - amcl
