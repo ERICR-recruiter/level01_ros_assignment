@@ -1,230 +1,105 @@
-================================================================================
 ERIC Robotics - Level 1 ROS 2 Navigation Assignment: Bugs Identification Report
-================================================================================
 
-This document details all intentional and environmental bugs identified in the
-starter codebase (`level01_ros_assignment`) and explains the root causes along
-with the exact fixes applied.
+This document details all intentional and environmental bugs identified in the starter codebase (level01_ros_assignment) and explains the root causes along with the exact fixes applied.
 
---------------------------------------------------------------------------------
-BUG 1: Missing Parentheses on ament_package in testbed_description/CMakeLists.txt
---------------------------------------------------------------------------------
-- File Path: testbed_description/CMakeLists.txt (Line 23)
-- Root Cause:
-  The macro was invoked as `ament_package` without trailing parentheses `()`. In
-  CMake, macro/function calls strictly require parentheses, causing `colcon build`
-  to fail immediately with a fatal CMake parse error:
-  `Parse error. Expected "(", got newline with text ""`.
-- Fix Applied:
-  Changed line 23 from `ament_package` to `ament_package()`.
+Summary of Starter Code Bugs and Solutions
 
---------------------------------------------------------------------------------
-BUG 2: Missing Maps Directory in testbed_bringup/CMakeLists.txt Install Rule
---------------------------------------------------------------------------------
-- File Path: testbed_bringup/CMakeLists.txt (Lines 27-32)
-- Root Cause:
-  The `install(DIRECTORY ...)` directive only installed the `launch` directory to
-  `share/testbed_bringup`. The `maps/` directory containing `testbed_world.yaml`
-  and `testbed_world.pgm` was omitted from installation. When downstream
-  navigation and map server launch files attempt to locate the map using
-  `get_package_share_directory('testbed_bringup')`, the path failed because `maps/`
-  did not exist in the install prefix.
-- Fix Applied:
-  Updated `install(DIRECTORY ...)` in `testbed_bringup/CMakeLists.txt` to include `maps`:
-  ```cmake
-  install(
-    DIRECTORY
-      launch
-      maps
-    DESTINATION
-      share/${PROJECT_NAME}/
-  )
-  ```
+During the setup and testing of the Testbed-T1.0.0 autonomous navigation pipeline, 13 distinct bugs were identified across the codebase. These ranged from CMake build errors and missing file install paths to simulation physics bugs, sensor misconfigurations, and navigation tuning issues.
 
---------------------------------------------------------------------------------
-BUG 3: Erroneous PGM Image Path in testbed_bringup/maps/testbed_world.yaml
---------------------------------------------------------------------------------
-- File Path: testbed_bringup/maps/testbed_world.yaml (Line 1)
-- Root Cause:
-  Line 1 had `image: wrong_path_testbed_world.pgm`. The actual map image in the
-  same directory is `testbed_world.pgm`. When `nav2_map_server` loaded this YAML
-  file, it threw an image file not found error and aborted lifecycle activation.
-- Fix Applied:
-  Corrected Line 1 in `testbed_bringup/maps/testbed_world.yaml` to:
-  `image: testbed_world.pgm`.
+Below is an overview of each bug, what caused it, and how it was resolved.
 
---------------------------------------------------------------------------------
-BUG 4: Missing Models Directory in testbed_gazebo/CMakeLists.txt Install Rule
---------------------------------------------------------------------------------
-- File Path: testbed_gazebo/CMakeLists.txt (Lines 28-34)
-- Root Cause:
-  The `install(DIRECTORY ...)` directive only installed `launch` and `worlds`,
-  omitting the `models/` directory (which holds mesh assets such as `box_room`,
-  `eric`, and `wooden_fence`). In Gazebo, models could not be resolved when
-  launched from the colcon install workspace.
-- Fix Applied:
-  Updated `install(DIRECTORY ...)` in `testbed_gazebo/CMakeLists.txt` to include `models`:
-  ```cmake
-  install(
-    DIRECTORY
-      launch
-      worlds
-      models
-    DESTINATION
-      share/${PROJECT_NAME}/
-  )
-  ```
 
---------------------------------------------------------------------------------
-BUG 5: Deprecated ROS 1 Control Plugin in testbed_description/urdf/testbed.gazebo
---------------------------------------------------------------------------------
-- File Path: testbed_description/urdf/testbed.gazebo (Lines 6-8)
-- Root Cause:
-  The URDF included:
-  `<plugin name="control" filename="libgazebo_ros_control.so"/>`.
-  `libgazebo_ros_control.so` is a legacy ROS 1 plugin that does not exist in
-  ROS 2 Humble Gazebo. It caused Gazebo error logs upon world initialization:
-  `[ERROR] [gazebo_ros]: Failed to load system plugin: libgazebo_ros_control.so`.
-- Fix Applied:
-  Removed the deprecated ROS 1 control plugin block. Differential drive actuation
-  is properly handled by `libgazebo_ros_diff_drive.so`.
+Category 1: Build and Package Installation Issues
 
---------------------------------------------------------------------------------
-BUG 6: Malformed XML Syntax in IMU Sensor Plugin in testbed.gazebo
---------------------------------------------------------------------------------
-- File Path: testbed_description/urdf/testbed.gazebo (Line 40)
-- Root Cause:
-  Line 40 contained a duplicate closing bracket:
-  `<initial_orientation_as_reference>false</initial_orientation_as_reference>>`
-  This stray `>` character corrupted the XML structure and produced parser
-  warnings/errors during URDF processing.
-- Fix Applied:
-  Removed the extra `>` character.
+1. Syntax Error in Description CMakeLists
+File: testbed_description/CMakeLists.txt (Line 23)
+Root Cause: The ament_package macro was written without trailing parentheses. In CMake, all function and macro calls strictly require parentheses. This caused colcon build to fail immediately with a fatal CMake parse error: Parse error. Expected "(", got newline with text "".
+Fix: Changed line 23 from ament_package to ament_package().
 
---------------------------------------------------------------------------------
-BUG 7: Extremely Restrictive LiDAR Sensor Range in testbed.gazebo
---------------------------------------------------------------------------------
-- File Path: testbed_description/urdf/testbed.gazebo (Line 65)
-- Root Cause:
-  The ray sensor range was configured with `<max>1.5</max>`. In a 20m x 20m arena,
-  a 1.5-meter maximum detection cutoff blinded the robot to all walls and obstacles
-  further than 1.5 meters away. Consequently, AMCL could never observe features to
-  converge its particle filter, and the global/local costmaps remained blank.
-- Fix Applied:
-  Increased `<max>` range in `testbed_description/urdf/testbed.gazebo` from `1.5`
-  to `12.0` meters (realistic for standard 2D planar LiDARs like RPLIDAR/Hokuyo),
-  allowing reliable AMCL localization and costmap raytracing.
+2. Missing Maps Directory in Bringup Install Rule
+File: testbed_bringup/CMakeLists.txt (Lines 27-32)
+Root Cause: The install(DIRECTORY ...) directive only installed the launch directory into share/testbed_bringup. The maps directory containing testbed_world.yaml and testbed_world.pgm was omitted from installation. When downstream navigation and map server launch files attempted to locate the map using get_package_share_directory('testbed_bringup'), the path failed because maps did not exist in the install prefix.
+Fix: Added maps to the install(DIRECTORY ...) directive in testbed_bringup/CMakeLists.txt so that both launch and maps are installed.
 
---------------------------------------------------------------------------------
-BUG 8: Simulation Timestamp Desynchronization in robot_description.launch.py
---------------------------------------------------------------------------------
-- File Path: testbed_description/launch/robot_description.launch.py (Line 26)
-- Root Cause:
-  `robot_state_publisher` was started without `'use_sim_time': True`. In Gazebo,
-  simulation time advances via `/clock`. Because `robot_state_publisher` was using
-  system wall-clock time while Gazebo published odometry with simulation clock time,
-  TF frames had conflicting timestamps, causing Nav2 TF buffer extrapolation errors
-  and dropping scan transformations.
-- Fix Applied:
-  Added a `use_sim_time` launch argument defaulting to `true` and passed
-  `{'use_sim_time': use_sim_time}` to `robot_state_publisher`.
+3. Typo in Map Image Path
+File: testbed_bringup/maps/testbed_world.yaml (Line 1)
+Root Cause: Line 1 had image: wrong_path_testbed_world.pgm instead of testbed_world.pgm. When nav2_map_server loaded this YAML configuration, it threw a file-not-found error and aborted lifecycle activation.
+Fix: Corrected line 1 in testbed_bringup/maps/testbed_world.yaml to image: testbed_world.pgm.
 
---------------------------------------------------------------------------------
-BUG 9: Robot Spawn Height Clipping at Z=0.0 in spawn_testbed.launch.py
---------------------------------------------------------------------------------
-- File Path: testbed_gazebo/launch/spawn_testbed.launch.py (Line 15)
-- Root Cause:
-  The initial spawn position was hardcoded to `position = [0.0, 5.0, 0.0]`.
-  Spawning at $Z=0.0$ placed the collision geometries of the wheels and base
-  directly inside the Gazebo ground plane ($Z=0$), causing ODE solver collision
-  explosions where the robot would jitter or flip. Additionally, $Y=5.0$ placed
-  the robot dangerously close to boundary fence models.
-- Fix Applied:
-  Introduced configurable launch arguments (`x_pose`, `y_pose`, `z_pose`, `yaw_pose`)
-  with safe defaults: $X=0.0, Y=0.0, Z=0.05, Yaw=0.0$. Spawning with $Z=0.05$
-  allows the robot to drop gently onto the ground plane without collision glitches.
+4. Missing Models Directory in Gazebo CMakeLists
+File: testbed_gazebo/CMakeLists.txt (Lines 28-34)
+Root Cause: The install(DIRECTORY ...) directive only installed launch and worlds, omitting the models directory containing simulation 3D mesh assets such as box_room, eric, and wooden_fence. In Gazebo, world models could not be resolved when launched from the colcon install workspace.
+Fix: Updated install(DIRECTORY ...) in testbed_gazebo/CMakeLists.txt to include models.
 
---------------------------------------------------------------------------------
-BUG 10: Inefficient/Fragile Substitution in testbed_full_bringup.launch.py
---------------------------------------------------------------------------------
-- File Path: testbed_bringup/launch/testbed_full_bringup.launch.py (Lines 35-37)
-- Root Cause:
-  `FindPackageShare(package='testbed_description').find('testbed_description')`
-  was used to locate the RViz configuration file, despite `pkg_testbed_description`
-  already being resolved at the top of the function.
-- Fix Applied:
-  Simplified to `os.path.join(pkg_testbed_description, 'rviz', 'full_bringup.rviz')`.
-================================================================================
 
---------------------------------------------------------------------------------
-BUG 11: Caster Wheel High Friction Anchor Lock in testbed.gazebo
---------------------------------------------------------------------------------
-- File Path: testbed_description/urdf/testbed.gazebo (Lines 96-155)
-- Root Cause:
-  The 4 passive caster wheels are fixed rigid joints (`type="fixed"` in URDF) and
-  collectively hold 4.7 kg of the robot's mass. In `testbed.gazebo`, their friction
-  was set to `<mu1>0.2</mu1>` and `<mu2>0.2</mu2>`—identical to the drive wheels!
-  Because the fixed casters could not rotate and bore most of the robot weight,
-  they acted as mechanical brake pads against the floor. When Nav2 commanded
-  velocities, the drive wheels slipped in place: Gazebo integrated the wheel
-  rotation into odometry (causing the robot to appear to move in RViz), but the
-  physical robot remained anchored to the floor in Gazebo simulation.
-- Fix Applied:
-  - Reduced caster wheel friction to nearly frictionless gliding contacts:
-    `<mu1>0.001</mu1>`, `<mu2>0.001</mu2>`.
-  - Increased drive wheel traction: `<mu1>10.0</mu1>`, `<mu2>10.0</mu2>`.
-  - Corrected `<wheel_separation>0.376</wheel_separation>` (measured center-to-center
-    between `left_wheel_1` and `right_wheel_1` STL meshes, replacing `0.35`) and
-    added `<max_wheel_torque>20.0</max_wheel_torque>` and
-    `<max_wheel_acceleration>3.0</max_wheel_acceleration>` in `diff_drive_control` so
-    odometry and actuation match physical motion cleanly.
+Category 2: Gazebo Simulation and URDF Issues
 
---------------------------------------------------------------------------------
-BUG 12: Costmap Doorway Pinch & Asymmetric Chassis Radius Blocking Navigation
---------------------------------------------------------------------------------
-- File Path: testbed_navigation/config/nav2_params.yaml
-- Root Cause:
-  1) The doorway openings between rooms (`testbed_world.pgm`) are 0.85–0.90 meters
-     wide. With `inflation_radius: 0.55m`, the inflation cost from both sides of
-     the door overlapped (`1.10m > 0.90m`), blocking doorways in the costmap.
-  2) Conversely, shrinking `robot_radius` too small (`0.18m`) under-approximated the
-     asymmetric robot geometry (whose `right_wheel_1` extends to `Y = -0.241m` from
-     `base_footprint`), causing paths to clip doorframes, while DWB's `GoalDistCritic`
-     locked onto the U-turn re-entry point on the opposite side of walls inside the
-     3x3m local costmap.
-- Fix Applied:
-  - Set `robot_radius: 0.24m` to cover the true right-wheel extent (`0.241m`) while
-    leaving a generous ~0.37m traversable gap in 0.85–0.90m doorways.
-  - Tuned `inflation_radius: 0.40m` with `cost_scaling_factor: 4.0` across local (`4m x 4m`)
-    and global costmaps to guide paths smoothly through doorway centerlines.
-  - Switched controller to `nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController`
-    (with arc-length lookahead, curvature/cost velocity scaling, and in-place heading rotation),
-    eliminating DWB wall-tunnel U-turn stalls, and set `use_astar: false` in `NavfnPlanner`
-    to eliminate potential-gradient extraction errors.
+5. Deprecated ROS 1 Control Plugin
+File: testbed_description/urdf/testbed.gazebo (Lines 6-8)
+Root Cause: The URDF attempted to load libgazebo_ros_control.so. This is a legacy ROS 1 plugin that does not exist in ROS 2 Humble Gazebo. It caused Gazebo error logs upon world initialization stating that it failed to load the system plugin.
+Fix: Removed the deprecated ROS 1 control plugin block. Differential drive actuation is properly handled by libgazebo_ros_diff_drive.so.
 
---------------------------------------------------------------------------------
-BUG 13: Stale TF Extrapolation Timeouts on Cross-Room Goals Under Sim Time
---------------------------------------------------------------------------------
-- File Paths:
-  - testbed_description/rviz/full_bringup.rviz
-  - testbed_navigation/config/nav2_params.yaml
-  - testbed_navigation/scripts/goal_pose_relay.py
-- Root Cause:
-  When launching `testbed_full_bringup.launch.py`, RViz starts with `Fixed Frame: odom`
-  (because `map` does not exist until `map_server`/`amcl` start—setting `map` prematurely
-  drops `/scan` messages and hides robot TF). When a user clicks "2D Goal Pose" in RViz
-  while `Fixed Frame` is `odom`, RViz publishes `/goal_pose` stamped in `odom` at the
-  click timestamp. During multi-room routes exceeding the 10-second TF buffer history,
-  1 Hz replanning in `planner_server` fails with:
-  `Extrapolation Error looking up target frame: Lookup would require extrapolation into the past... when looking up transform from frame [odom] to frame [map]`.
-- Fix Applied:
-  - Kept `Fixed Frame: odom` in `full_bringup.rviz` with Global/Local Plan displays
-    alongside RobotModel, TF, and `/scan` so robot TF, LiDAR scans, and planned
-    navigation paths render cleanly.
-  - Added `testbed_navigation/scripts/goal_pose_relay.py` (with `bt_navigator` remapping
-    `goal_pose:=goal_pose_map`) to transform incoming `/goal_pose` messages into the
-    global `map` frame once on receipt.
-  - Configured `transform_tolerance: 1.0` (and `transform_timeout: 1.0`) across
-    `planner_server`, `FollowPath`, `local_costmap`, `global_costmap`, and
-    `behavior_server` in `nav2_params.yaml`.
-================================================================================
+6. Malformed XML Syntax in IMU Plugin
+File: testbed_description/urdf/testbed.gazebo (Line 40)
+Root Cause: Line 40 contained a duplicate closing bracket: <initial_orientation_as_reference>false</initial_orientation_as_reference>>. This stray character corrupted the XML syntax and produced parser warnings and errors during URDF processing.
+Fix: Removed the extra bracket character.
+
+7. Robot Spawning Inside the Floor
+File: testbed_gazebo/launch/spawn_testbed.launch.py (Line 15)
+Root Cause: The initial spawn position was hardcoded to position = [0.0, 5.0, 0.0]. Spawning at Z = 0.0 placed the collision geometries of the wheels and chassis directly inside the Gazebo ground plane. The ODE physics engine attempted to violently eject the intersecting collision meshes, causing the robot to jitter or flip. In addition, Y = 5.0 placed the robot dangerously close to boundary fence models.
+Fix: Added configurable launch arguments (x_pose, y_pose, z_pose, yaw_pose) with safe defaults of X = 0.0, Y = 0.0, Z = 0.05, Yaw = 0.0. Spawning at Z = 0.05 allows the robot to drop gently onto the ground plane without collision glitches.
+
+8. Inefficient Path Resolution in Bringup Launch
+File: testbed_bringup/launch/testbed_full_bringup.launch.py (Lines 35-37)
+Root Cause: A nested FindPackageShare call was used to locate the RViz configuration file, even though pkg_testbed_description was already resolved at the start of the function.
+Fix: Simplified the path resolution using os.path.join(pkg_testbed_description, 'rviz', 'full_bringup.rviz').
+
+
+Category 3: Sensor and Timing Synchronization Issues
+
+9. Extremely Restrictive LiDAR Sensor Range
+File: testbed_description/urdf/testbed.gazebo (Line 65)
+Root Cause: The LiDAR ray sensor max range was configured to 1.5 meters. In a 20-by-20 meter arena, a 1.5-meter maximum detection cutoff blinded the robot to all walls and obstacles further than 1.5 meters away. As a result, AMCL could never observe features to converge its particle filter, and the global and local costmaps remained blank.
+Fix: Increased the max range from 1.5 to 12.0 meters, realistic for standard planar 2D LiDAR units like RPLIDAR or Hokuyo, enabling reliable AMCL particle convergence and clear costmap raytracing.
+
+10. Simulation Timestamp Desynchronization
+File: testbed_description/launch/robot_description.launch.py (Line 26)
+Root Cause: The robot_state_publisher node was started without use_sim_time: True. In Gazebo, simulation time advances via the /clock topic. Because robot_state_publisher used system wall-clock time while Gazebo published odometry with simulation clock time, TF frames had conflicting timestamps, causing Nav2 TF buffer extrapolation errors and dropping scan transformations.
+Fix: Added a use_sim_time launch argument defaulting to true and passed {'use_sim_time': use_sim_time} to robot_state_publisher.
+
+
+Category 4: Physical Dynamics and Traction Issues
+
+11. Caster Wheel Anchor Lock (Robot Moving in RViz but Stationary in Gazebo)
+File: testbed_description/urdf/testbed.gazebo (Lines 96-155)
+Root Cause: The four passive caster wheels are fixed rigid joints carrying about 4.7 kg of the robot's mass. In testbed.gazebo, their friction parameters were set to mu1 = 0.2 and mu2 = 0.2, identical to the drive wheels. Because the fixed casters could not rotate and bore most of the robot weight, they acted as mechanical brake pads against the floor. When Nav2 commanded velocities, the drive wheels slipped in place. Gazebo integrated the wheel rotation into odometry (making the robot appear to move in RViz), but the physical robot remained anchored to the floor in Gazebo.
+Fix Applied:
+- Reduced caster wheel friction to nearly frictionless gliding contacts (mu1 = 0.001, mu2 = 0.001).
+- Increased drive wheel traction (mu1 = 10.0, mu2 = 10.0).
+- Corrected wheel_separation to 0.376 meters (measured center-to-center between left_wheel_1 and right_wheel_1 STL meshes, replacing 0.35 meters).
+- Added max_wheel_torque of 20.0 Newton-meters and max_wheel_acceleration of 3.0 in diff_drive_control so odometry matches physical actuation cleanly.
+
+
+Category 5: Navigation and Costmap Tuning Issues
+
+12. Costmap Doorway Pinching and Asymmetric Chassis Radius Blocking Navigation
+File: testbed_navigation/config/nav2_params.yaml
+Root Cause:
+First, doorway openings between rooms in testbed_world.pgm are 0.85 to 0.90 meters wide. With a standard inflation_radius of 0.55 meters, the inflation cost from both sides of the door overlapped (1.10 meters greater than 0.90 meters), completely blocking doorways in the costmap.
+Second, shrinking robot_radius too small (such as 0.18 meters) under-approximated the asymmetric robot geometry (whose right_wheel_1 extends to Y = -0.241 meters from base_footprint), causing paths to clip doorframes. At the same time, the DWB controller's GoalDistCritic locked onto the U-turn re-entry point on the opposite side of walls inside the local costmap, stalling the robot.
+Fix Applied:
+- Set robot_radius to 0.24 meters to cover the true right-wheel extent while leaving a safe traversable gap in 0.85 to 0.90 meter doorways.
+- Tuned inflation_radius to 0.40 meters with cost_scaling_factor = 4.0 across local (4m x 4m) and global costmaps to guide paths smoothly through doorway centerlines.
+- Switched the local controller to nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController with arc-length lookahead, curvature and cost velocity scaling, and in-place heading rotation, eliminating wall-tunnel U-turn stalls.
+- Configured use_astar = false in NavfnPlanner (using Dijkstra wave expansion) to eliminate gradient extraction failures in tight spaces.
+
+13. Stale TF Extrapolation Timeouts on Cross-Room Goals Under Simulation Time
+Files:
+- testbed_description/rviz/full_bringup.rviz
+- testbed_navigation/config/nav2_params.yaml
+- testbed_navigation/scripts/goal_pose_relay.py
+Root Cause: When launching testbed_full_bringup.launch.py, RViz starts with Fixed Frame: odom because map does not exist until map_server and amcl are active. When a user clicks 2D Goal Pose in RViz while Fixed Frame is odom, RViz publishes /goal_pose stamped in odom at the click timestamp. During multi-room routes exceeding the 10-second TF buffer history, 1 Hz replanning in planner_server failed with: Extrapolation Error looking up target frame: Lookup would require extrapolation into the past... when looking up transform from frame [odom] to frame [map].
+Fix Applied:
+- Kept Fixed Frame: odom in full_bringup.rviz with Global and Local Plan displays alongside RobotModel, TF, and /scan so robot TF, LiDAR pointclouds, and planned navigation paths render cleanly without wall overlays.
+- Created testbed_navigation/scripts/goal_pose_relay.py (with bt_navigator remapping goal_pose:=goal_pose_map) to transform incoming /goal_pose messages into the global map frame once upon receipt.
+- Configured transform_tolerance: 1.0 (and transform_timeout: 1.0) across planner_server, FollowPath, local_costmap, global_costmap, and behavior_server in nav2_params.yaml.
