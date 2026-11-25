@@ -126,5 +126,5 @@ We’re excited to see how you approach this task. Good luck, and happy coding! 
 
 ## Contact Info 
  - Name: Sarath Kumar S K
- - Contact number: +91 6381207641
+ - Contact number: +91-6381207641
  - Email Address: sarathkumarsenthilkavitha@gmail.com
