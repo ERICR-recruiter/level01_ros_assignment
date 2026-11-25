@@ -27,7 +27,9 @@ endif()
 
 install(
   DIRECTORY
+    config
     launch
+    models
     worlds
   DESTINATION
     share/${PROJECT_NAME}/

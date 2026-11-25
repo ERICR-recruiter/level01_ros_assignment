@@ -1,0 +1,11 @@
+map_server:
+  ros__parameters:
+    topic_name: map
+    frame_id: map
+
+lifecycle_manager_map:
+  ros__parameters:
+    bond_timeout: 4.0
+    attempt_respawn_reconnection: true
+    node_names:
+      - map_server

@@ -1,0 +1,78 @@
+BUGS FOUND AND FIXED IN THE STARTER CODE - Level 1 ROS2 Navigation Assignment
+=============================================================================
+
+1. testbed_description/CMakeLists.txt
+   Bug:   "ament_package" was written without parentheses.
+   Found: colcon build stopped with 'Parse error. Expected "("'.
+   Fix:   Changed to "ament_package()".
+
+2. testbed_bringup/maps/testbed_world.yaml
+   Bug:   image pointed to "wrong_path_testbed_world.pgm", which does not exist.
+   Found: Compared the yaml with the files in the maps folder.
+   Fix:   Changed to "testbed_world.pgm". map_server now loads a 405 x 400 map.
+
+3. testbed_bringup/CMakeLists.txt
+   Bug:   The maps folder was not installed.
+   Found: Only "launch" was in the install rule.
+   Fix:   Added "maps".
+
+4. testbed_gazebo/CMakeLists.txt
+   Bug:   The models folder was not installed, but the launch file uses it.
+   Found: Compared the install rule with spawn_playground.launch.py.
+   Fix:   Added "models".
+
+5. testbed_description/urdf/testbed.gazebo (wheel separation)
+   Bug:   wheel_separation was 0.35. The wheel mesh centres are 0.376 m apart.
+   Found: Measured the meshes, then compared odometry with the Gazebo pose.
+   Fix:   Set to 0.385. With 0.376 a commanded full turn still gave 346.8 deg
+          in odometry against 338.9 deg actual. With 0.385 it gave 344.6 deg
+          against 345.1 deg. The value 0.385 is tuned to this simulation.
+
+6. testbed_description/urdf/testbed.gazebo (lidar range)
+   Bug:   The lidar maximum range was 1.5 m in a room of about 20 x 20 m. The
+          nearest mapped obstacle to the spawn point is 3.35 m away.
+   Found: Compared the sensor range with the map.
+   Fix:   Set to 12.0 m. 298 of 300 rays then returned a range at the spawn.
+
+7. testbed_description/launch/robot_description.launch.py
+   Bug:   robot_state_publisher did not use simulation time.
+   Found: use_sim_time was missing from the node parameters.
+   Fix:   Added use_sim_time: True and checked it on the running node.
+
+8. package.xml of testbed_bringup, testbed_description and testbed_gazebo
+   Bug:   Dependencies were missing, for example rclpy in testbed_bringup,
+          although its CMakeLists.txt requires it.
+   Found: Compared package.xml with CMakeLists.txt and the launch files.
+   Fix:   Declared the missing dependencies.
+
+9. testbed_description/urdf/testbed.gazebo (IMU block)
+   Bug:   Stray ">" after initial_orientation_as_reference. xacro still parsed
+          the file, so this was a typo and not a crash.
+   Found: Read the file.
+   Fix:   Removed it. The whole IMU block was later replaced, see B1.
+
+10. testbed_description/urdf/testbed.xacro (rotation centre)
+    Bug:   base_footprint was not at the centre between the wheels, which is
+           at (-0.0505, -0.0378) from it.
+    Found: A turn of about 180 deg moved the robot 0.125 m in Gazebo while
+           odometry showed no movement.
+    Fix:   Moved base_link by (0.0505, 0.0378) under base_footprint. The shift
+           is now below 0.005 m.
+
+11. testbed_bringup/maps/testbed_world.yaml (free_thresh)
+    Bug:   5345 unknown cells (pixel 205, occupancy 0.19608) loaded as free
+           because free_thresh was 0.25.
+    Found: Counted the cell values published on /map.
+    Fix:   Set free_thresh to 0.196. The cells now load as unknown.
+
+12. testbed_description/rviz/full_bringup.rviz
+    Bug:   There was no Map display, the fixed frame was odom and the robot
+           description used Volatile durability.
+    Found: Read the file.
+    Fix:   Fixed frame map, added map, costmap, path, particle and footprint
+           displays, Transient Local durability for the robot description.
+
+Items 10, 11 and 12 may not be intentional bugs, but they affect odometry,
+planning and visualization.
+
+
