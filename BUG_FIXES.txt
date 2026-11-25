@@ -1,0 +1,90 @@
+# ERIC ROS 2 Assignment – Bug Fixes
+
+## 1. Incorrect Map Image Path
+
+**File:** `testbed_bringup/maps/testbed_world.yaml`
+
+**Issue:**
+The map YAML file referenced an incorrect image filename:
+
+`wrong_path_testbed_world.pgm`
+
+This prevented the map server from locating the occupancy map image correctly.
+
+**Root Cause:**
+The image filename specified in the YAML file did not match the actual map image filename.
+
+**Fix Implemented:**
+Updated the image entry to:
+
+`image: testbed_world.pgm`
+
+**Result:**
+The map server successfully loaded the map image.
+
+---
+
+## 2. Map Files Missing from Package Installation
+
+**File:** `testbed_bringup/CMakeLists.txt`
+
+**Issue:**
+The map files were not included in the package installation directory.
+
+**Root Cause:**
+The `maps` directory was missing from the CMake install directory list.
+
+**Fix Implemented:**
+Added `maps` to the existing install directive:
+
+```cmake
+install(
+  DIRECTORY
+    launch
+    maps
+  DESTINATION
+    share/${PROJECT_NAME}/
+)
+```
+
+**Result:**
+The map YAML and PGM files were installed with the `testbed_bringup` package. The Nav2 map server successfully loaded the installed map.
+
+---
+
+## 3. Navigation Package Implementation
+
+**Package:** `testbed_navigation`
+
+**Implementation:**
+Created a separate ROS 2 package to configure and launch Nav2 components manually.
+
+Implemented the following launch files:
+
+- `map_loader.launch.py`
+- `localization.launch.py`
+- `navigation.launch.py`
+
+Added configuration files:
+
+- `amcl_params.yaml`
+- `nav2_params.yaml`
+
+**Testing Result:**
+The map server, AMCL, planner, controller, behavior server and BT Navigator were successfully activated. Navigation actions became available, and the robot successfully moved in Gazebo and RViz using a navigation goal.
+
+---
+
+## 4. Validation
+
+The following functionality was tested:
+
+- ROS 2 workspace build.
+- Gazebo robot simulation.
+- Map loading.
+- AMCL localization.
+- Nav2 component activation.
+- Navigation action availability.
+- Robot movement using RViz navigation goals.
+
+**Note:** Further goal-completion testing and evidence screenshots are included in the assignment validation process.

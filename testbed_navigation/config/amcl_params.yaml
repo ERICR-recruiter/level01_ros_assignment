@@ -1,0 +1,30 @@
+amcl:
+  ros__parameters:
+    use_sim_time: true
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+    base_frame_id: "base_footprint"
+    global_frame_id: "map"
+    odom_frame_id: "odom"
+    scan_topic: "/scan"
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    min_particles: 500
+    max_particles: 2000
+    set_initial_pose: false
+    tf_broadcast: true
+    transform_tolerance: 1.0
+    update_min_d: 0.10
+    update_min_a: 0.10
+    laser_model_type: "likelihood_field"
+    max_beams: 60
+    do_beamskip: false
+    laser_max_range: 12.0
+    laser_min_range: 0.10
+    max_laser_range: 12.0
+    save_pose_rate: 0.5
+    resample_interval: 1
+    pf_err: 0.05
+    pf_z: 0.99
