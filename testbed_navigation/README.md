@@ -130,4 +130,5 @@ The following screenshots demonstrate the implementation:
 
 A demonstration video of the ROS 2 navigation implementation can be added here.
 
-**Video Link:** To be added.
+[ros2_navigation_demo.webm](https://github.com/user-attachments/assets/87b4b982-5a1e-4e9f-884b-9b5e711e9e4c)
+
