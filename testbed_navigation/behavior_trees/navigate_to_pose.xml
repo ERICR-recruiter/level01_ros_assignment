@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+  Behavior Tree: NavigateToPose with Replanning and Recovery
+  Robot: Testbed-T1.0.0 (ERIC Robotics)
+
+  Structure:
+    1. RecoveryNode wraps the whole navigation attempt (max 6 retries).
+    2. PipelineSequence runs planning and path-following concurrently.
+       - RateController replans the global path at 1 Hz.
+       - FollowPath executes the DWB local controller.
+    3. On failure the RecoveryFallback tries, in round-robin order:
+       a. Clear both costmaps.
+       b. Spin in place (90°).
+       c. Wait 5 s.
+       d. Back up 0.15 m.
+       If a new goal arrives (GoalUpdated), recovery is interrupted.
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <RateController hz="1.0">
+          <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+        </RateController>
+        <FollowPath path="{path}" controller_id="FollowPath"/>
+      </PipelineSequence>
+      <ReactiveFallback name="RecoveryFallback">
+        <GoalUpdated/>
+        <RoundRobin name="RecoveryActions">
+          <Sequence name="ClearingActions">
+            <ClearEntireCostmap name="ClearLocalCostmap"
+              service_name="local_costmap/clear_entirely_local_costmap"/>
+            <ClearEntireCostmap name="ClearGlobalCostmap"
+              service_name="global_costmap/clear_entirely_global_costmap"/>
+          </Sequence>
+          <Spin spin_dist="1.57"/>
+          <Wait wait_duration="5"/>
+          <BackUp backup_dist="0.15" backup_speed="0.025"/>
+        </RoundRobin>
+      </ReactiveFallback>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>
