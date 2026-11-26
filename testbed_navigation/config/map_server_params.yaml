@@ -1,0 +1,10 @@
+# ------------------------------------------------------------------
+# Map Server parameters for Testbed-T1.0.0
+# Used by: map_loader.launch.py
+# ------------------------------------------------------------------
+map_server:
+  ros__parameters:
+    use_sim_time: true
+    yaml_filename: ""   # Overridden by launch file at runtime
+    topic_name: "map"
+    frame_id: "map"

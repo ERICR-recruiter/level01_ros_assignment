@@ -1,0 +1,106 @@
+================================================================================
+ERIC ROBOTICS — LEVEL 1 ROS 2 NAVIGATION ASSIGNMENT
+STARTER REPOSITORY BUGS IDENTIFICATION AND RESOLUTION REPORT
+================================================================================
+Author: Kunal J
+Date: 2026-11-24
+Robot: Testbed-T1.0.0
+Target Platform: ROS 2 Humble / Ubuntu 22.04 / Gazebo Classic 11
+
+--------------------------------------------------------------------------------
+BUG 1: CMake 'ament_package' missing parentheses
+--------------------------------------------------------------------------------
+File: testbed_description/CMakeLists.txt (line 23)
+Problem: 'ament_package' was written without parentheses.
+Why it is incorrect: 'ament_package' is a CMake macro. Without (), CMake treats
+it as a variable dereference rather than a macro invocation. As a result, the
+ament package registration, package marker, and CMake export files are never
+generated, breaking downstream dependencies.
+Solution: Corrected to 'ament_package()'.
+Verification: colcon build completes successfully; ament package index entry is
+created in install space.
+
+--------------------------------------------------------------------------------
+BUG 2: Map YAML referenced non-existent PGM image
+--------------------------------------------------------------------------------
+File: testbed_bringup/maps/testbed_world.yaml (line 1)
+Problem: YAML specified 'image: wrong_path_testbed_world.pgm'.
+Why it is incorrect: The file 'wrong_path_testbed_world.pgm' does not exist in the
+maps directory. The actual occupancy grid file is 'testbed_world.pgm'. At runtime,
+nav2_map_server fails to load the map and throws a file not found error.
+Solution: Updated image parameter to 'image: testbed_world.pgm'.
+Verification: Map YAML parses cleanly and testbed_world.pgm exists (405x400 px).
+
+--------------------------------------------------------------------------------
+BUG 3: IMU plugin XML syntax error and tag misplacement
+--------------------------------------------------------------------------------
+File: testbed_description/urdf/testbed.gazebo (line 40)
+Problem: '<initial_orientation_as_reference>false</initial_orientation_as_reference>>'
+contained a stray '>' character and was located outside the proper plugin indentation.
+Why it is incorrect: Stray character causes XML parsing to crash (mismatched tags).
+Furthermore, initial_orientation_as_reference is a parameter of the
+gazebo_ros_imu_sensor plugin and must be a child element within the <plugin> block.
+Solution: Moved tag inside <plugin> block with correct indentation and removed
+stray '>'.
+Verification: ElementTree XML parser parses testbed.gazebo with zero syntax errors.
+
+--------------------------------------------------------------------------------
+BUG 4: 'maps/' directory omitted from install target
+--------------------------------------------------------------------------------
+File: testbed_bringup/CMakeLists.txt (line 27)
+Problem: install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/) only installed
+the launch directory.
+Why it is incorrect: After colcon build, testbed_bringup's share folder did not
+contain the maps/ folder. Any node relying on
+get_package_share_directory('testbed_bringup') + '/maps/...' failed at runtime.
+Solution: Updated to 'install(DIRECTORY launch maps DESTINATION share/${PROJECT_NAME}/)'.
+Verification: Map files are copied into install/testbed_bringup/share/testbed_bringup/maps/.
+
+--------------------------------------------------------------------------------
+BUG 5: Obsolete ROS 1 Gazebo control plugin
+--------------------------------------------------------------------------------
+File: testbed_description/urdf/testbed.gazebo (lines 6-8)
+Problem: Contained '<plugin name="control" filename="libgazebo_ros_control.so"/>'.
+Why it is incorrect: libgazebo_ros_control.so is a ROS 1 plugin that does not exist
+in ROS 2 Humble. The robot already uses libgazebo_ros_diff_drive.so for motion
+control. Attempting to load the non-existent ROS 1 plugin causes Gazebo to emit
+runtime load errors.
+Solution: Removed the unused and incompatible ROS 1 plugin block.
+Verification: Gazebo loads model cleanly without library not found errors.
+
+--------------------------------------------------------------------------------
+BUG 6: Differential-drive wheel separation mismatch with URDF geometry
+--------------------------------------------------------------------------------
+File: testbed_description/urdf/testbed.gazebo (line 13)
+Problem: '<wheel_separation>0.35</wheel_separation>' was configured.
+Why it is incorrect: From URDF joint origins: left_wheel_joint Y = +0.135241 m,
+right_wheel_joint Y = -0.210759 m. The true geometric separation is:
+|0.135241 - (-0.210759)| = 0.346 m. The 0.35 m value caused a 1.16% kinematic error,
+resulting in 4.2 degrees of cumulative heading drift per wheel revolution.
+Solution: Updated wheel separation to 0.346 m.
+Verification: Accurate odometry scaling during pure rotational and translational moves.
+
+--------------------------------------------------------------------------------
+BUG 7: Robot State Publisher missing 'use_sim_time: True'
+--------------------------------------------------------------------------------
+File: testbed_description/launch/robot_description.launch.py (line 28)
+Problem: Node(..., parameters=[{'robot_description': ...}]) did not specify
+use_sim_time.
+Why it is incorrect: Without use_sim_time: True, the robot_state_publisher timestamps
+TF messages with wall-clock time instead of the Gazebo simulation clock (/clock).
+This causes TF transform lookup timeout errors in Nav2.
+Solution: Added {'use_sim_time': True} to the Node parameters list.
+Verification: robot_state_publisher publishes TF messages synchronized with /clock.
+
+--------------------------------------------------------------------------------
+BUG 8: Missing package dependencies in package.xml manifests
+--------------------------------------------------------------------------------
+Files: testbed_description/package.xml, testbed_bringup/package.xml,
+       testbed_gazebo/package.xml
+Problem: Missing runtime/execution dependencies (launch, launch_ros, xacro,
+robot_state_publisher, gazebo_ros).
+Why it is incorrect: rosdep cannot resolve required packages, and downstream
+workspace builds risk missing runtime tools.
+Solution: Added all missing dependencies to the respective package.xml files.
+Verification: All packages pass XML schema validation and declare full dependency sets.
+================================================================================

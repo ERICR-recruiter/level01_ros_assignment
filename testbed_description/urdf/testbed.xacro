@@ -29,9 +29,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="-0.0507 -0.0379 0.1203" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+      <box size="0.350 0.352 0.204"/>
     </geometry>
   </collision>
 </link>
@@ -50,9 +50,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.050476 -0.135241 -0.050004" rpy="0 0 0"/>
+    <origin xyz="0 0.015 0" rpy="1.57079632679 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/left_wheel_1.stl" scale="0.001 0.001 0.001"/>
+      <cylinder radius="0.05" length="0.03"/>
     </geometry>
   </collision>
 </link>
@@ -71,9 +71,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.175703 -0.108591 -0.084004" rpy="0 0 0"/>
+    <origin xyz="0 0 -0.059" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/caster_1.stl" scale="0.001 0.001 0.001"/>
+      <sphere radius="0.025"/>
     </geometry>
   </collision>
 </link>
@@ -92,9 +92,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.175703 0.184109 -0.084004" rpy="0 0 0"/>
+    <origin xyz="0 0 -0.059" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/caster_2.stl" scale="0.001 0.001 0.001"/>
+      <sphere radius="0.025"/>
     </geometry>
   </collision>
 </link>
@@ -113,9 +113,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="-0.074297 -0.108591 -0.084004" rpy="0 0 0"/>
+    <origin xyz="0 0 -0.059" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/caster_3.stl" scale="0.001 0.001 0.001"/>
+      <sphere radius="0.025"/>
     </geometry>
   </collision>
 </link>
@@ -134,9 +134,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="-0.074297 0.184109 -0.084004" rpy="0 0 0"/>
+    <origin xyz="0 0 -0.059" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/caster_4.stl" scale="0.001 0.001 0.001"/>
+      <sphere radius="0.025"/>
     </geometry>
   </collision>
 </link>
@@ -154,12 +154,6 @@
     </geometry>
     <material name="silver"/>
   </visual>
-  <collision>
-    <origin xyz="0.04 0.033 -0.226509" rpy="0 0 0"/>
-    <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/lidar_link_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-  </collision>
 </link>
 
 <link name="imu_link_1">
@@ -175,12 +169,6 @@
     </geometry>
     <material name="silver"/>
   </visual>
-  <collision>
-    <origin xyz="0.1 -0.05 -0.1612" rpy="0 0 0"/>
-    <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/imu_link_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-  </collision>
 </link>
 
 <link name="dummy_link_1">
@@ -196,12 +184,6 @@
     </geometry>
     <material name="silver"/>
   </visual>
-  <collision>
-    <origin xyz="0.1 0.14 -0.1612" rpy="0 0 0"/>
-    <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/dummy_link_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-  </collision>
 </link>
 
 <link name="right_wheel_1">
@@ -218,9 +200,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.050503 0.210759 -0.050004" rpy="0 0 0"/>
+    <origin xyz="0 -0.015 0" rpy="1.57079632679 0 0"/>
     <geometry>
-      <mesh filename="file://$(find testbed_description)/meshes/right_wheel_1.stl" scale="0.001 0.001 0.001"/>
+      <cylinder radius="0.05" length="0.03"/>
     </geometry>
   </collision>
 </link>
