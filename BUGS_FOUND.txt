@@ -1,0 +1,26 @@
+Bugs I found and fixed
+
+1. testbed_description/CMakeLists.txt
+   The last line said "ament_package" without brackets. colcon build
+   stopped with a parse error on this package, which is how I noticed it.
+   I changed it to ament_package().
+
+2. testbed_description/urdf/testbed.gazebo
+   The lidar max range was set to 1.5 m, which is far too short for this map.
+   I saw it when I echoed /scan and range_max was 1.5. I changed the value
+   to 8.0 and checked /scan again.
+
+3. testbed_bringup/CMakeLists.txt
+   The install rule only copied the launch folder, not maps. After building
+   I looked in the install folder and the maps folder was not there.
+   I added maps to the install line.
+
+4. testbed_gazebo/CMakeLists.txt
+   Same kind of problem: models was not being installed. I found it by
+   comparing the src folder with the install folder. I added models to the
+   install line.
+
+5. testbed_bringup/maps/testbed_world.yaml
+   The image name was "wrong_path_testbed_world.pgm", so map_server could
+   not load the map. The real file is testbed_world.pgm, so I fixed the name
+   in the yaml.
