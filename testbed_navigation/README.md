@@ -133,13 +133,31 @@ and the `/tf` remaps (no-ops without a namespace) follow Humble's `localization_
 ### TF tree
 
 ```
-map ──(amcl)──> odom ──(gazebo_ros_diff_drive)──> base_footprint ──(robot_state_publisher)──> base_link
-                                                                       ──> lidar_link_1, imu_link_1, dummy_link_1, wheels, casters
+map ──(amcl)──> odom ──(ekf_filter_node)──> base_footprint ──(robot_state_publisher)──> base_link
+                                                                ──> lidar_link_1, imu_link_1, dummy_link_1, wheels, casters
 ```
 
 `base_footprint` lies on the ground at the drive-axle center ([BUGS.md](../BUGS.md) #9) and is the
 `robot_base_frame` for AMCL, the costmaps, the BT navigator, the behaviors and the collision monitor.
 Wheel TF comes from `/joint_states` via `robot_state_publisher` (BUGS.md #7).
+
+### Odometry
+
+| Source                   | Topic                | Rate   | Fused by the EKF                        |
+| ------------------------ | -------------------- | ------ | --------------------------------------- |
+| Wheel encoders           | `/odom`              | 100 Hz | `vx`, `vy` (= 0), `vyaw`                |
+| IMU gyro                 | `/imu`               | 100 Hz | `vyaw`                                  |
+| EKF (robot_localization) | `/odometry/filtered` | 50 Hz  | output; also TF `odom → base_footprint` |
+
+- The Gazebo diff-drive plugin integrates the wheel joints (`odometry_source` 0). Its default (1)
+  reads the model pose from Gazebo, which is ground truth and never drifts; the starter used that default.
+- The EKF fuses velocities only. Wheel odometry pose drifts, and the simulated IMU's absolute yaw is
+  close to ground truth, so fusing either as an absolute pose would follow the drift or hide it.
+- The EKF runs with the robot (`testbed_bringup/config/ekf.yaml`, started by `testbed_full_bringup`
+  and by `bringup_all`), so the simulation alone provides a complete TF tree, as before.
+- `/clock` is published at 100 Hz (`testbed_gazebo/config/gazebo_params.yaml`). At the Gazebo default
+  of 10 Hz, every sim-time timer, including the 50 Hz EKF, ran at 10 Hz.
+- `bt_navigator`, `controller_server` and `velocity_smoother` read `odometry/filtered`.
 
 ### Velocity chain
 
@@ -332,6 +350,10 @@ at about 1° per beam. Both polygons are published for RViz (`polygon_stop`, `po
   in `gazebo::transport::Connection::IsOpen`, not physics or the robot). Reading
   `/gazebo/model_states` over ROS gave 0 crashes in later runs. The submitted launch files do not use
   this recorder.
+- **A 10 Hz simulation clock.** After switching to encoder odometry with an EKF, `/odometry/filtered`
+  arrived at 10 Hz instead of the configured 50 Hz. Gazebo publishes `/clock` at 10 Hz by default, and
+  sim-time timers cannot fire faster than the clock advances. Setting the gazebo_ros `publish_rate`
+  to 100 Hz restored 50 Hz filter output and a 50 Hz `odom → base_footprint` TF.
 - **Environment.** The development machine runs Ubuntu 24.04 with ROS 2 Jazzy, which has no Humble or
   Gazebo Classic packages. Humble (Nav2 1.1.20, Gazebo 11) ran in an isolated RoboStack/pixi
   environment with its own `ROS_DOMAIN_ID`. With `ROS_LOCALHOST_ONLY=1`, Cyclone DDS allows only
@@ -351,48 +373,66 @@ Full-resolution video: [docs/media/demo_navigation_5x.mp4](docs/media/demo_navig
 
 ### Goal tour
 
-|                                     | Runs | Goals reached | Recoveries                                      | Distance | Sim time per tour       |
-| ----------------------------------- | :--: | :-----------: | ----------------------------------------------- | -------- | ----------------------- |
-| Headless (`gui:=false rviz:=false`) |  4   |    20 / 20    | 0                                               | 57.9 m   | ~160 s (wall ~173 s)    |
-| Gazebo + RViz windows open          |  2   |    10 / 10    | 3 (2 in run 1, 1 in run 2), costmap clears only | 57.9 m   | ~160 s (wall 188–245 s) |
+| Configuration                                     | Runs | Goals reached | Recoveries             | Distance | Sim time per tour |
+| ------------------------------------------------- | :--: | :-----------: | ---------------------- | -------- | ----------------- |
+| Encoder odometry + IMU EKF (current), headless    |  2   |    10 / 10    | 0                      | 58 m     | ~164 s            |
+| Encoder odometry + IMU EKF, README 4-terminal run |  1   |     2 / 2     | 0                      | –        | –                 |
+| Ground-truth odometry (earlier), headless         |  4   |    20 / 20    | 0                      | 57.9 m   | ~160 s            |
+| Ground-truth odometry (earlier), GUIs open        |  2   |    10 / 10    | 3, costmap clears only | 57.9 m   | ~160 s            |
 
-The table counts completed runs. Two earlier attempts ended in Gazebo crashes caused by the
-ground-truth recorder, not the stack (see Challenges). Accuracy figures below use the three runs made
-with the TF-based recorder.
+The earlier runs used the starter's ground-truth odometry, before the switch to encoder odometry and
+the EKF (see Odometry). Two further attempts in that phase ended in Gazebo crashes caused by the
+ground-truth recorder, not the stack (see Challenges). With both GUIs open, Gazebo's real-time factor
+dropped to about 0.7 and the behavior tree used its first recovery step (clear the costmap and
+replan) near a wall; every goal still succeeded.
 
-With both GUIs open, Gazebo's real-time factor dropped to about 0.7 and the controller missed its
-20 Hz deadline more often than in headless runs. The behavior tree then ran its first recovery step
-(clear the costmap and replan) near a wall, twice in run 1 and once in run 2; every goal still
-succeeded. The second GUI run started from a deliberately wrong AMCL pose (below).
+### Odometry drift
+
+Raw wheel odometry and the EKF output, each compared with Gazebo ground truth in the odom frame:
+
+| Test                                      | Raw wheel odometry   | EKF (wheels + IMU)   |
+| ----------------------------------------- | -------------------- | -------------------- |
+| 60 s at rest                              | 0.000 m, 0.000 rad   | 0.001 m, 0.000 rad   |
+| Scripted drive: 4 m with a full 360° spin | 0.374 m, 0.259 rad   | 0.031 m, 0.013 rad   |
+| Goal tour 1 (58 m): final / max position  | 2.25 m / 2.32 m      | 0.10 m / 0.13 m      |
+| Goal tour 2 (58 m): final / max position  | 2.63 m / 2.93 m      | 0.02 m / 0.04 m      |
+| Goal tours: max heading error             | 0.146 rad, 0.179 rad | 0.026 rad, 0.024 rad |
+
+Wheel odometry drifts mainly through yaw during in-place turns (wheel slip). The gyro measures yaw
+rate directly, so the EKF removes most of that drift. AMCL corrects what remains.
 
 ### Localization accuracy
 
 A recorder script kept outside the package compared the TF estimate `map → base_footprint`
-(AMCL + odometry, the pose Nav2 uses) with Gazebo's ground-truth model pose over three headless
-tours (about 330 samples each, 2 Hz):
+(AMCL + EKF odometry, the pose Nav2 uses) with Gazebo's ground-truth model pose over the two EKF
+tours (330 samples each, 2 Hz):
 
-|                | Mean        | p95             | Max       |
-| -------------- | ----------- | --------------- | --------- |
-| Position error | 0.10–0.11 m | 0.17–0.18 m     | 0.23 m    |
-| Heading error  | 0.011 rad   | 0.026–0.029 rad | 0.048 rad |
+|                | Mean            | p95         | Max       |
+| -------------- | --------------- | ----------- | --------- |
+| Position error | 0.107–0.108 m   | 0.17–0.19 m | 0.22 m    |
+| Heading error  | 0.011–0.012 rad | 0.030 rad   | 0.045 rad |
 
 Most of the position error is a constant offset of about (+0.08, +0.03) m, the same in every run.
 The map image is shifted by that amount relative to the Gazebo world (the obstacle outlines in
-`testbed_world.pgm` show it too), and AMCL correctly aligns the robot with the map. Without the
-offset, the error is 0.07 m mean and 0.12–0.13 m p95.
+`testbed_world.pgm` show it too), and AMCL aligns the robot with the map. Without the offset, the
+error is 0.07–0.08 m mean and 0.13 m p95. These figures match the earlier ground-truth-odometry runs
+(0.10–0.11 m mean), so AMCL holds the same accuracy with real odometry drift.
 
 ![Estimated vs ground-truth path over the whole tour](docs/media/07_trajectory_ground_truth.png)
 
 ### Screenshots
 
-|                                                                                                                                                                                    |                                                        |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **1. Map loaded** (`map_loader.launch.py` only; the TF warning is expected until AMCL publishes `map → odom`)                                                                      | ![](docs/media/01_map_loaded.png)                      |
-| **2. Localization, wrong initial pose**: `/initialpose` published 0.3 m and 0.15 rad off with a wide covariance; the particle cloud is spread and the scan (red) misses the walls. | ![](docs/media/02_localization_wrong_initial_pose.png) |
-| **3. Converged after a few meters of driving**: tight cloud, scan on the walls; the unmapped box (center) is in both costmaps and the global plan bends around it.                 | ![](docs/media/03_localization_converged_obstacle.png) |
-| **4. Navigation, full map**: global plan, costmaps, particle cloud                                                                                                                 | ![](docs/media/04_navigation_full_map.png)             |
-| **5. Robot in Gazebo**                                                                                                                                                             | ![](docs/media/05_gazebo_robot.png)                    |
-| **6. TF tree** (`view_frames`): `map → odom` from AMCL, `odom → base_footprint` from the diff-drive plugin, the rest from `robot_state_publisher`                                  | ![](docs/media/06_tf_tree.png)                         |
+Screenshots and the video were recorded before the switch to encoder odometry and the EKF; the
+navigation behavior shown is unchanged.
+
+|                                                                                                                                                                                                     |                                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **1. Map loaded** (`map_loader.launch.py` only; the TF warning is expected until AMCL publishes `map → odom`)                                                                                       | ![](docs/media/01_map_loaded.png)                      |
+| **2. Localization, wrong initial pose**: `/initialpose` published 0.3 m and 0.15 rad off with a wide covariance; the particle cloud is spread and the scan (red) misses the walls.                  | ![](docs/media/02_localization_wrong_initial_pose.png) |
+| **3. Converged after a few meters of driving**: tight cloud, scan on the walls; the unmapped box (center) is in both costmaps and the global plan bends around it.                                  | ![](docs/media/03_localization_converged_obstacle.png) |
+| **4. Navigation, full map**: global plan, costmaps, particle cloud                                                                                                                                  | ![](docs/media/04_navigation_full_map.png)             |
+| **5. Robot in Gazebo**                                                                                                                                                                              | ![](docs/media/05_gazebo_robot.png)                    |
+| **6. TF tree** (`view_frames`): `map → odom` from AMCL, `odom → base_footprint` from the diff-drive plugin (recorded before the EKF, which now publishes it), the rest from `robot_state_publisher` | ![](docs/media/06_tf_tree.png)                         |
 
 ## Verification and debugging
 

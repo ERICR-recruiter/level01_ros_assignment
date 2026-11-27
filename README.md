@@ -10,8 +10,10 @@ Tested on ROS 2 Humble, Gazebo 11 and Nav2 1.1.20.
 
 ![Goal tour in RViz, 5x speed](testbed_navigation/docs/media/demo_navigation_preview.gif)
 
-Results: 30 of 30 goals reached over six runs, including an obstacle that is not in the map.
-Localization error against Gazebo ground truth: 0.10–0.11 m mean position, 0.011 rad mean heading.
+Results: every goal reached in all test runs (42 of 42), including an obstacle that is not in the map.
+Odometry: wheel encoders and IMU fused in an EKF (robot_localization); over a 58 m tour the EKF drifted
+0.02–0.10 m where raw wheel odometry drifted 2.3–2.6 m. Localization error against Gazebo ground truth:
+0.11 m mean position, 0.012 rad mean heading.
 
 ### Requirements checklist
 

@@ -82,7 +82,7 @@ measuring the meshes, and bug 8 by measuring the running simulation against Gaze
 | 7   | `testbed_description/urdf/testbed.gazebo`                                                   | Nothing publishes `/joint_states`; wheel TF comes from the drive plugin instead | Added `gazebo_ros_joint_state_publisher`; `publish_wheel_tf` → `false`           |
 | 8   | `testbed_description/urdf/testbed.gazebo`, `testbed_gazebo/worlds/testbed_playground.world` | Idle robot creeps and turns by itself                                           | Solver iterations 50 → 200; wheels μ = 1.0 with a stiff contact; casters μ = 0.0 |
 | 9   | `testbed_description/urdf/testbed.xacro`                                                    | `base_footprint` is not at the drive-axle center                                | `fixed_base_joint` origin `0.0505 0.0378 0`; empty `base_footprint` link         |
-| 10  | `testbed_description/urdf/testbed.gazebo`                                                   | Wrong `wheel_separation`, so odometry heading drifts                            | 0.35 → 0.376 m; added torque/acceleration limits                                 |
+| 10  | `testbed_description/urdf/testbed.gazebo`                                                   | Wrong `wheel_separation`: robot turns ~7 % less than commanded                  | 0.35 → 0.376 m; added torque/acceleration limits                                 |
 | 11  | `testbed_description/urdf/testbed.xacro`                                                    | Centres of mass 23–36 cm outside the robot                                      | Inertial origins set from the measured meshes                                    |
 | 12  | `testbed_description/urdf/testbed.xacro`                                                    | IMU and dummy meshes drawn at each other's frames; hand-edited visual offsets   | Mesh files swapped; visual origins = −(joint origin)                             |
 | 13  | `*/package.xml`                                                                             | Missing run dependencies, so `rosdep` and clean installs fail                   | Added `exec_depend`s and descriptions                                            |
@@ -261,7 +261,10 @@ measuring the meshes, and bug 8 by measuring the running simulation against Gaze
 - Evidence: `wheel_separation` is 0.35, close to the distance between the joint origins (0.346 m),
   which lie on the wheels' inner faces. The tread-center distance from the meshes is
   0.1502 − (−0.2258) = 0.376 m. The plugin uses this value to convert `cmd_vel` angular velocity into
-  wheel speeds and to integrate odometry, so every turn is off by 0.376 / 0.35 ≈ 7 %.
+  wheel speeds, so the robot turns 0.35 / 0.376 ≈ 93 % of the commanded rate. In the starter,
+  odometry comes from the Gazebo model pose (`odometry_source` default 1), so the error showed only
+  as under-rotation. With encoder odometry (now enabled, see below) the same value also integrates
+  odometry, and a wrong track would corrupt every heading estimate.
 - Root cause: The separation was taken from the joint frames instead of the contact patches.
 - Fix: `0.35` → `0.376`. `wheel_diameter` 0.1 is correct (mesh height 0.100 m). Added
   `<max_wheel_torque>20</max_wheel_torque>` and `<max_wheel_acceleration>2.0</max_wheel_acceleration>`.
@@ -362,5 +365,9 @@ measuring the meshes, and bug 8 by measuring the running simulation against Gaze
   `ros2_control`, so they are harmless, and they were kept to minimize the diff.
 - `testbed_description/rviz/urdf_gazebo.rviz` references `/box_bot/...` topics from a template.
   No launch file uses it.
+- Odometry: the starter's diff-drive plugin uses the default `odometry_source` 1, which reports the
+  Gazebo model pose (ground truth). This is not a defect, but it hides odometry drift. The
+  submission switches to encoder odometry (`odometry_source` 0) fused with the IMU in a
+  robot_localization EKF; see `testbed_navigation/README.md`, Odometry.
 - `full_bringup.rviz` uses fixed frame `odom` and has no map display. That suits the raw simulation
   bringup, so navigation uses its own config in `testbed_navigation/rviz/`.
