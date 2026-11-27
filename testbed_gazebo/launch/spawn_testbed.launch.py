@@ -1,47 +1,71 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import random
-
-from launch_ros.actions import Node
 from launch import LaunchDescription
+from launch.actions import RegisterEventHandler
+from launch.event_handlers import OnProcessExit
+from launch_ros.actions import Node
 
 
-# this is the function launch  system will look for
 def generate_launch_description():
-
-
-    # Position and orientation
-    # [X, Y, Z]
-    position = [0.0, 5.0, 0.0]
-    # [Roll, Pitch, Yaw]
+    position = [0.0, 5.0, 0.02]
     orientation = [0.0, 0.0, 0.0]
-    # Base Name or robot
-    robot_base_name = "testbed"
+    entity_name = 'testbed'
 
-
-    entity_name = robot_base_name#+"-"+str(int(random.random()*100000))
-
-    # Spawn ROBOT Set Gazebo
     spawn_robot = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
+        package='ros_gz_sim',
+        executable='create',
         name='spawn_entity',
         output='screen',
-        arguments=['-entity',
-                   entity_name,
-                   '-x', str(position[0]), '-y', str(position[1]
-                                                     ), '-z', str(position[2]),
-                   '-R', str(orientation[0]), '-P', str(orientation[1]
-                                                        ), '-Y', str(orientation[2]),
-                   '-topic', '/robot_description'
-                   ]
+        arguments=[
+            '-name', entity_name,
+            '-topic', '/robot_description',
+            '-x', str(position[0]),
+            '-y', str(position[1]),
+            '-z', str(position[2]),
+            '-R', str(orientation[0]),
+            '-P', str(orientation[1]),
+            '-Y', str(orientation[2]),
+        ],
     )
 
- 
-
-    # create and return launch description object
-    return LaunchDescription(
-        [
-            spawn_robot,
-        ]
+    gz_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='ros_gz_bridge',
+        output='screen',
+        arguments=[
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+            '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
+            '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+        ],
     )
+
+    joint_state_broadcaster_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['joint_state_broadcaster', '--controller-manager', '/controller_manager'],
+        output='screen',
+    )
+
+    diff_drive_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['diff_drive_base_controller', '--controller-manager', '/controller_manager'],
+        output='screen',
+    )
+
+    load_controllers_after_spawn = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=spawn_robot,
+            on_exit=[
+                joint_state_broadcaster_spawner,
+                diff_drive_controller_spawner,
+            ],
+        )
+    )
+
+    return LaunchDescription([
+        gz_bridge,
+        spawn_robot,
+        load_controllers_after_spawn,
+    ])
