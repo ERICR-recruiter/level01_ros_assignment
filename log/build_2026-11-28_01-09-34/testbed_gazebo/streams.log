@@ -1,0 +1,77 @@
+[0.008s] Invoking command in '/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo': AMENT_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:/home/vikk/robot_ws/install/robot_description:/home/vikk/robot_ws/install/robot_controller:/opt/ros/humble /usr/bin/cmake /home/vikk/assignment_ws/src/level01_ros_assignment/testbed_gazebo -DCMAKE_INSTALL_PREFIX=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo
+[0.060s] -- The C compiler identification is GNU 11.4.0
+[0.113s] -- The CXX compiler identification is GNU 11.4.0
+[0.120s] -- Detecting C compiler ABI info
+[0.187s] -- Detecting C compiler ABI info - done
+[0.193s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.193s] -- Detecting C compile features
+[0.193s] -- Detecting C compile features - done
+[0.196s] -- Detecting CXX compiler ABI info
+[0.272s] -- Detecting CXX compiler ABI info - done
+[0.278s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.278s] -- Detecting CXX compile features
+[0.278s] -- Detecting CXX compile features - done
+[0.280s] -- Found ament_cmake: 1.3.13 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.410s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[0.487s] -- Found rclpy: 3.3.20 (/opt/ros/humble/share/rclpy/cmake)
+[0.487s] -- Found testbed_description: 0.0.0 (/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description/share/testbed_description/cmake)
+[0.489s] -- Found ament_lint_auto: 0.12.15 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[0.578s] -- Added test 'flake8' to check Python code syntax and style conventions
+[0.578s] -- Added test 'lint_cmake' to check CMake code style
+[0.579s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[0.581s] -- Added test 'xmllint' to check XML markup files
+[0.582s] -- Configuring done
+[0.585s] -- Generating done
+[0.587s] -- Build files have been written to: /home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo
+[0.591s] Invoked command in '/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo' returned '0': AMENT_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:/home/vikk/robot_ws/install/robot_description:/home/vikk/robot_ws/install/robot_controller:/opt/ros/humble /usr/bin/cmake /home/vikk/assignment_ws/src/level01_ros_assignment/testbed_gazebo -DCMAKE_INSTALL_PREFIX=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo
+[0.593s] Invoking command in '/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo': AMENT_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:/home/vikk/robot_ws/install/robot_description:/home/vikk/robot_ws/install/robot_controller:/opt/ros/humble /usr/bin/cmake --build /home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo -- -j16 -l16
+[0.632s] Invoked command in '/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo' returned '0': AMENT_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:/home/vikk/robot_ws/install/robot_description:/home/vikk/robot_ws/install/robot_controller:/opt/ros/humble /usr/bin/cmake --build /home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo -- -j16 -l16
+[0.634s] Invoking command in '/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo': AMENT_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:/home/vikk/robot_ws/install/robot_description:/home/vikk/robot_ws/install/robot_controller:/opt/ros/humble /usr/bin/cmake --install /home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo
+[0.641s] -- Install configuration: ""
+[0.641s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//launch
+[0.642s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//launch/spawn_playground.launch.py
+[0.642s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//launch/spawn_testbed.launch.py
+[0.642s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//worlds
+[0.642s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//worlds/testbed_empty.world
+[0.643s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//worlds/testbed_playground.world
+[0.643s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models
+[0.643s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/test_room
+[0.643s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/test_room/model.sdf
+[0.643s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/test_room/model.config
+[0.644s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/Fence1
+[0.644s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/Fence1/model.sdf
+[0.644s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/Fence1/model.config
+[0.644s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/eric
+[0.644s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/eric/model.sdf
+[0.644s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/eric/model.config
+[0.645s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/wooden_fence
+[0.645s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/wooden_fence/model.sdf
+[0.645s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/wooden_fence/model.config
+[0.645s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/wooden_fence/wooden_fence
+[0.645s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/wooden_fence/wooden_fence/model.sdf
+[0.646s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/wooden_fence/wooden_fence/model.config
+[0.646s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/my_world
+[0.646s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/my_world/model.sdf
+[0.646s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/my_world/model.config
+[0.647s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/box_room
+[0.647s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/box_room/meshes
+[0.647s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/box_room/meshes/box_room.dae
+[0.649s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/box_room/meshes/chambre.png
+[0.649s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/box_room/model.sdf
+[0.650s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo//models/box_room/model.config
+[0.650s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/ament_index/resource_index/package_run_dependencies/testbed_gazebo
+[0.650s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/ament_index/resource_index/parent_prefix_path/testbed_gazebo
+[0.650s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/environment/ament_prefix_path.sh
+[0.650s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/environment/ament_prefix_path.dsv
+[0.650s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/environment/path.sh
+[0.651s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/environment/path.dsv
+[0.651s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/local_setup.bash
+[0.651s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/local_setup.sh
+[0.651s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/local_setup.zsh
+[0.651s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/local_setup.dsv
+[0.651s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/package.dsv
+[0.651s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/ament_index/resource_index/packages/testbed_gazebo
+[0.652s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/cmake/testbed_gazeboConfig.cmake
+[0.652s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/cmake/testbed_gazeboConfig-version.cmake
+[0.652s] -- Installing: /home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_gazebo/share/testbed_gazebo/package.xml
+[0.654s] Invoked command in '/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo' returned '0': AMENT_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vikk/assignment_ws/src/level01_ros_assignment/install/testbed_description:/home/vikk/robot_ws/install/robot_description:/home/vikk/robot_ws/install/robot_controller:/opt/ros/humble /usr/bin/cmake --install /home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo
