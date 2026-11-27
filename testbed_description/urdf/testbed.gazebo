@@ -3,10 +3,6 @@
 
 <xacro:property name="body_color" value="Gazebo/Silver" />
 
-<gazebo>
-  <plugin name="control" filename="libgazebo_ros_control.so"/>
-</gazebo>
-
   <gazebo>
     <plugin name="diff_drive_control" filename="libgazebo_ros_diff_drive.so">
       <update_rate>100</update_rate>
@@ -14,19 +10,32 @@
       <left_joint>left_wheel_joint</left_joint>
       <right_joint>right_wheel_joint</right_joint>
 
-      <wheel_separation>0.35</wheel_separation>
+      <!-- Track between the wheels' contact-patch centers, measured from the meshes (y = +0.1502 / -0.2258) -->
+      <wheel_separation>0.376</wheel_separation>
       <wheel_diameter>0.1</wheel_diameter>
+
+      <max_wheel_torque>20</max_wheel_torque>
+      <max_wheel_acceleration>2.0</max_wheel_acceleration>
 
       <command_topic>cmd_vel</command_topic>
 
       <publish_odom>true</publish_odom>
       <publish_odom_tf>true</publish_odom_tf>
-      <publish_wheel_tf>true</publish_wheel_tf>
+      <!-- Wheel TF comes from robot_state_publisher via /joint_states (plugin below) -->
+      <publish_wheel_tf>false</publish_wheel_tf>
 
       <odometry_topic>odom</odometry_topic>
       <odometry_frame>odom</odometry_frame>
       <robot_base_frame>base_footprint</robot_base_frame>
 
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <update_rate>50</update_rate>
+      <joint_name>left_wheel_joint</joint_name>
+      <joint_name>right_wheel_joint</joint_name>
     </plugin>
   </gazebo>
 
@@ -37,7 +46,7 @@
       <update_rate>10</update_rate>
       <visualize>true</visualize>
       <plugin name="my_imu_plugin" filename="libgazebo_ros_imu_sensor.so">
-      <initial_orientation_as_reference>false</initial_orientation_as_reference>>
+      <initial_orientation_as_reference>false</initial_orientation_as_reference>
         <ros>
           <remapping>~/out:=imu</remapping>
         </ros>
@@ -54,15 +63,15 @@
       <ray>
         <scan>
           <horizontal>
-            <samples>300</samples>
+            <samples>360</samples>
             <resolution>1</resolution>
             <min_angle>-3.14</min_angle>
             <max_angle>3.14</max_angle>
           </horizontal>
         </scan>
         <range>
-          <min>0.10</min>
-          <max>1.5</max>
+          <min>0.12</min>
+          <max>12.0</max>
           <resolution>0.01</resolution>
         </range>
         <noise>
@@ -96,29 +105,33 @@
 
 <gazebo reference="caster_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <!-- Fixed (non-rotating) caster: frictionless so it slides instead of dragging -->
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_2">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <!-- Fixed (non-rotating) caster: frictionless so it slides instead of dragging -->
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_3">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <!-- Fixed (non-rotating) caster: frictionless so it slides instead of dragging -->
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="caster_4">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <!-- Fixed (non-rotating) caster: frictionless so it slides instead of dragging -->
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
   <self_collide>true</self_collide>
 </gazebo>
 
@@ -145,15 +158,27 @@
 
 <gazebo reference="right_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <!-- Drive wheel: high grip and a stiff contact so odometry matches real motion.
+       No minDepth: a 1 mm sink would shift the load onto the frictionless casters
+       (only 0.4 mm higher), and the robot would slide and yaw on its own. -->
+  <mu1>1.0</mu1>
+  <mu2>1.0</mu2>
+  <kp>1000000.0</kp>
+  <kd>100.0</kd>
+  <maxVel>0.1</maxVel>
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="left_wheel_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+  <!-- Drive wheel: high grip and a stiff contact so odometry matches real motion.
+       No minDepth: a 1 mm sink would shift the load onto the frictionless casters
+       (only 0.4 mm higher), and the robot would slide and yaw on its own. -->
+  <mu1>1.0</mu1>
+  <mu2>1.0</mu2>
+  <kp>1000000.0</kp>
+  <kd>100.0</kd>
+  <maxVel>0.1</maxVel>
   <self_collide>true</self_collide> 
 </gazebo>
 

@@ -23,7 +23,8 @@ def generate_launch_description():
   state_pub = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(
       os.path.join(pkg_testbed_description, 'launch', 'robot_description.launch.py'),
-    )
+    ),
+    launch_arguments={'use_sim_time': 'true'}.items(),
   )
 
   spawn = IncludeLaunchDescription(
