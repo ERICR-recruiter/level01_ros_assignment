@@ -1,4 +1,8 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Singam Bhavesh Reddy
+
+Completed solution: [`testbed_navigation/`](testbed_navigation/README.md) (manual Nav2
+map/localization/navigation launch files and params) and
+[`BUGS_FOUND.txt`](BUGS_FOUND.txt) (starter bugs and fixes).
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -125,6 +129,6 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Singam Bhavesh Reddy
+ - Contact number: not provided
+ - Email Address: singambhavesh@gmail.com
