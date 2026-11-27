@@ -1,0 +1,63 @@
+amcl:
+  ros__parameters:
+    use_sim_time: true
+
+    # frames / topics
+    global_frame_id: map
+    odom_frame_id: odom
+    base_frame_id: base_footprint
+    scan_topic: scan
+    map_topic: map
+    tf_broadcast: true
+    transform_tolerance: 1.0
+
+    # The robot is spawned at (0, 5, 0) with yaw 0 in spawn_testbed.launch.py, and the
+    # map is already in gazebo world coordinates, so we can start AMCL right on top of it.
+    # You can still override it with "2D Pose Estimate" in rviz.
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0
+    always_reset_initial_pose: false
+    first_map_only: false
+    save_pose_rate: 0.5
+
+    # motion model - diff drive. Gazebo odom is pretty clean so the alphas are kept low-ish
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    alpha1: 0.2   # rotation noise from rotation
+    alpha2: 0.2   # rotation noise from translation
+    alpha3: 0.2   # translation noise from translation
+    alpha4: 0.2   # translation noise from rotation
+    alpha5: 0.2   # only used by omni model
+
+    # laser model. Range matches the lidar in testbed.gazebo (0.1 - 12 m)
+    laser_model_type: "likelihood_field"
+    laser_min_range: 0.1
+    laser_max_range: 12.0
+    laser_likelihood_max_dist: 2.0
+    max_beams: 60
+    sigma_hit: 0.2
+    z_hit: 0.5
+    z_short: 0.05
+    z_max: 0.05
+    z_rand: 0.5
+    lambda_short: 0.1
+    do_beamskip: false
+    beam_skip_distance: 0.5
+    beam_skip_threshold: 0.3
+    beam_skip_error_threshold: 0.9
+
+    # particle filter
+    min_particles: 500
+    max_particles: 2000
+    pf_err: 0.05
+    pf_z: 0.99
+    resample_interval: 1
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
+
+    # only update the filter after the robot has moved a bit
+    update_min_d: 0.2
+    update_min_a: 0.2

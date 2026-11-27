@@ -21,7 +21,8 @@ def generate_launch_description():
         executable='robot_state_publisher',
         name='robot_state_publisher_node',
         emulate_tty=True,
-        parameters=[{'use_sim_time': True, 
+        # no gazebo here, so nothing publishes /clock -> run on wall time
+        parameters=[{'use_sim_time': False, 
                      'robot_description': Command(['xacro ', robot_desc_path])}],
         output="screen"
     )
@@ -46,7 +47,7 @@ def generate_launch_description():
             package='rviz2',
             executable='rviz2',
             name='rviz_node',
-            parameters=[{'use_sim_time': True}],
+            parameters=[{'use_sim_time': False}],
             arguments=['-d', rviz_config_dir]
     )
 

@@ -1,0 +1,113 @@
+Bugs found in the starter code
+==============================
+
+These are the problems I found in the given packages (testbed_description, testbed_gazebo,
+testbed_bringup), roughly in the order I ran into them, and what I changed to fix each one.
+
+
+1. testbed_description doesn't build
+   File: testbed_description/CMakeLists.txt (last line)
+   Problem: it says "ament_package" without the brackets, so cmake treats it as garbage and
+   colcon build fails for this package (and everything that depends on it).
+   Fix: changed it to ament_package().
+
+2. Map yaml points to an image that doesn't exist
+   File: testbed_bringup/maps/testbed_world.yaml
+   Problem: "image: wrong_path_testbed_world.pgm" - the file in the folder is testbed_world.pgm,
+   so map_server fails to load the map.
+   Fix: image: testbed_world.pgm (relative path, map_server resolves it relative to the yaml).
+
+3. Maps folder never gets installed
+   File: testbed_bringup/CMakeLists.txt
+   Problem: only the launch folder was installed, so even with the right image name there was no
+   map under install/testbed_bringup/share/testbed_bringup/maps and get_package_share_directory()
+   based paths didn't work.
+   Fix: added maps to the install(DIRECTORY ...) list. Also removed find_package(rclpy), it isn't
+   used by this package.
+
+4. Gazebo models folder never gets installed
+   File: testbed_gazebo/CMakeLists.txt
+   Problem: spawn_playground.launch.py adds share/testbed_gazebo/models to GAZEBO_MODEL_PATH, but
+   models wasn't in the install list, so that path doesn't exist after a build.
+   Fix: added models to the install(DIRECTORY ...) list.
+
+5. robot_state_publisher runs on wall time
+   File: testbed_description/launch/robot_description.launch.py
+   Problem: use_sim_time was never set, so robot_state_publisher stamped TFs with wall clock while
+   gazebo (and everything in nav2) runs on /clock. This causes TF extrapolation errors once AMCL
+   and the costmaps start looking up base_footprint -> lidar_link_1.
+   Fix: added a use_sim_time launch argument (default true) and passed it to the node. Also
+   wrapped robot_description in ParameterValue(..., value_type=str) so launch doesn't try to parse
+   the URDF as yaml.
+
+6. ROS1 gazebo_ros_control plugin in the URDF
+   File: testbed_description/urdf/testbed.gazebo
+   Problem: <plugin filename="libgazebo_ros_control.so"/> is the ROS1 plugin, it doesn't exist in
+   ROS2 Humble, so gazebo just errors when loading it. The robot is driven by the diff drive plugin
+   anyway, so it isn't needed.
+   Fix: removed it.
+
+7. Robot can't really drive: casters have the same friction as the wheels
+   File: testbed_description/urdf/testbed.gazebo
+   Problem: the four casters are fixed joints (they don't roll), they're heavy (~1.18 kg each,
+   so most of the robot's weight is on them) and they had mu1/mu2 = 0.2, the same as the drive
+   wheels. So the casters drag on the ground with about as much force as the wheels can push,
+   and the robot barely moves or turns, whatever cmd_vel says.
+   Fix: casters set to mu1 = mu2 = 0 so they slide like ball casters, wheels set to mu1 = mu2 = 1.0
+   with kp/kd so they actually grip. I checked with "gz sdf -p" that the friction values still end
+   up on the caster collisions after gazebo merges the fixed joints into base_link.
+
+8. Lidar range is only 1.5 m
+   File: testbed_description/urdf/testbed.gazebo (head_hokuyo_sensor)
+   Problem: <max>1.5</max>. The room is ~20 x 20 m, so most of the time the scan sees nothing and
+   AMCL has almost nothing to match against the map. Localization drifts or doesn't converge.
+   Fix: increased to 12 m and used the same range in amcl_params.yaml.
+
+9. Wrong wheel separation in the diff drive plugin
+   File: testbed_description/urdf/testbed.gazebo
+   Problem: wheel_separation was 0.35. Measuring the wheel meshes, the left wheel is centred at
+   y = +0.150 and the right one at y = -0.226, which gives 0.376 m. With the smaller value the robot
+   turns more slowly than commanded.
+   Fix: wheel_separation = 0.376. (Also gave the plugin a max_wheel_torque and max_wheel_acceleration.)
+
+10. No /joint_states, so the wheel TFs depend on the diff drive plugin
+    File: testbed_description/urdf/testbed.gazebo
+    Problem: nothing published /joint_states, so robot_state_publisher couldn't publish
+    base_link -> left/right wheel. The diff drive plugin was covering it with publish_wheel_tf,
+    which means two different nodes are responsible for the robot's TF tree.
+    Fix: added libgazebo_ros_joint_state_publisher.so for both wheel joints, and set
+    publish_wheel_tf to false so robot_state_publisher owns every TF inside the robot.
+
+11. Typo in the IMU plugin
+    File: testbed_description/urdf/testbed.gazebo
+    Problem: "</initial_orientation_as_reference>>" has an extra ">", which ends up as stray text
+    inside the <plugin> element.
+    Fix: removed the extra character.
+
+12. Barebones rviz launch waits for a clock that never comes
+    File: testbed_description/launch/testbed_rviz_barebones.launch.py
+    Problem: robot_state_publisher and rviz have use_sim_time: True, but this launch file doesn't
+    start gazebo, so nothing publishes /clock and the moving joints never show up properly.
+    Fix: set use_sim_time to False in this launch file only.
+
+13. Missing package dependencies
+    Files: testbed_bringup/package.xml, testbed_description/package.xml, testbed_gazebo/package.xml
+    Problem: the launch files use xacro, robot_state_publisher, joint_state_publisher, rviz2,
+    gazebo_ros etc. but none of them are declared, so rosdep install won't pull them in and
+    colcon doesn't know the build order between the testbed packages.
+    Fix: added the exec_depends.
+
+
+Things I noticed but left alone (they don't affect navigation)
+------------------------------------------------------------------
+- .vscode/settings.json has a hardcoded path from the original author's machine
+  (/home/eric-ros1/...). Harmless, but it won't work for anyone else.
+- imu_joint and dummy_joint look swapped: the imu_link_1 frame sits where the dummy mesh is
+  (y = +0.05) and the other way round. Nothing in this assignment uses the IMU so I didn't touch it.
+- The robot's origin (base_footprint) isn't between the wheels: it's about 5 cm behind and 4 cm to
+  the side of the axle centre. I handled this in nav2 with a polygon footprint instead of a
+  radius rather than editing the URDF.
+- I first thought the map didn't line up with the world (the test_room <pose> in the .world file
+  is shifted by about -1.2 m in y). Turns out the <state> block further down in the file
+  overrides it with a pose that does match the map, so the map frame = gazebo world frame and
+  AMCL's initial pose is just the spawn point (0, 5, 0).
