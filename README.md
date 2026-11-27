@@ -1,5 +1,47 @@
 # Level 1: ROS2 Navigation Assignment - Narendhran Krishnasamy
 
+## Submission
+
+Tested on ROS 2 Humble, Gazebo 11 and Nav2 1.1.20.
+
+- [BUGS.md](BUGS.md): the 15 bugs found in the starter packages, each with evidence, root cause and fix.
+- [testbed_navigation/README.md](testbed_navigation/README.md): approach, plugin choices, challenges and results.
+- [Demo video](testbed_navigation/docs/media/demo_navigation_5x.mp4): goal tour in RViz, 47 s at 5x speed.
+
+![Goal tour in RViz, 5x speed](testbed_navigation/docs/media/demo_navigation_preview.gif)
+
+Results: 30 of 30 goals reached over six runs, including an obstacle that is not in the map.
+Localization error against Gazebo ground truth: 0.10–0.11 m mean position, 0.011 rad mean heading.
+
+### Requirements checklist
+
+| Requirement                                    | Where                                                           |
+| ---------------------------------------------- | --------------------------------------------------------------- |
+| Fix the bugs in the starter code               | `testbed_description`, `testbed_gazebo`, `testbed_bringup`      |
+| Bug list in a text file at the repository root | [BUGS.md](BUGS.md)                                              |
+| New `ament_cmake` package `testbed_navigation` | [testbed_navigation/](testbed_navigation)                       |
+| Map loading with `map_server`                  | `launch/map_loader.launch.py`, `config/map_server_params.yaml`  |
+| Localization with AMCL                         | `launch/localization.launch.py`, `config/amcl_params.yaml`      |
+| Navigation with Nav2 plugins                   | `launch/navigation.launch.py`, `config/nav2_params.yaml`        |
+| No `nav2_bringup`                              | Every Nav2 node is started in this package's own launch files   |
+| README with approach and challenges            | [testbed_navigation/README.md](testbed_navigation/README.md)    |
+| Screenshots or video                           | [testbed_navigation/docs/media/](testbed_navigation/docs/media) |
+
+### Run
+
+```bash
+cd ~/assignment_ws && colcon build && source install/setup.bash
+ros2 launch testbed_bringup testbed_full_bringup.launch.py      # terminal 1: simulation
+ros2 launch testbed_navigation map_loader.launch.py              # terminal 2: map
+ros2 launch testbed_navigation localization.launch.py            # terminal 3: AMCL
+ros2 launch testbed_navigation navigation.launch.py              # terminal 4: Nav2
+ros2 run testbed_navigation send_goals.py --spawn-obstacle       # terminal 5: goal tour
+```
+
+The assignment brief follows unchanged.
+
+---
+
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
 
