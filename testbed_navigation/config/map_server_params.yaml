@@ -1,0 +1,8 @@
+# nav2_map_server parameters (map loading)
+map_server:
+  ros__parameters:
+    use_sim_time: true
+    # Overridden by the `map` launch argument of map_loader.launch.py
+    yaml_filename: "testbed_world.yaml"
+    frame_id: "map"
+    topic_name: "map"
