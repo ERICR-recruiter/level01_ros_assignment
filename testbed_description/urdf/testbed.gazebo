@@ -19,8 +19,13 @@
 
       <command_topic>cmd_vel</command_topic>
 
+      <!-- Integrate odometry from the wheel joints (encoders). The plugin default (1) reads the
+           model's pose from Gazebo, i.e. ground truth with no drift. -->
+      <odometry_source>0</odometry_source>
       <publish_odom>true</publish_odom>
-      <publish_odom_tf>true</publish_odom_tf>
+      <!-- odom -> base_footprint is published by the EKF (testbed_bringup/config/ekf.yaml),
+           which fuses this wheel odometry with the IMU; one publisher per TF edge. -->
+      <publish_odom_tf>false</publish_odom_tf>
       <!-- Wheel TF comes from robot_state_publisher via /joint_states (plugin below) -->
       <publish_wheel_tf>false</publish_wheel_tf>
 
@@ -43,8 +48,23 @@
     <gravity>true</gravity>
     <sensor name="imu_link_1" type="imu">
       <always_on>true</always_on>
-      <update_rate>10</update_rate>
+      <!-- 100 Hz: the EKF integrates the gyro yaw rate, so it needs samples well above the 50 Hz filter rate -->
+      <update_rate>100</update_rate>
       <visualize>true</visualize>
+      <!-- Gyro/accelerometer noise (Gazebo ROS IMU demo values). Also gives the IMU message a non-zero
+           covariance, which the EKF uses to weight it. -->
+      <imu>
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></z>
+        </linear_acceleration>
+      </imu>
       <plugin name="my_imu_plugin" filename="libgazebo_ros_imu_sensor.so">
       <initial_orientation_as_reference>false</initial_orientation_as_reference>
         <ros>

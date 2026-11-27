@@ -26,6 +26,7 @@ endif()
 
 install(
   DIRECTORY
+    config
     launch
     maps
   DESTINATION

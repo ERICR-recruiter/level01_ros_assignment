@@ -41,6 +41,9 @@
   <exec_depend>nav2_rviz_plugins</exec_depend>
   <exec_depend>rviz2</exec_depend>
 
+  <!-- Odometry EKF started by bringup_all.launch.py -->
+  <exec_depend>robot_localization</exec_depend>
+
   <!-- Robot, world and map from the starter packages -->
   <exec_depend>testbed_bringup</exec_depend>
   <exec_depend>testbed_gazebo</exec_depend>

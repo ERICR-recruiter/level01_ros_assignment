@@ -41,7 +41,11 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py'),
         ),
-    )    
+        # /clock at 100 Hz instead of the default 10 Hz (see config/gazebo_params.yaml)
+        launch_arguments={
+            'params_file': os.path.join(pkg_testbed_gazebo, 'config', 'gazebo_params.yaml'),
+        }.items(),
+    )
 
     return LaunchDescription([
         DeclareLaunchArgument(

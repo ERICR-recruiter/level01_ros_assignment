@@ -2,7 +2,7 @@
 # Target: ROS 2 Humble, nav2_amcl. Loaded by launch/localization.launch.py.
 #
 # Particle-filter localization against the static map.
-# Inputs:  /scan (LaserScan, lidar_link_1), TF odom -> base_footprint (Gazebo diff drive), /map (map_server)
+# Inputs:  /scan (LaserScan, lidar_link_1), TF odom -> base_footprint (odometry EKF), /map (map_server)
 # Output:  TF map -> odom, /amcl_pose, /particle_cloud
 amcl:
   ros__parameters:

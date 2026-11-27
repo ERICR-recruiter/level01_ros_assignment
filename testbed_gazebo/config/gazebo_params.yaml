@@ -1,0 +1,6 @@
+# Parameters for the gazebo_ros node inside gzserver (passed by spawn_playground.launch.py).
+gazebo:
+  ros__parameters:
+    # /clock rate. The default (10 Hz) caps every sim-time timer at 10 Hz, including the odometry EKF
+    # (50 Hz) and therefore the odom -> base_footprint TF.
+    publish_rate: 100.0

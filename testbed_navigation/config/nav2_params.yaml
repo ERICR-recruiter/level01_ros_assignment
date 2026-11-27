@@ -18,7 +18,7 @@ bt_navigator:
     use_sim_time: true
     global_frame: map
     robot_base_frame: base_footprint
-    odom_topic: /odom
+    odom_topic: /odometry/filtered     # EKF output (wheel odometry + IMU)
     bt_loop_duration: 10                # ms per BT tick
     default_server_timeout: 20          # ms to wait for an action server response per tick
     wait_for_service_timeout: 1000      # ms to wait for BT node services/actions at startup
@@ -93,6 +93,7 @@ bt_navigator_navigate_through_poses_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: true
+    odom_topic: "odometry/filtered"     # robot speed for the controller and progress checker
     controller_frequency: 20.0          # Hz; RPP is cheap, 20 Hz gives smooth tracking
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.5       # diff drive: no lateral velocity
@@ -309,7 +310,7 @@ velocity_smoother:
     # so these limits are always physically achievable.
     max_accel: [1.0, 0.0, 3.2]
     max_decel: [-1.5, 0.0, -3.2]        # braking limit above the acceleration limit
-    odom_topic: "odom"
+    odom_topic: "odometry/filtered"     # EKF output; used only in CLOSED_LOOP mode
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0               # s; publish zero if no new command arrives

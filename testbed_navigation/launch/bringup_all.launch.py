@@ -5,8 +5,9 @@ Composes the three stage launch files of this package; nav2_bringup is not used.
 
 Starts:
   * (launch_sim:=true) Gazebo Classic with testbed_playground.world, robot_state_publisher,
-    and the Testbed-T1.0.0 spawned at (0, 5, yaw 0). testbed_full_bringup is not included,
-    since it would start a second RViz with an odom-frame config.
+    the Testbed-T1.0.0 spawned at (0, 5, yaw 0), and the odometry EKF (robot_localization).
+    testbed_full_bringup is not included, since it would start a second RViz with an
+    odom-frame config.
   * map_loader.launch.py    - map_server + lifecycle_manager_map            (immediately)
   * localization.launch.py  - amcl + lifecycle_manager_localization         (after a delay)
   * navigation.launch.py    - Nav2 servers + lifecycle_manager_navigation   (after a delay)
@@ -91,6 +92,14 @@ def generate_launch_description():
             include(os.path.join(description_share, 'launch', 'robot_description.launch.py'),
                     {'use_sim_time': use_sim_time}),
             include(os.path.join(gazebo_share, 'launch', 'spawn_testbed.launch.py')),
+            # Odometry EKF (wheel odometry + IMU), as in testbed_full_bringup.launch.py.
+            Node(
+                package='robot_localization',
+                executable='ekf_node',
+                name='ekf_filter_node',
+                output='screen',
+                parameters=[os.path.join(bringup_share, 'config', 'ekf.yaml'),
+                            {'use_sim_time': ParameterValue(use_sim_time, value_type=bool)}]),
         ])
 
     map_loader = include(

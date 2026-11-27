@@ -27,6 +27,7 @@ endif()
 
 install(
   DIRECTORY
+    config
     launch
     worlds
     models
