@@ -68,7 +68,7 @@ Send a goal with RViz's **2D Goal Pose**, or:
 ```bash
 ros2 topic pub --once /goal_pose geometry_msgs/msg/PoseStamped \
   "header: {frame_id: map}
-pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {w: 1.0}}}"
+pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}"
 ```
 
 Optional RViz config:
@@ -117,6 +117,8 @@ Captured from RViz with `rviz/navigation.rviz` during the verification run:
 
 - `../screenshots/01_localization.png` — loaded map, laser scan and AMCL pose after the initial pose.
 - `../screenshots/02_navigation.png` — robot navigating towards a goal.
+- `../screenshots/03_fitted_window.png` — fitted RViz window with the loaded map, scan and localized robot.
+- `../screenshots/04_fitted_navigation.png` — fitted RViz window after a navigation goal.
 
 ## Challenges
 
