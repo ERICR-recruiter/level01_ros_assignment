@@ -1,0 +1,14 @@
+Bug 1:
+- File: testbed_description/CMakeLists.txt (Line 23)
+- Issue: Syntax/parse error due to missing parentheses on `ament_package`.
+- Fix: Changed `ament_package` to `ament_package()`.
+
+Bug 2:
+- File: testbed_bringup/maps/testbed_world.yaml (Line 1)
+- Issue: Incorrect image path (`wrong_path_testbed_world.pgm`) pointing to a non-existent map file.
+- Fix: Changed `image: wrong_path_testbed_world.pgm` to `image: testbed_world.pgm`.
+
+Bug 3:
+- File: testbed_bringup/CMakeLists.txt (Lines 27-32)
+- Issue: The `maps` directory was omitted from the `install(DIRECTORY ...)` command, preventing the map files from being copied to the install space during build.
+- Fix: Added `maps` alongside `launch` inside `install(DIRECTORY launch maps DESTINATION share/${PROJECT_NAME}/)`.
