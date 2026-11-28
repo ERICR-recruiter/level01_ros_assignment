@@ -1,0 +1,25 @@
+Bugs found and fixed
+
+1. testbed_description/CMakeLists.txt
+   colcon build failed straight away with a CMake parse error on line 23. The last command had been cut off to "ament_pac" instead of "ament_package()". I put the full command back and the package built.
+
+2. testbed_bringup/CMakeLists.txt
+   The install() block only copied the launch folder. The maps folder was never installed, so the map files wouldn't exist in install/ and couldn't be found through the package. I added "maps" to the list.
+
+3. testbed_gazebo/CMakeLists.txt
+   Same kind of problem. spawn_playground.launch.py adds share/testbed_gazebo/models to GAZEBO_MODEL_PATH, but "models" wasn't being installed, so that path didn't exist. I added "models" to the install list.
+
+4. testbed_description/package.xml
+   The launch files use xacro and robot_state_publisher, but neither was declared as a dependency. On my machine xacro wasn't even installed, and robot_description.launch.py failed with "executable not found". I added both as exec_depend entries so a missing install is easier to spot.
+
+5. testbed_description/urdf/testbed.gazebo (IMU plugin)
+   There was an extra ">" after the closing initial_orientation_as_reference tag, which left a stray character inside the plugin block. It's a small typo, but I removed it to keep the XML clean.
+
+6. testbed_description/urdf/testbed.gazebo (lidar)
+   The lidar max range was 1.5 m. When I echoed /scan from the spawn point every reading was inf, since no wall was close enough, and that would leave AMCL with almost nothing to match against. I raised it to 10 m.
+
+7. testbed_bringup/maps/testbed_world.yaml
+   The image field pointed to "wrong_path_testbed_world.pgm", which doesn't exist, so map_server couldn't load the map. I changed it to the real file name, testbed_world.pgm.
+
+8. testbed_description/launch/robot_description.launch.py
+   robot_state_publisher was started without use_sim_time, so it stamped transforms with wall-clock time while Gazebo and the rest of the stack ran on sim time. I set use_sim_time to True for that node.
