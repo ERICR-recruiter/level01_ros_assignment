@@ -70,7 +70,11 @@ The commands are the same before and after the
 [Part 2](#part-2-odometry-extension-encoder-odometry--imu-ekf) extension; with it,
 `testbed_full_bringup` and `bringup_all` also start the odometry EKF.
 
-#### One command
+#### One command (optional)
+
+A convenience for demos. `bringup_all.launch.py` includes the same three stage launch files
+(`map_loader`, `localization`, `navigation`) plus the simulation; it does not use `nav2_bringup`, and
+the stage files above remain the way to start and test each stage on its own.
 
 ```bash
 ros2 launch testbed_navigation bringup_all.launch.py
