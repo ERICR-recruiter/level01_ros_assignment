@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - YOUR FULL NAME
+# Level 1: ROS2 Navigation Assignment - Mounish Maddipati
 
 ## Overview
 
@@ -180,12 +180,9 @@ ros2 launch testbed_navigation navigation.launch.py               # terminal 4: 
 
 In RViz: set Fixed Frame to `map` (it appears once AMCL is running), add the Map display on `/map` with Durability Policy `Transient Local`, use 2D Pose Estimate if the scan does not line up with the map, then send a 2D Goal Pose.
 
-### Demo
-
-Video: <ADD LINK HERE>
 
 ## Contact Info
 
-Name: YOUR FULL NAME
-Contact number: YOUR CONTACT NUMBER
-Email Address: YOUR EMAIL ADDRESS
+Name: Mounish Maddipati
+Contact number: 9063017277
+Email Address: mounishmaddipati2006@gmail.com
