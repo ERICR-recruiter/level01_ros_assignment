@@ -1,0 +1,42 @@
+# Odometry EKF for Testbed-T1.0.0 (robot_localization, ROS 2 Humble).
+# Fuses wheel-encoder odometry (/odom from the Gazebo diff-drive plugin) with the IMU yaw rate (/imu)
+# and publishes /odometry/filtered and the TF odom -> base_footprint. AMCL then publishes map -> odom.
+ekf_filter_node:
+  ros__parameters:
+    use_sim_time: true
+    frequency: 50.0                     # Hz; above the 20 Hz controller rate
+    sensor_timeout: 0.1
+    two_d_mode: true                    # planar robot: z, roll and pitch are held at zero
+    publish_tf: true
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_footprint
+    world_frame: odom                   # continuous local estimate; AMCL owns the map frame
+
+    # Wheel odometry: body-frame velocities only. Integrated wheel pose drifts, and fusing it as
+    # absolute pose would make the filter follow that drift.
+    # Order: x y z, roll pitch yaw, vx vy vz, vroll vpitch vyaw, ax ay az
+    odom0: /odom
+    odom0_config: [false, false, false,
+                   false, false, false,
+                   true,  true,  false,
+                   false, false, true,
+                   false, false, false]  # vx, vy (= 0 for a diff drive), vyaw
+    odom0_differential: false
+    odom0_relative: false
+    odom0_queue_size: 10
+
+    # IMU: gyro yaw rate only. It is far less noisy than wheel-derived yaw rate and is not affected by
+    # wheel slip. The simulated IMU's absolute yaw is close to ground truth, so fusing it would hide
+    # heading drift instead of estimating it.
+    imu0: /imu
+    imu0_config: [false, false, false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, true,
+                  false, false, false]   # vyaw
+    imu0_differential: false
+    imu0_relative: false
+    imu0_queue_size: 20
+    imu0_remove_gravitational_acceleration: true

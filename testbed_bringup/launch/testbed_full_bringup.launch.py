@@ -23,7 +23,8 @@ def generate_launch_description():
   state_pub = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(
       os.path.join(pkg_testbed_description, 'launch', 'robot_description.launch.py'),
-    )
+    ),
+    launch_arguments={'use_sim_time': 'true'}.items(),
   )
 
   spawn = IncludeLaunchDescription(
@@ -32,6 +33,16 @@ def generate_launch_description():
     )
   )
   
+  # Odometry EKF: fuses wheel odometry and the IMU, publishes odom -> base_footprint.
+  ekf_node = Node(
+    package='robot_localization',
+    executable='ekf_node',
+    name='ekf_filter_node',
+    output='screen',
+    parameters=[os.path.join(get_package_share_directory('testbed_bringup'), 'config', 'ekf.yaml'),
+                {'use_sim_time': True}]
+  )
+
   rviz_config_dir = os.path.join(
     launch_ros.substitutions.FindPackageShare(package='testbed_description').find('testbed_description'),
     'rviz/full_bringup.rviz')
@@ -50,5 +61,6 @@ def generate_launch_description():
     state_pub,
     gazebo,
     spawn,
+    ekf_node,
     rviz_node,
   ])

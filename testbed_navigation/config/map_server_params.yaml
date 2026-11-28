@@ -1,0 +1,13 @@
+# map_server for Testbed-T1.0.0
+# Target: ROS 2 Humble, nav2_map_server. Loaded by launch/map_loader.launch.py.
+#
+# Reads the occupancy-grid YAML/PGM pair and publishes nav_msgs/OccupancyGrid on /map once with
+# transient-local QoS, so late subscribers (AMCL, costmaps, RViz) still receive it.
+map_server:
+  ros__parameters:
+    use_sim_time: true                  # overridden by the use_sim_time launch argument
+    # Placeholder: map_loader.launch.py overrides it with the `map` launch argument, default
+    # testbed_bringup/maps/testbed_world.yaml (0.05 m/px, origin [-10.2, -9.94, 0]).
+    yaml_filename: "testbed_world.yaml"
+    topic_name: "map"
+    frame_id: "map"                     # AMCL and the global costmap use this as the global frame

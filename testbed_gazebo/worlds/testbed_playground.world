@@ -72,6 +72,15 @@
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
+      <!-- 0.15 kg wheels carry a ~7 kg body (the four casters alone are 4.7 kg). With the default 50
+           iterations the wheel-motor and contact constraints do not converge and the idle robot
+           creeps and turns; 200 iterations hold it still (see BUGS.md #8). -->
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>200</iters>
+        </solver>
+      </ode>
     </physics>
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>

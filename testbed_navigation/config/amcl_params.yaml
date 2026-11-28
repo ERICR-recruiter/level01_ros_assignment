@@ -1,0 +1,69 @@
+# AMCL (Adaptive Monte Carlo Localization) for Testbed-T1.0.0
+# Target: ROS 2 Humble, nav2_amcl. Loaded by launch/localization.launch.py.
+#
+# Particle-filter localization against the static map.
+# Inputs:  /scan (LaserScan, lidar_link_1), TF odom -> base_footprint (odometry EKF), /map (map_server)
+# Output:  TF map -> odom, /amcl_pose, /particle_cloud
+amcl:
+  ros__parameters:
+    use_sim_time: true
+
+    # --- Frames and topics ---
+    global_frame_id: "map"
+    odom_frame_id: "odom"
+    base_frame_id: "base_footprint"     # drive-axle center on the ground (see BUGS.md #9)
+    scan_topic: scan
+    map_topic: map
+    tf_broadcast: true                  # AMCL owns the map -> odom transform
+    transform_tolerance: 1.0            # s; map -> odom is post-dated by this much to avoid TF extrapolation errors
+
+    # --- Initial pose: spawn pose (0, 5, yaw 0); the map frame coincides with the Gazebo world frame ---
+    set_initial_pose: true              # no manual "2D Pose Estimate" needed in RViz
+    initial_pose:
+      x: 0.0
+      y: 5.0
+      z: 0.0
+      yaw: 0.0
+    always_reset_initial_pose: false
+    first_map_only: false
+    save_pose_rate: 0.5
+
+    # --- Particle filter ---
+    min_particles: 500                  # KLD sampling shrinks to this once the cloud converges
+    max_particles: 2000                 # upper bound while the pose is uncertain (map is about 20 m x 20 m)
+    pf_err: 0.05                        # KLD: max error between true and estimated distribution
+    pf_z: 0.99                          # KLD: upper standard-normal quantile
+    resample_interval: 1                # resample on every filter update
+    update_min_d: 0.2                   # run a filter update after 0.2 m of travel...
+    update_min_a: 0.2                   # ...or 0.2 rad (about 11 deg) of rotation
+    # Random-particle injection off: the start pose is known and several rooms are nearly
+    # symmetric, so injected particles could pull the estimate into the wrong room.
+    recovery_alpha_slow: 0.0
+    recovery_alpha_fast: 0.0
+
+    # --- Motion model: differential drive ---
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    # Odometry noise (alpha1: rot from rot, alpha2: rot from trans, alpha3: trans from trans, alpha4: trans from rot).
+    # Moderate values keep the cloud wide enough to absorb wheel slip without diverging.
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2                         # only used by the omni model; listed for completeness
+
+    # --- Sensor model: likelihood field ---
+    laser_model_type: "likelihood_field"  # precomputed distance-to-obstacle lookup; cheaper and smoother than beam ray-casting
+    laser_min_range: 0.12               # matches the Gazebo lidar <min>
+    laser_max_range: 12.0               # matches the Gazebo lidar <max> (starter value 1.5 m, see BUGS.md #5)
+    max_beams: 60                       # every 6th of 360 beams: enough geometry at ~1/6 the cost
+    laser_likelihood_max_dist: 2.0      # distance at which the likelihood field saturates
+    sigma_hit: 0.2                      # std-dev of the hit model (map cell size plus small pose error)
+    z_hit: 0.5                          # likelihood_field mixes only z_hit and z_rand (sum 1.0); z_max/z_short below are unused
+    z_rand: 0.5
+    z_max: 0.05                         # beam-model only; ignored by likelihood_field
+    z_short: 0.05                       # beam-model only; ignored by likelihood_field
+    lambda_short: 0.1                   # beam-model only
+    do_beamskip: false                  # static world: no unmapped objects to skip beams for
+    beam_skip_distance: 0.5
+    beam_skip_error_threshold: 0.9
+    beam_skip_threshold: 0.3
