@@ -1,4 +1,34 @@
-# Level 1: ROS2 Navigation Assignment - Your Full Name
+# Level 1: ROS2 Navigation Assignment - Singam Bhavesh Reddy
+
+Completed solution: [`testbed_navigation/`](testbed_navigation/README.md) (manual Nav2
+map/localization/navigation launch files and params) and
+[`BUGS_FOUND.txt`](BUGS_FOUND.txt) (starter bugs and fixes).
+
+## Approach and challenges
+
+The workflow is split into three independent launch files so each Nav2 stage can be started and debugged on its own: `map_loader.launch.py` loads the supplied map with `nav2_map_server`, `localization.launch.py` runs AMCL, and `navigation.launch.py` starts the planner, controller, smoother, behaviour server, BT navigator, waypoint follower and velocity smoother without calling `nav2_bringup`.
+
+Challenges handled:
+
+- The supplied map YAML pointed at a missing PGM and the map directory was not installed; both are fixed and documented in `BUGS_FOUND.txt`.
+- Gazebo publishes odometry on `odom` → `base_footprint` while Nav2 uses `base_link`; the static TF from `robot_state_publisher` bridges them.
+- The supplied LiDAR is limited to 1.5 m, so costmap raytrace and obstacle ranges are clamped to 1.4 m.
+- AMCL needs a 2D Pose Estimate at the robot's start pose before goals are sent.
+
+Evidence: `screenshots/01_localization.png`, `screenshots/02_navigation.png`, `screenshots/03_fitted_window.png` and `screenshots/04_fitted_navigation.png`.
+
+## Engineering file-format practices
+
+Rules used in this submission so configs stay reviewable and diffs stay small:
+
+- **Text:** UTF-8, LF line endings, one final newline, no trailing whitespace. `.gitignore` excludes generated `__pycache__/` and `*.pyc`.
+- **YAML:** two-space indentation, no tabs, no duplicate keys; one file per responsibility (`amcl_params.yaml`, `map_server_params.yaml`, `nav2_params.yaml`). Quote paths containing `:`.
+- **Python launch files:** four-space indentation, one launch file per stage, explicit arguments instead of copied launch blocks; check with `python3 -m py_compile` and `ros2 launch --show-args`.
+- **XML/URDF/SDF:** one element per line, escaped special characters; validate before building with `xmllint` or `xacro`.
+- **Binary evidence:** lossless PNG screenshots in `screenshots/`, STL meshes in `testbed_description/meshes/`, and the PGM map beside its YAML; reference binaries with relative paths and do not re-encode them.
+- **Names:** lowercase filenames with hyphens or underscores, no spaces; config names match the node or stage they configure.
+
+Starter files that already used CRLF were left as committed to avoid a whole-file diff.
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -25,9 +55,8 @@ ros_nav2_assignment/
 │   ├── rviz/            # RVIZ configuration files
 │   └── urdf/            # URDF files for Testbed-T1.0.0
 ├── testbed_gazebo/
-│   ├── worlds/            # Simulation world files
-│   ├── launch/            # Launch files for Gazebo
-│   └── models/            # Misc. Gazebo model files
+│   ├── worlds/            # Simulation world file
+│   └── launch/            # Launch files for Gazebo
 ├── testbed_bringup/
 │   ├── launch/            # Launch file for bringing up the robot
 │   └── maps/              # Predefined map of the test environment
@@ -125,6 +154,6 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Singam Bhavesh Reddy
+ - Contact number: not provided
+ - Email Address: singambhavesh@gmail.com

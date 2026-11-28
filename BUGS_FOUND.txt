@@ -1,0 +1,70 @@
+Starter-code bugs found and fixed - Testbed-T1.0.0 ROS2 navigation assignment
+==============================================================================
+Candidate: Singam Bhavesh Reddy
+
+1. testbed_description/CMakeLists.txt - build stopped immediately
+   Symptom : "CMake Error at CMakeLists.txt:24: Parse error. Expected "(" ..."
+   Cause   : the last line was "ament_package" instead of "ament_package()".
+   Fix     : added the parentheses. Verified with colcon build.
+
+2. testbed_bringup/maps/testbed_world.yaml - map server could not load the map
+   Symptom : map_server failed to read the image at startup.
+   Cause   : "image: wrong_path_testbed_world.pgm" while the file in the folder is
+             testbed_world.pgm.
+   Fix     : "image: testbed_world.pgm".
+
+3. testbed_bringup/CMakeLists.txt - map missing from the install space
+   Symptom : after colcon build, install/testbed_bringup/share/testbed_bringup/
+             contained no maps directory, so the map YAML could not be resolved
+             from an installed workspace.
+   Cause   : the install(DIRECTORY ...) rule installed only launch/.
+   Fix     : added maps/ to the install rule.
+
+4. testbed_description/launch/robot_description.launch.py - wrong time source
+   Symptom : TF from robot_state_publisher used wall-clock time while Gazebo, RViz
+             and Nav2 used /clock, causing time-offset warnings and unstable TF.
+   Cause   : robot_state_publisher got robot_description but not use_sim_time.
+   Fix     : parameters=[robot_description, {'use_sim_time': True}].
+
+5. testbed_description/urdf/testbed.gazebo - malformed IMU plugin tag
+   Symptom : stray character after the closing tag of initial_orientation_as_reference.
+   Cause   : "<initial_orientation_as_reference>false</initial_orientation_as_reference>>"
+             had an extra ">".
+   Fix     : removed the extra character.
+
+6. testbed_description/urdf/testbed.gazebo - redundant ros_control plugin
+   Symptom : an empty libgazebo_ros_control.so plugin was loaded with no controller
+             configuration, competing with the diff-drive plugin for the wheel joints.
+   Cause   : leftover empty <gazebo><plugin name="control" .../></gazebo> block.
+   Fix     : removed the block; libgazebo_ros_diff_drive.so alone drives the wheels.
+
+7. testbed_description/urdf/testbed.gazebo - wrong wheel separation
+   Symptom : odometry/turning radius disagreed with the model.
+   Cause   : plugin used 0.35 m; the wheel joints are at y=+0.135241 and y=-0.210759,
+             giving 0.346 m separation.
+   Fix     : <wheel_separation>0.346</wheel_separation>.
+
+8. testbed_description/urdf/testbed.gazebo - self-collision enabled on every link
+   Symptom : fixed casters and wheel meshes are treated as self-colliding bodies,
+             which makes the simulated base fight its own collision geometry.
+   Cause   : <self_collide>true</self_collide> on all ten link blocks.
+   Fix     : set to false for all links.
+
+9. testbed_description/urdf/testbed.gazebo - friction values unsuitable for the drive
+   Symptom : the four casters are fixed (non-rotating) links, so 0.2 friction resists
+             turning, while the driven wheels had too little grip at 0.2.
+   Fix     : caster mu1/mu2 = 0.01, left/right wheel mu1/mu2 = 1.0.
+
+10. package.xml dependency declarations (testbed_bringup, testbed_description,
+    testbed_gazebo) - incomplete
+    Symptom : rosdep and fresh-workspace builds did not know about executables used
+              by the launch files (xacro, robot_state_publisher, rviz2, gazebo_ros,
+              launch/launch_ros, sibling packages).
+    Fix     : added the missing <depend>/<exec_depend> entries.
+
+Notes
+-----
+The URDF visual/collision origins were checked against the STL vertex bounds and are
+consistent (the meshes are exported in base_link millimetre coordinates), so they were
+left unchanged. The LiDAR's 1.5 m range is a sensor property, not an injected bug; the
+Nav2 costmap ranges in testbed_navigation/config/nav2_params.yaml were clamped to it.
