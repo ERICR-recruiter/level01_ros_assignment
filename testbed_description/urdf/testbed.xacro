@@ -6,14 +6,7 @@
 <xacro:include filename="$(find testbed_description)/urdf/testbed.gazebo" />
 
 
-<link name="base_footprint">
-  <visual>
-    <origin xyz="0 0 0" rpy="0 0 0" />
-    <geometry>
-      <box size="0.0 0.0 0.0" />
-    </geometry>
-  </visual>
-</link>
+<link name="base_footprint"/>
 
 <link name="base_link">
   <inertial>

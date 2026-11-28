@@ -1,0 +1,67 @@
+# ============================================================
+# Testbed-T1.0.0 - AMCL Localization Configuration (ROS 2 Humble)
+# ============================================================
+
+amcl:
+  ros__parameters:
+    use_sim_time: true
+
+    # Coordinate frames
+    global_frame_id: "map"
+    odom_frame_id: "odom"
+    base_frame_id: "base_footprint"
+
+    # Laser scanner configuration (matches testbed.gazebo 360-deg 12m LiDAR)
+    scan_topic: "/scan"
+    laser_model_type: "likelihood_field"
+    laser_min_range: 0.15
+    laser_max_range: 12.0
+    max_beams: 60
+    laser_likelihood_max_dist: 2.0
+
+    # Particle filter settings
+    min_particles: 500
+    max_particles: 2000
+    pf_err: 0.05
+    pf_z: 0.99
+    resample_interval: 1
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
+
+    # Differential drive odometry motion model
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+
+    # Laser beam likelihood parameters
+    sigma_hit: 0.2
+    z_hit: 0.5
+    z_short: 0.05
+    z_max: 0.05
+    z_rand: 0.5
+    lambda_short: 0.1
+    beam_skip_distance: 0.5
+    beam_skip_error_threshold: 0.9
+    beam_skip_threshold: 0.3
+    do_beamskip: false
+
+    # Filter update and TF broadcast
+    update_min_d: 0.10
+    update_min_a: 0.10
+    tf_broadcast: true
+    transform_tolerance: 1.0
+    save_pose_rate: 0.5
+
+    # Require explicit initial pose via RViz2 "2D Pose Estimate"
+    set_initial_pose: false
+
+lifecycle_manager_localization:
+  ros__parameters:
+    use_sim_time: true
+    autostart: true
+    bond_timeout: 4.0
+    node_names:
+      - amcl
