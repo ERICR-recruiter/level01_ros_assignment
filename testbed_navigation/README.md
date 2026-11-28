@@ -6,10 +6,20 @@ Nav2 navigation for the Testbed-T1.0.0 on ROS 2 Humble, built from individual Na
 monitor), each have their own lifecycle manager and parameter file. A fourth launch file starts the
 whole demo in one command.
 
+This README has two parts. [Part 1](#part-1-navigation-stack-assignment-scope) is the assignment as
+specified, with its results; [Part 2](#part-2-odometry-extension-encoder-odometry--imu-ekf) is a later
+extension beyond the brief that fuses wheel-encoder odometry and the IMU in a robot_localization EKF.
+
 Starter-package bugs that blocked localization and navigation are fixed and documented with evidence
 in [`../BUGS.md`](../BUGS.md).
 
-## Package layout
+## Part 1: Navigation stack (assignment scope)
+
+This part covers map loading with `map_server`, localization with AMCL and navigation with Nav2,
+each composed by hand, as the assignment specifies. All results in this part were measured with the
+starter's ground-truth odometry.
+
+### Package layout
 
 ```
 testbed_navigation/
@@ -32,9 +42,9 @@ testbed_navigation/
 └── docs/media/                  # screenshots, trajectory plot and demo video used in Results (not installed)
 ```
 
-## Quick start
+### Quick start
 
-### Build
+#### Build
 
 ```bash
 cd ~/assignment_ws
@@ -43,7 +53,7 @@ source install/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp   # optional, recommended in help.md
 ```
 
-### Stage by stage (one terminal per line)
+#### Stage by stage (one terminal per line)
 
 ```bash
 ros2 launch testbed_bringup testbed_full_bringup.launch.py   # Gazebo + robot (its RViz uses fixed frame odom; can be closed)
@@ -56,8 +66,11 @@ ros2 run testbed_navigation send_goals.py                     # 5-goal tour of t
 ```
 
 Each stage needs only the earlier stages, so any stage can be stopped, retuned and restarted alone.
+The commands are the same before and after the
+[Part 2](#part-2-odometry-extension-encoder-odometry--imu-ekf) extension; with it,
+`testbed_full_bringup` and `bringup_all` also start the odometry EKF.
 
-### One command
+#### One command
 
 ```bash
 ros2 launch testbed_navigation bringup_all.launch.py
@@ -69,7 +82,7 @@ ros2 launch testbed_navigation bringup_all.launch.py launch_sim:=false   # simul
 (`STACK_START_DELAY`), once Gazebo publishes `/clock`, `/scan` and odom TF. It includes the starter's
 three building blocks instead of `testbed_full_bringup` to avoid a second RViz.
 
-### Launch arguments
+#### Launch arguments
 
 | Argument                                   | Default                                                                                 | Declared in                                        |
 | ------------------------------------------ | --------------------------------------------------------------------------------------- | -------------------------------------------------- |
@@ -85,7 +98,7 @@ three building blocks instead of `testbed_full_bringup` to avoid a second RViz.
 In `map_loader`, `map` overrides `yaml_filename` in `map_server_params.yaml` via `RewrittenYaml`,
 so the default always points at the installed `testbed_world.yaml`.
 
-### send_goals.py
+#### send_goals.py
 
 | Option               | Effect                                                                                                                        |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -98,9 +111,9 @@ Goals come from an analysis of `testbed_world.pgm`; each is at least 0.85 m from
 occupied cell. The tour crosses both north/south doorways (x ≈ 3.7 and x ≈ -6.7, at y ≈ -0.45),
 a 0.85 m gap in the vertical wall and its 3.95 m opening.
 
-## Architecture
+### Architecture
 
-### Stages and lifecycle managers
+#### Stages and lifecycle managers
 
 ```
  Gazebo Classic ── /clock, /scan, /odom, TF odom->base_footprint ──┐        ▲ /cmd_vel
@@ -130,36 +143,21 @@ and the `/tf` remaps (no-ops without a namespace) follow Humble's `localization_
   bringup sends recovery motions straight to `cmd_vel`.
 - No `smoother_server` (see [Not included](#not-included)).
 
-### TF tree
+#### TF tree
 
 ```
-map ──(amcl)──> odom ──(ekf_filter_node)──> base_footprint ──(robot_state_publisher)──> base_link
+map ──(amcl)──> odom ──(wheel odometry)──> base_footprint ──(robot_state_publisher)──> base_link
                                                                 ──> lidar_link_1, imu_link_1, dummy_link_1, wheels, casters
 ```
+
+`odom → base_footprint` is wheel odometry. In the core setup the Gazebo diff-drive plugin
+(`gazebo_ros_diff_drive`) publishes it; after the Part 2 extension, the EKF (`ekf_filter_node`) does.
 
 `base_footprint` lies on the ground at the drive-axle center ([BUGS.md](../BUGS.md) #9) and is the
 `robot_base_frame` for AMCL, the costmaps, the BT navigator, the behaviors and the collision monitor.
 Wheel TF comes from `/joint_states` via `robot_state_publisher` (BUGS.md #7).
 
-### Odometry
-
-| Source                   | Topic                | Rate   | Fused by the EKF                        |
-| ------------------------ | -------------------- | ------ | --------------------------------------- |
-| Wheel encoders           | `/odom`              | 100 Hz | `vx`, `vy` (= 0), `vyaw`                |
-| IMU gyro                 | `/imu`               | 100 Hz | `vyaw`                                  |
-| EKF (robot_localization) | `/odometry/filtered` | 50 Hz  | output; also TF `odom → base_footprint` |
-
-- The Gazebo diff-drive plugin integrates the wheel joints (`odometry_source` 0). Its default (1)
-  reads the model pose from Gazebo, which is ground truth and never drifts; the starter used that default.
-- The EKF fuses velocities only. Wheel odometry pose drifts, and the simulated IMU's absolute yaw is
-  close to ground truth, so fusing either as an absolute pose would follow the drift or hide it.
-- The EKF runs with the robot (`testbed_bringup/config/ekf.yaml`, started by `testbed_full_bringup`
-  and by `bringup_all`), so the simulation alone provides a complete TF tree, as before.
-- `/clock` is published at 100 Hz (`testbed_gazebo/config/gazebo_params.yaml`). At the Gazebo default
-  of 10 Hz, every sim-time timer, including the 50 Hz EKF, ran at 10 Hz.
-- `bt_navigator`, `controller_server` and `velocity_smoother` read `odometry/filtered`.
-
-### Velocity chain
+#### Velocity chain
 
 ```
 controller_server ─┐  (cmd_vel remapped to cmd_vel_nav)
@@ -171,12 +169,12 @@ The `controller_server`, `behavior_server` and `velocity_smoother` remaps are in
 `navigation.launch.py`; the collision monitor's topics are parameters (`cmd_vel_in_topic`,
 `cmd_vel_out_topic`). Because the collision monitor is last, no command bypasses it.
 
-## Plugin choices and key parameters
+### Plugin choices and key parameters
 
 All keys were checked against Nav2 Humble 1.1.20 (`nav2_bringup/params/nav2_params.yaml` at that
 tag and the plugin sources); several differ in Jazzy.
 
-### Map analysis behind the numbers
+#### Map analysis behind the numbers
 
 `testbed_world.pgm` is 405 × 400 px at 0.05 m/px. A distance transform and reachability check show:
 
@@ -186,7 +184,7 @@ tag and the plugin sources); several differ in Jazzy.
   the doorway center below the inscribed cost (253).
 - The world obstacles described as unmapped (box, cylinder, two spheres) are in the map as outlines.
 
-### AMCL (`amcl_params.yaml`)
+#### AMCL (`amcl_params.yaml`)
 
 | Parameter                             | Value                                | Reason                                                                                                           |
 | ------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
@@ -201,7 +199,7 @@ tag and the plugin sources); several differ in Jazzy.
 | `recovery_alpha_slow` / `_fast`       | 0.0 / 0.0                            | no random-particle injection; the start is known and similar rooms could pull the estimate into the wrong one    |
 | `transform_tolerance`                 | 1.0 s                                | post-dates map->odom so consumers do not extrapolate                                                             |
 
-### BT navigator
+#### BT navigator
 
 - Humble default trees (`default_nav_to_pose_bt_xml` unset):
   `navigate_to_pose_w_replanning_and_recovery.xml` and its through-poses counterpart, which replan at
@@ -211,13 +209,13 @@ tag and the plugin sources); several differ in Jazzy.
 - `bt_navigator_navigate_to_pose_rclcpp_node` and `bt_navigator_navigate_through_poses_rclcpp_node`
   each set `use_sim_time`; in Humble every navigator spins its own internal node.
 
-### Planner: NavFn (`GridBased`)
+#### Planner: NavFn (`GridBased`)
 
 `nav2_navfn_planner/NavfnPlanner` with `use_astar: false`, `tolerance: 0.5`, `allow_unknown: true`.
 The diff-drive robot turns in place, so kinematically feasible paths (Smac Hybrid-A*/Lattice) are
 unnecessary, and on a ~160k-cell map a full Dijkstra expansion is cheap at 1 Hz replanning.
 
-### Controller: Regulated Pure Pursuit (`FollowPath`)
+#### Controller: Regulated Pure Pursuit (`FollowPath`)
 
 `nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController` at `controller_frequency: 20.0`.
 
@@ -239,7 +237,7 @@ navigation, Regulated Pure Pursuit tracks the planner's path predictably with fe
 not steer around obstacles itself; avoidance comes from 1 Hz replanning on a global costmap with an
 obstacle layer.
 
-### Costmaps
+#### Costmaps
 
 |                                   | Local                               | Global                                              |
 | --------------------------------- | ----------------------------------- | --------------------------------------------------- |
@@ -260,7 +258,7 @@ obstacle layer.
   VoxelLayer is unnecessary for a single-plane 2D lidar. The global one lets the planner route around
   objects that are not in the map.
 
-### Behavior server, waypoint follower
+#### Behavior server, waypoint follower
 
 - `behavior_plugins: ["spin", "backup", "drive_on_heading", "wait"]`; AssistedTeleop is not loaded.
 - The behaviors collision-check against the local costmap (`local_costmap/costmap_raw`,
@@ -268,7 +266,7 @@ obstacle layer.
 - Rotation limits are 1.0 / 0.4 rad/s with `rotational_acc_lim: 3.2`, matching the velocity smoother.
 - The waypoint follower uses `WaitAtWaypoint` (200 ms) with `stop_on_failure: false`.
 
-### Velocity smoother
+#### Velocity smoother
 
 | Parameter                       | Value                                                                        |
 | ------------------------------- | ---------------------------------------------------------------------------- |
@@ -280,7 +278,7 @@ obstacle layer.
 
 Each limit is individually within the diff-drive plugin's `max_wheel_acceleration` of 2.0 m/s².
 
-### Collision monitor
+#### Collision monitor
 
 Raw `/scan` points are tested against polygons in `base_footprint` (no costmap), with
 `base_shift_correction: true`. In Humble an action triggers when more than `max_points` points are
@@ -295,7 +293,7 @@ The ±0.30 m slowdown zone stays inside a 0.85 m doorway's walls at ±0.425 m, s
 trigger a slowdown. `max_points: 3` ignores single noisy returns; a real obstacle gives tens of points
 at about 1° per beam. Both polygons are published for RViz (`polygon_stop`, `polygon_slowdown`).
 
-### Not included
+#### Not included
 
 | Left out                                                   | Reason                                                                           |
 | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -305,7 +303,7 @@ at about 1° per beam. Both polygons are published for RViz (`polygon_stop`, `po
 | Smac planners, DWB, MPPI                                   | see the planner and controller sections                                          |
 | Composition, respawn, namespace arguments                  | optional; omitted to keep the launch files short                                 |
 
-## Approach
+### Approach
 
 1. Fixed the starter code first, since navigation depends on a correct robot model, TF tree, sim
    time and lidar. Most relevant to Nav2: lidar range (#5), `robot_state_publisher` sim time (#4),
@@ -318,7 +316,7 @@ at about 1° per beam. Both polygons are published for RViz (`polygon_stop`, `po
 4. Built and verified one stage at a time (map, AMCL, Nav2), each with its own launch file and
    lifecycle manager.
 
-## Challenges
+### Challenges
 
 - **Humble vs Jazzy parameter differences.** The Humble collision monitor uses `max_points`
   (triggers above it), Jazzy `min_points` (triggers at or above it). Polygon `points` is a flat list,
@@ -350,43 +348,133 @@ at about 1° per beam. Both polygons are published for RViz (`polygon_stop`, `po
   in `gazebo::transport::Connection::IsOpen`, not physics or the robot). Reading
   `/gazebo/model_states` over ROS gave 0 crashes in later runs. The submitted launch files do not use
   this recorder.
-- **A 10 Hz simulation clock.** After switching to encoder odometry with an EKF, `/odometry/filtered`
-  arrived at 10 Hz instead of the configured 50 Hz. Gazebo publishes `/clock` at 10 Hz by default, and
-  sim-time timers cannot fire faster than the clock advances. Setting the gazebo_ros `publish_rate`
-  to 100 Hz restored 50 Hz filter output and a 50 Hz `odom → base_footprint` TF.
 - **Environment.** The development machine runs Ubuntu 24.04 with ROS 2 Jazzy, which has no Humble or
   Gazebo Classic packages. Humble (Nav2 1.1.20, Gazebo 11) ran in an isolated RoboStack/pixi
   environment with its own `ROS_DOMAIN_ID`. With `ROS_LOCALHOST_ONLY=1`, Cyclone DDS allows only
   about 10 participants per domain on loopback, so the full stack needed a higher
   `MaxAutoParticipantIndex`. This affects only the local setup, not the package.
 
-## Results
+### Results
 
-All results use ROS 2 Humble, Gazebo 11.15, Nav2 1.1.20 and this package's launch files and
-parameters unchanged. The test is `send_goals.py --spawn-obstacle`: a 0.4 m box not in the map is
-spawned on the first leg, then the robot visits four goals, one per room, and returns to the
-start (five goals in all).
+All results in this part use ROS 2 Humble, Gazebo 11.15, Nav2 1.1.20 and this package's launch files
+and parameters unchanged, with the starter's ground-truth odometry (before the Part 2 extension). The
+test is `send_goals.py --spawn-obstacle`: a 0.4 m box not in the map is spawned on the first leg, then
+the robot visits four goals, one per room, and returns to the start (five goals in all).
 
 ![Navigation demo (RViz, 5x speed)](docs/media/demo_navigation_preview.gif)
 
 Full-resolution video: [docs/media/demo_navigation_5x.mp4](docs/media/demo_navigation_5x.mp4) (47 s, 5x speed).
 
-### Goal tour
+#### Goal tour
 
-| Configuration                                     | Runs | Goals reached | Recoveries             | Distance | Sim time per tour |
-| ------------------------------------------------- | :--: | :-----------: | ---------------------- | -------- | ----------------- |
-| Encoder odometry + IMU EKF (current), headless    |  2   |    10 / 10    | 0                      | 58 m     | ~164 s            |
-| Encoder odometry + IMU EKF, README 4-terminal run |  1   |     2 / 2     | 0                      | –        | –                 |
-| Ground-truth odometry (earlier), headless         |  4   |    20 / 20    | 0                      | 57.9 m   | ~160 s            |
-| Ground-truth odometry (earlier), GUIs open        |  2   |    10 / 10    | 3, costmap clears only | 57.9 m   | ~160 s            |
+| Configuration                                              | Runs | Goals reached | Recoveries                                      | Distance | Sim time per tour       |
+| ---------------------------------------------------------- | :--: | :-----------: | ----------------------------------------------- | -------- | ----------------------- |
+| Ground-truth odometry, headless (`gui:=false rviz:=false`) |  4   |    20 / 20    | 0                                               | 57.9 m   | ~160 s (wall ~173 s)    |
+| Ground-truth odometry, Gazebo + RViz windows open          |  2   |    10 / 10    | 3 (2 in run 1, 1 in run 2), costmap clears only | 57.9 m   | ~160 s (wall 188–245 s) |
 
-The earlier runs used the starter's ground-truth odometry, before the switch to encoder odometry and
-the EKF (see Odometry). Two further attempts in that phase ended in Gazebo crashes caused by the
-ground-truth recorder, not the stack (see Challenges). With both GUIs open, Gazebo's real-time factor
-dropped to about 0.7 and the behavior tree used its first recovery step (clear the costmap and
-replan) near a wall; every goal still succeeded.
+The table counts completed runs. Two further attempts in this phase ended in Gazebo crashes caused by
+the ground-truth recorder, not the stack (see Challenges). Accuracy figures below use the three runs
+made with the TF-based recorder.
 
-### Odometry drift
+With both GUIs open, Gazebo's real-time factor dropped to about 0.7 and the controller missed its
+20 Hz deadline more often than in headless runs. The behavior tree then ran its first recovery step
+(clear the costmap and replan) near a wall, twice in run 1 and once in run 2; every goal still
+succeeded. The second GUI run started from a deliberately wrong AMCL pose (see Screenshots).
+
+#### Localization accuracy
+
+A recorder script kept outside the package compared the TF estimate `map → base_footprint`
+(AMCL + odometry, the pose Nav2 uses) with Gazebo's ground-truth model pose over three headless
+tours (about 330 samples each, 2 Hz):
+
+|                | Mean        | p95             | Max       |
+| -------------- | ----------- | --------------- | --------- |
+| Position error | 0.10–0.11 m | 0.17–0.18 m     | 0.23 m    |
+| Heading error  | 0.011 rad   | 0.026–0.029 rad | 0.048 rad |
+
+Most of the position error is a constant offset of about (+0.08, +0.03) m, the same in every run.
+The map image is shifted by that amount relative to the Gazebo world (the obstacle outlines in
+`testbed_world.pgm` show it too), and AMCL correctly aligns the robot with the map. Without the
+offset, the error is 0.07 m mean and 0.12–0.13 m p95.
+
+![Estimated vs ground-truth path over the whole tour](docs/media/07_trajectory_ground_truth.png)
+
+#### Screenshots
+
+The screenshots and the video were recorded in this phase, with ground-truth odometry. The navigation
+behavior they show is unchanged by Part 2.
+
+|                                                                                                                                                                                                              |                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| **1. Map loaded** (`map_loader.launch.py` only; the TF warning is expected until AMCL publishes `map → odom`)                                                                                                | ![](docs/media/01_map_loaded.png)                      |
+| **2. Localization, wrong initial pose**: `/initialpose` published 0.3 m and 0.15 rad off with a wide covariance; the particle cloud is spread and the scan (red) misses the walls.                           | ![](docs/media/02_localization_wrong_initial_pose.png) |
+| **3. Converged after a few meters of driving**: tight cloud, scan on the walls; the unmapped box (center) is in both costmaps and the global plan bends around it.                                           | ![](docs/media/03_localization_converged_obstacle.png) |
+| **4. Navigation, full map**: global plan, costmaps, particle cloud                                                                                                                                           | ![](docs/media/04_navigation_full_map.png)             |
+| **5. Robot in Gazebo**                                                                                                                                                                                       | ![](docs/media/05_gazebo_robot.png)                    |
+| **6. TF tree** (`view_frames`): `map → odom` from AMCL, `odom → base_footprint` from the diff-drive plugin (recorded before the EKF, which publishes it after Part 2), the rest from `robot_state_publisher` | ![](docs/media/06_tf_tree.png)                         |
+
+## Part 2: Odometry extension (encoder odometry + IMU EKF)
+
+This extension goes beyond the assignment brief and was added after Part 1 was complete and measured.
+
+### Why
+
+The Gazebo diff-drive plugin can integrate the wheel joints (`odometry_source` 0). Its default (1)
+reads the model pose from Gazebo, which is ground truth and never drifts; the starter used that default,
+and so did every Part 1 result. A real robot integrates wheel encoders, whose pose drifts with wheel
+slip, and usually fuses an IMU. This part switches the simulation to encoder odometry and fuses it with
+the IMU gyro in a robot_localization EKF, so AMCL and Nav2 run on odometry that drifts as on hardware.
+
+### What changed
+
+| Change              | Before (starter, Part 1)                                        | After (Part 2)                                                                                 | Where                                                                                  |
+| ------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Odometry source     | `odometry_source` default 1: Gazebo model pose (ground truth)   | `odometry_source` 0: integrated wheel joints (encoders)                                        | `testbed_description/urdf/testbed.gazebo`                                              |
+| `publish_odom_tf`   | `true`: the diff-drive plugin publishes `odom → base_footprint` | `false`: the EKF publishes it (one publisher per TF edge)                                      | `testbed_description/urdf/testbed.gazebo`                                              |
+| IMU                 | 10 Hz, no noise model                                           | 100 Hz; Gaussian noise, gyro stddev 2e-4 rad/s, accelerometer 1.7e-2 m/s²                      | `testbed_description/urdf/testbed.gazebo`                                              |
+| Odometry EKF        | none                                                            | `ekf_filter_node` (robot_localization `ekf_node`), 50 Hz                                       | `testbed_bringup/config/ekf.yaml`; started by `testbed_full_bringup` and `bringup_all` |
+| `/clock` rate       | 10 Hz (Gazebo default)                                          | 100 Hz (`publish_rate: 100.0`)                                                                 | `testbed_gazebo/config/gazebo_params.yaml`, passed by `spawn_playground.launch.py`     |
+| Nav2 odometry input | `/odom`                                                         | `odometry/filtered` (`odom_topic` of `bt_navigator`, `controller_server`, `velocity_smoother`) | `config/nav2_params.yaml`                                                              |
+| Dependencies        | –                                                               | `exec_depend` on `robot_localization`                                                          | `testbed_bringup/package.xml`, `testbed_navigation/package.xml`                        |
+
+The Part 1 launch commands, stages, lifecycle managers and plugin choices are otherwise unchanged.
+
+### Odometry
+
+| Source                   | Topic                | Rate   | Fused by the EKF                        |
+| ------------------------ | -------------------- | ------ | --------------------------------------- |
+| Wheel encoders           | `/odom`              | 100 Hz | `vx`, `vy` (= 0), `vyaw`                |
+| IMU gyro                 | `/imu`               | 100 Hz | `vyaw`                                  |
+| EKF (robot_localization) | `/odometry/filtered` | 50 Hz  | output; also TF `odom → base_footprint` |
+
+- The EKF fuses velocities only. Wheel odometry pose drifts, and the simulated IMU's absolute yaw is
+  close to ground truth, so fusing either as an absolute pose would follow the drift or hide it.
+- The EKF runs with the robot (`testbed_bringup/config/ekf.yaml`, started by `testbed_full_bringup`
+  and by `bringup_all`), so the simulation alone provides a complete TF tree, as before.
+- `/clock` is published at 100 Hz (`testbed_gazebo/config/gazebo_params.yaml`). At the Gazebo default
+  of 10 Hz, every sim-time timer, including the 50 Hz EKF, ran at 10 Hz (see the challenge below).
+- `bt_navigator`, `controller_server` and `velocity_smoother` read `odometry/filtered`.
+
+### Challenge: a 10 Hz simulation clock
+
+After switching to encoder odometry with an EKF, `/odometry/filtered` arrived at 10 Hz instead of the
+configured 50 Hz. Gazebo publishes `/clock` at 10 Hz by default, and sim-time timers cannot fire faster
+than the clock advances. Setting the gazebo_ros `publish_rate` to 100 Hz restored 50 Hz filter output
+and a 50 Hz `odom → base_footprint` TF.
+
+### Results with the EKF
+
+Same software versions and the same test as in Part 1 (`send_goals.py --spawn-obstacle`: an unmapped
+box on the first leg, then five goals), with the changes above.
+
+#### Goal tour with the EKF
+
+| Configuration                                     | Runs | Goals reached | Recoveries | Distance | Sim time per tour |
+| ------------------------------------------------- | :--: | :-----------: | ---------- | -------- | ----------------- |
+| Encoder odometry + IMU EKF, headless              |  2   |    10 / 10    | 0          | 58 m     | ~164 s            |
+| Encoder odometry + IMU EKF, README 4-terminal run |  1   |     2 / 2     | 0          | –        | –                 |
+
+#### Odometry drift
 
 Raw wheel odometry and the EKF output, each compared with Gazebo ground truth in the odom frame:
 
@@ -401,7 +489,7 @@ Raw wheel odometry and the EKF output, each compared with Gazebo ground truth in
 Wheel odometry drifts mainly through yaw during in-place turns (wheel slip). The gyro measures yaw
 rate directly, so the EKF removes most of that drift. AMCL corrects what remains.
 
-### Localization accuracy
+#### Localization accuracy with the EKF
 
 A recorder script kept outside the package compared the TF estimate `map → base_footprint`
 (AMCL + EKF odometry, the pose Nav2 uses) with Gazebo's ground-truth model pose over the two EKF
@@ -412,27 +500,10 @@ tours (330 samples each, 2 Hz):
 | Position error | 0.107–0.108 m   | 0.17–0.19 m | 0.22 m    |
 | Heading error  | 0.011–0.012 rad | 0.030 rad   | 0.045 rad |
 
-Most of the position error is a constant offset of about (+0.08, +0.03) m, the same in every run.
-The map image is shifted by that amount relative to the Gazebo world (the obstacle outlines in
-`testbed_world.pgm` show it too), and AMCL aligns the robot with the map. Without the offset, the
-error is 0.07–0.08 m mean and 0.13 m p95. These figures match the earlier ground-truth-odometry runs
-(0.10–0.11 m mean), so AMCL holds the same accuracy with real odometry drift.
-
-![Estimated vs ground-truth path over the whole tour](docs/media/07_trajectory_ground_truth.png)
-
-### Screenshots
-
-Screenshots and the video were recorded before the switch to encoder odometry and the EKF; the
-navigation behavior shown is unchanged.
-
-|                                                                                                                                                                                                     |                                                        |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **1. Map loaded** (`map_loader.launch.py` only; the TF warning is expected until AMCL publishes `map → odom`)                                                                                       | ![](docs/media/01_map_loaded.png)                      |
-| **2. Localization, wrong initial pose**: `/initialpose` published 0.3 m and 0.15 rad off with a wide covariance; the particle cloud is spread and the scan (red) misses the walls.                  | ![](docs/media/02_localization_wrong_initial_pose.png) |
-| **3. Converged after a few meters of driving**: tight cloud, scan on the walls; the unmapped box (center) is in both costmaps and the global plan bends around it.                                  | ![](docs/media/03_localization_converged_obstacle.png) |
-| **4. Navigation, full map**: global plan, costmaps, particle cloud                                                                                                                                  | ![](docs/media/04_navigation_full_map.png)             |
-| **5. Robot in Gazebo**                                                                                                                                                                              | ![](docs/media/05_gazebo_robot.png)                    |
-| **6. TF tree** (`view_frames`): `map → odom` from AMCL, `odom → base_footprint` from the diff-drive plugin (recorded before the EKF, which now publishes it), the rest from `robot_state_publisher` | ![](docs/media/06_tf_tree.png)                         |
+As in Part 1, most of the position error is the constant map offset of about (+0.08, +0.03) m.
+Without the offset, the error is 0.07–0.08 m mean and 0.13 m p95. These figures match the earlier
+ground-truth-odometry runs (0.10–0.11 m mean, see Part 1), so AMCL holds the same accuracy with real
+odometry drift.
 
 ## Verification and debugging
 
@@ -459,6 +530,11 @@ ros2 topic echo /amcl_pose --once
 ros2 topic hz /cmd_vel_nav                 # controller output (while a goal runs)
 ros2 topic hz /cmd_vel                     # after smoother + collision monitor
 ros2 param get /controller_server FollowPath.desired_linear_vel
+
+# Odometry EKF (Part 2)
+ros2 topic hz /odometry/filtered           # expect ~50 Hz
+ros2 node info /ekf_filter_node            # subscribes /odom and /imu, publishes /odometry/filtered
+ros2 run tf2_ros tf2_echo odom base_footprint
 ```
 
 In RViz (`rviz/nav2.rviz`, fixed frame `map`), these displays show whether each stage works:

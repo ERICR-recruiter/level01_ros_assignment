@@ -5,15 +5,20 @@
 Tested on ROS 2 Humble, Gazebo 11 and Nav2 1.1.20.
 
 - [BUGS.md](BUGS.md): the 15 bugs found in the starter packages, each with evidence, root cause and fix.
-- [testbed_navigation/README.md](testbed_navigation/README.md): approach, plugin choices, challenges and results.
+- [testbed_navigation/README.md](testbed_navigation/README.md): Part 1, the assignment (approach, plugin
+  choices, challenges and results); Part 2, an odometry extension beyond the brief.
 - [Demo video](testbed_navigation/docs/media/demo_navigation_5x.mp4): goal tour in RViz, 47 s at 5x speed.
 
 ![Goal tour in RViz, 5x speed](testbed_navigation/docs/media/demo_navigation_preview.gif)
 
-Results: every goal reached in all test runs (42 of 42), including an obstacle that is not in the map.
-Odometry: wheel encoders and IMU fused in an EKF (robot_localization); over a 58 m tour the EKF drifted
-0.02–0.10 m where raw wheel odometry drifted 2.3–2.6 m. Localization error against Gazebo ground truth:
-0.11 m mean position, 0.012 rad mean heading.
+Results (assignment scope): 30 of 30 goals reached over six runs, including an obstacle that is not in
+the map. Localization error against Gazebo ground truth: 0.10–0.11 m mean position, 0.011 rad mean
+heading.
+
+Extension beyond the brief: wheel encoders and IMU fused in an EKF (robot_localization). Over a 58 m
+tour the EKF drifted 0.02–0.10 m where raw wheel odometry drifted 2.3–2.6 m. With the EKF, every goal
+was still reached (12 of 12; 42 of 42 across all test runs), with 0.11 m mean position and 0.012 rad
+mean heading error.
 
 ### Requirements checklist
 
