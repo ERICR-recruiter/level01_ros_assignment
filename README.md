@@ -2,7 +2,7 @@
 
 ## Submission
 
-Tested on ROS 2 Humble, Gazebo 11 and Nav2 1.1.20.
+Submitted by K NARENDHRAN (narendhrankrishnasamy@gmail.com). Tested on ROS 2 Humble, Gazebo 11 and Nav2 1.1.20.
 
 - [BUGS.md](BUGS.md): the 15 bugs found in the starter packages, each with evidence, root cause and fix.
 - [testbed_navigation/README.md](testbed_navigation/README.md): Part 1, the assignment (approach, plugin
