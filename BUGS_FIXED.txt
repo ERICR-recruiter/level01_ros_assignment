@@ -1,0 +1,89 @@
+BUGS IDENTIFIED AND FIXED - ERIC ROBOTICS LEVEL 1 ROS 2 NAVIGATION ASSIGNMENT
+=============================================================================
+
+1. Malformed XML closing tag ('>>') in IMU plugin
+   File: testbed_description/urdf/testbed.gazebo
+   Issue: <initial_orientation_as_reference>false</initial_orientation_as_reference>>
+          contained an extra '>' character.
+   Fix: Removed the stray '>' character.
+
+2. Obsolete ROS 1 Gazebo plugin (libgazebo_ros_control.so)
+   File: testbed_description/urdf/testbed.gazebo
+   Issue: Loaded ROS 1 plugin libgazebo_ros_control.so which does not exist in ROS 2
+          Humble / Gazebo Classic 11 and causes plugin load errors.
+   Fix: Removed the libgazebo_ros_control.so plugin block (robot uses
+        libgazebo_ros_diff_drive.so).
+
+3. LiDAR max range too short (1.5 m in a 20 m x 20 m room)
+   File: testbed_description/urdf/testbed.gazebo
+   Issue: Ray sensor max range was 1.5 m, leaving the robot blind to walls at the
+          spawn location (0.0, 5.0) and preventing AMCL localization.
+   Fix: Updated LiDAR range to min=0.15 m, max=12.0 m, samples=360, update_rate=10 Hz.
+
+4. Wheel separation mismatch and wheel/caster friction parameters
+   File: testbed_description/urdf/testbed.gazebo
+   Issue: wheel_separation was 0.35 m instead of the actual 0.376 m measured from
+          left_wheel_1.stl (Y=+0.1502 m) and right_wheel_1.stl (Y=-0.2258 m).
+          Drive wheels and fixed casters both had mu1=0.2, mu2=0.2, causing slip
+          and drag during rotation.
+   Fix: Set wheel_separation=0.376 m, added max_wheel_torque=20 and
+        max_wheel_acceleration=1.0, set drive wheels to mu1=1.0/mu2=1.0 and
+        fixed casters to mu1=0.01/mu2=0.01.
+
+5. Missing use_sim_time in robot_description.launch.py
+   File: testbed_description/launch/robot_description.launch.py
+   Issue: robot_state_publisher defaulted to wall-clock time while Gazebo published
+          /clock, causing TF timestamp extrapolation errors in RViz2 and Nav2.
+   Fix: Added use_sim_time launch argument (default true) and wrapped
+        robot_description and use_sim_time with ParameterValue.
+
+6. Zero-dimension visual box in base_footprint
+   File: testbed_description/urdf/testbed.xacro
+   Issue: base_footprint had <box size="0.0 0.0 0.0" /> causing Gazebo warnings.
+   Fix: Simplified to <link name="base_footprint"/>.
+
+7. Uninstalled models/ directory in testbed_gazebo
+   File: testbed_gazebo/CMakeLists.txt
+   Issue: models/ directory was omitted from install(DIRECTORY ...), preventing
+          Gazebo from resolving packaged models via GAZEBO_MODEL_PATH.
+   Fix: Added models to install(DIRECTORY launch worlds models ...).
+
+8. World launch argument not explicitly forwarded in spawn_playground.launch.py
+   File: testbed_gazebo/launch/spawn_playground.launch.py
+   Issue: world argument was not passed via launch_arguments to gazebo.launch.py.
+   Fix: Passed world and verbose explicitly via launch_arguments.
+
+9. Gazebo spawn race condition and hardcoded spawn pose
+   Files: testbed_bringup/launch/testbed_full_bringup.launch.py,
+          testbed_gazebo/launch/spawn_testbed.launch.py
+   Issue: spawn_entity.py launched simultaneously with gzserver with no timeout,
+          and use_sim_time was not propagated to robot_description.launch.py.
+   Fix: Staged spawn with TimerAction(period=3.0), added -timeout 60, parameterized
+        x_pose/y_pose/z_pose(0.01)/yaw, and propagated use_sim_time and use_rviz.
+
+10. Missing package.xml dependencies and unused rclpy find_package
+    Files: testbed_description/package.xml, testbed_gazebo/package.xml,
+           testbed_bringup/package.xml, testbed_bringup/CMakeLists.txt
+    Fix: Added complete exec_depend entries and removed unused rclpy from
+         testbed_bringup/CMakeLists.txt.
+
+11. Hardcoded local path in .vscode/settings.json
+    File: .vscode/settings.json
+    Fix: Replaced /home/eric-ros1/level01_ros_assignment with ${workspaceFolder}.
+
+12. Missing dedicated amcl_params.yaml and misplaced/empty BUGS_FIXED.txt
+    Files: testbed_navigation/config/amcl_params.yaml,
+           testbed_navigation/config/map_server_params.yaml,
+           testbed_navigation/launch/localization.launch.py
+    Fix: Created standalone amcl_params.yaml and map_server_params.yaml, updated
+         localization.launch.py to load amcl_params.yaml, removed empty
+         testbed_navigation/BUGS_FIXED.txt, and placed bug reports in root.
+
+13. Nav2 Humble configuration fixes in testbed_navigation/config/nav2_params.yaml
+    Fix: Added complete ROS 2 Humble bt_navigator plugin_lib_names (47 libraries),
+         replaced provisional robot_radius (0.20 m) with exact STL-measured
+         polygon footprint [[-0.24, -0.25], [-0.24, 0.18], [0.14, 0.18],
+         [0.14, -0.25]], set inflation_radius=0.45 m, updated costmap obstacle
+         and raytrace ranges to 4.5 m / 5.5 m, added missing nav2_smoother /
+         testbed_bringup / rviz2 dependencies in package.xml, and added
+         rviz/nav2_view.rviz and bringup_navigation.launch.py.
