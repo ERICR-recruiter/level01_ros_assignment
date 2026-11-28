@@ -455,6 +455,33 @@ The Part 1 launch commands, stages, lifecycle managers and plugin choices are ot
   of 10 Hz, every sim-time timer, including the 50 Hz EKF, ran at 10 Hz (see the challenge below).
 - `bt_navigator`, `controller_server` and `velocity_smoother` read `odometry/filtered`.
 
+### Odometry modes
+
+Three settings decide where `odom → base_footprint` comes from. They change together: the transform
+must have exactly one publisher, and Nav2's `odom_topic` must name the odometry in use.
+
+| Mode                                  | `odometry_source`  | `publish_odom_tf` | EKF node | Nav2 `odom_topic`   | Drift over a 58 m tour | Used for                                    |
+| ------------------------------------- | :----------------: | :---------------: | :------: | ------------------- | ---------------------- | ------------------------------------------- |
+| 1. Gazebo ground truth                | 1 (plugin default) |      `true`       |    no    | `/odom`             | none                   | Part 1 results, screenshots and video       |
+| 2. Wheel encoders only                |         0          |      `true`       |    no    | `/odom`             | 2.3–2.6 m              | Comparison only                             |
+| 3. Encoders + IMU in an EKF (current) |         0          |      `false`      |   yes    | `odometry/filtered` | 0.02–0.10 m            | Part 2 results; the submitted configuration |
+
+The mode 2 drift is the raw `/odom` recorded during the mode 3 tours; Nav2 was not run in mode 2.
+
+Where each setting lives:
+
+| Setting                              | File                                                                                    | Element                                                                  |
+| ------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `odometry_source`, `publish_odom_tf` | `testbed_description/urdf/testbed.gazebo`                                               | diff-drive plugin                                                        |
+| EKF node                             | `testbed_bringup/launch/testbed_full_bringup.launch.py`, `launch/bringup_all.launch.py` | `ekf_filter_node` (robot_localization `ekf_node`)                        |
+| Nav2 odometry input                  | `config/nav2_params.yaml`                                                               | `odom_topic` of `bt_navigator`, `controller_server`, `velocity_smoother` |
+
+The IMU rate and noise, the 100 Hz `/clock` and `ekf.yaml` are harmless in every mode and stay as they
+are. After changing a mode, rebuild (`colcon build`) and restart the simulation, since the URDF is read
+when the robot spawns. Check the result with `ros2 node list | grep ekf` (present only in mode 3) and
+`ros2 run tf2_ros tf2_echo odom base_footprint` (must work in every mode). The repository as measured in
+Part 1 (mode 1, before this extension) is commit `8138ee6`.
+
 ### Challenge: a 10 Hz simulation clock
 
 After switching to encoder odometry with an EKF, `/odometry/filtered` arrived at 10 Hz instead of the
