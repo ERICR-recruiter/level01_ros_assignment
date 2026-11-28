@@ -500,22 +500,24 @@ box on the first leg, then five goals), with the changes above.
 
 #### Goal tour with the EKF
 
-| Configuration                                     | Runs | Goals reached | Recoveries | Distance | Sim time per tour |
-| ------------------------------------------------- | :--: | :-----------: | ---------- | -------- | ----------------- |
-| Encoder odometry + IMU EKF, headless              |  2   |    10 / 10    | 0          | 58 m     | ~164 s            |
-| Encoder odometry + IMU EKF, README 4-terminal run |  1   |     2 / 2     | 0          | –        | –                 |
+| Configuration                                     | Runs | Goals reached | Recoveries             | Distance | Sim time per tour |
+| ------------------------------------------------- | :--: | :-----------: | ---------------------- | -------- | ----------------- |
+| Encoder odometry + IMU EKF, headless              |  2   |    10 / 10    | 0                      | 58 m     | ~164 s            |
+| Encoder odometry + IMU EKF, README 4-terminal run |  1   |     2 / 2     | 0                      | –        | –                 |
+| Encoder odometry + IMU EKF, Gazebo + RViz open    |  1   |     5 / 5     | 2 local costmap clears | 57.9 m   | ~170 s            |
 
 #### Odometry drift
 
 Raw wheel odometry and the EKF output, each compared with Gazebo ground truth in the odom frame:
 
-| Test                                      | Raw wheel odometry   | EKF (wheels + IMU)   |
-| ----------------------------------------- | -------------------- | -------------------- |
-| 60 s at rest                              | 0.000 m, 0.000 rad   | 0.001 m, 0.000 rad   |
-| Scripted drive: 4 m with a full 360° spin | 0.374 m, 0.259 rad   | 0.031 m, 0.013 rad   |
-| Goal tour 1 (58 m): final / max position  | 2.25 m / 2.32 m      | 0.10 m / 0.13 m      |
-| Goal tour 2 (58 m): final / max position  | 2.63 m / 2.93 m      | 0.02 m / 0.04 m      |
-| Goal tours: max heading error             | 0.146 rad, 0.179 rad | 0.026 rad, 0.024 rad |
+| Test                                           | Raw wheel odometry   | EKF (wheels + IMU)   |
+| ---------------------------------------------- | -------------------- | -------------------- |
+| 60 s at rest                                   | 0.000 m, 0.000 rad   | 0.001 m, 0.000 rad   |
+| Scripted drive: 4 m with a full 360° spin      | 0.374 m, 0.259 rad   | 0.031 m, 0.013 rad   |
+| Goal tour 1 (58 m): final / max position       | 2.25 m / 2.32 m      | 0.10 m / 0.13 m      |
+| Goal tour 2 (58 m): final / max position       | 2.63 m / 2.93 m      | 0.02 m / 0.04 m      |
+| Goal tours: max heading error                  | 0.146 rad, 0.179 rad | 0.026 rad, 0.024 rad |
+| Recorded GUI tour (58 m): final / max position | 2.36 m / 2.47 m      | 0.03 m / 0.07 m      |
 
 Wheel odometry drifts mainly through yaw during in-place turns (wheel slip). The gyro measures yaw
 rate directly, so the EKF removes most of that drift. AMCL corrects what remains.
@@ -535,6 +537,26 @@ As in Part 1, most of the position error is the constant map offset of about (+0
 Without the offset, the error is 0.07–0.08 m mean and 0.13 m p95. These figures match the earlier
 ground-truth-odometry runs (0.10–0.11 m mean, see Part 1), so AMCL holds the same accuracy with real
 odometry drift.
+
+#### Screenshots and video with the EKF
+
+Recorded with the current code (encoder odometry + IMU EKF) in one run with Gazebo and RViz open:
+5 of 5 goals, two local costmap clears at the start of legs 2 and 3, raw wheel odometry 2.36 m off at
+the end of the tour against 0.03 m for the EKF. The Part 1 screenshots and video above show the same
+test with the earlier ground-truth odometry.
+
+![Navigation demo with the EKF (RViz, 5x speed)](docs/media/demo_navigation_ekf_preview.gif)
+
+Full-resolution video: [docs/media/demo_navigation_ekf_5x.mp4](docs/media/demo_navigation_ekf_5x.mp4) (49 s, 5x speed).
+
+![Raw wheel odometry and EKF odometry against Gazebo ground truth over the goal tour](docs/media/12_ekf_odometry_vs_ground_truth.png)
+
+| Screenshot (with the EKF)                                                                                                                                                                                      | Image                                                      |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **8. Localization, wrong initial pose**: `/initialpose` published 0.3 m and 0.15 rad off; the particle cloud is spread and the scan does not line up with the walls.                                           | ![](docs/media/08_ekf_localization_wrong_initial_pose.png) |
+| **9. Converged after a few meters**: tight cloud, scan on the walls; the unmapped box is in the costmaps and the plan bends around it.                                                                         | ![](docs/media/09_ekf_localization_converged_obstacle.png) |
+| **10. Navigation, full map**: global plan, costmaps, particle cloud.                                                                                                                                           | ![](docs/media/10_ekf_navigation_full_map.png)             |
+| **11. TF tree** (`view_frames`): `odom → base_footprint` at 50 Hz, the EKF rate (published by `ekf_filter_node`; Humble's `view_frames` labels every broadcaster `default_authority`), `map → odom` from AMCL. | ![](docs/media/11_ekf_tf_tree.png)                         |
 
 ## Verification and debugging
 

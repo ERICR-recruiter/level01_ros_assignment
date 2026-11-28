@@ -7,7 +7,8 @@ Submitted by K NARENDHRAN (narendhrankrishnasamy@gmail.com). Tested on ROS 2 Hum
 - [BUGS.md](BUGS.md): the 15 bugs found in the starter packages, each with evidence, root cause and fix.
 - [testbed_navigation/README.md](testbed_navigation/README.md): Part 1, the assignment (approach, plugin
   choices, challenges and results); Part 2, an odometry extension beyond the brief.
-- [Demo video](testbed_navigation/docs/media/demo_navigation_5x.mp4): goal tour in RViz, 47 s at 5x speed.
+- [Demo video](testbed_navigation/docs/media/demo_navigation_5x.mp4): goal tour in RViz, 47 s at 5x speed (Part 1, ground-truth odometry).
+- [Demo video with the EKF](testbed_navigation/docs/media/demo_navigation_ekf_5x.mp4): the same tour with encoder odometry and the IMU fused in the EKF, 49 s at 5x speed (Part 2, current code).
 
 ![Goal tour in RViz, 5x speed](testbed_navigation/docs/media/demo_navigation_preview.gif)
 
@@ -17,7 +18,7 @@ heading.
 
 Extension beyond the brief: wheel encoders and IMU fused in an EKF (robot_localization). Over a 58 m
 tour the EKF drifted 0.02–0.10 m where raw wheel odometry drifted 2.3–2.6 m. With the EKF, every goal
-was still reached (12 of 12; 42 of 42 across all test runs), with 0.11 m mean position and 0.012 rad
+was still reached (17 of 17; 47 of 47 across all test runs), with 0.11 m mean position and 0.012 rad
 mean heading error.
 
 ### Requirements checklist
