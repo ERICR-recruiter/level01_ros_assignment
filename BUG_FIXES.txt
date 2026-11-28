@@ -1,0 +1,53 @@
+Starter-code bugs identified and fixed
+=======================================
+
+1. Invalid ament_package invocation
+   File: testbed_description/CMakeLists.txt
+   The ament_package command was missing parentheses, making the CMake file
+   invalid. It is now invoked as ament_package().
+
+2. Incorrect map image path
+   File: testbed_bringup/maps/testbed_world.yaml
+   The map metadata pointed to a nonexistent PGM file. It now references the
+   sibling testbed_world.pgm file.
+
+3. Map assets were not installed
+   File: testbed_bringup/CMakeLists.txt
+   The maps directory was omitted from the install rule, so a map_server
+   launched from the installed package could not resolve the map. The map
+   directory is now installed with the launch files.
+
+4. Malformed Gazebo IMU plugin XML
+   File: testbed_description/urdf/testbed.gazebo
+   An extra closing angle bracket after initial_orientation_as_reference
+   produced invalid xacro/XML. The stray character was removed.
+
+5. Gazebo world launch argument was not forwarded
+   File: testbed_gazebo/launch/spawn_playground.launch.py
+   The world argument was declared but never passed to gazebo.launch.py, so
+   selecting a world had no effect. The argument is now forwarded.
+
+6. Gazebo assets were not installed
+   File: testbed_gazebo/CMakeLists.txt
+   Model files referenced by the simulation world were absent from the
+   installed package. The models directory is now installed.
+
+7. Robot state publisher did not use simulation time
+   File: testbed_description/launch/robot_description.launch.py
+   TF timestamps could use wall time while Gazebo runs on /clock. The launch
+   now exposes use_sim_time (default true) and applies it to
+   robot_state_publisher.
+
+8. AMCL had no initial pose source
+   File: testbed_navigation/config/amcl_params.yaml
+   AMCL was configured to broadcast map → odom, but no initial pose was
+   published at startup, so AMCL waited for an initial pose and did not
+   establish the transform. The Gazebo spawn launch sets the robot pose to
+   (0, 5, 0); AMCL now initializes from that pose. If the robot starts at a
+   different pose, set its actual pose with RViz's 2D Pose Estimate tool.
+
+Verification:
+`colcon build --symlink-install` completed successfully for all four packages
+on ROS 2 Humble. End-to-end localization and robot motion toward a navigation
+goal have not been verified in this session and require an interactive Gazebo
+run with sensor data.
