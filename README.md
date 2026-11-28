@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Sri Vikas
+# Level 1: ROS2 Navigation Assignment - Udugu Sri Vikas
 
 ## Overview
 At ERIC Robotics, we’re big believers in building software with modularity. The nav2 stack reflects this perfectly with flexible, plugin-based framework, allowing you to pick and choose which pieces you need and run them independently. In this assignment, you’ll walk through the navigation workflow step by step—manually creating and calling actions—to bring an autonomous robot to life.
@@ -125,9 +125,9 @@ We’ll be looking for:
 We’re excited to see how you approach this task. Good luck, and happy coding! :)
 
 ## Contact Info 
- - Name: Your full name
- - Contact number: Your contact number
- - Email Address: Your email address
+ - Name: Udugu Sri Vikas
+ - Contact number: 9059042163
+ - Email Address: srivikas0704@gmail.com
 
 ---
 
@@ -135,3 +135,23 @@ We’re excited to see how you approach this task. Good luck, and happy coding! 
 
 - Bugs found in the starter code and how I fixed them: [`bugs.txt`](bugs.txt)
 - Navigation package (launch files, parameters, README with approach, challenges and screenshots): [`testbed_navigation/`](testbed_navigation/README.md)
+
+### Results
+
+Localization: the laser scan lines up with the map walls (AMCL running, Fixed Frame `map`).
+
+![Localization](testbed_navigation/docs/03_localization_scan_on_walls_zoom.png)
+
+Navigation: a global plan to a goal, and the robot driving there in RViz and Gazebo.
+
+![Global plan](testbed_navigation/docs/04_global_plan_to_goal.png)
+
+![Navigating](testbed_navigation/docs/05_navigating_rviz_and_gazebo.png)
+
+All Nav2 lifecycle nodes active, and the TF tree (`map → odom → base_footprint`):
+
+![Lifecycle nodes](testbed_navigation/docs/07_lifecycle_nodes_active.png)
+
+![TF tree](testbed_navigation/docs/08_tf_tree_view_frames.png)
+
+More screenshots and the full write-up are in [`testbed_navigation/README.md`](testbed_navigation/README.md).
