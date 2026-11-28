@@ -20,3 +20,5 @@ Bugs found and fixed
 
 7. testbed_bringup/maps/testbed_world.yaml
    The image field pointed to "wrong_path_testbed_world.pgm", which doesn't exist, so map_server couldn't load the map. I changed it to the real file name, testbed_world.pgm.
+8. testbed_description/launch/robot_description.launch.py
+   robot_state_publisher was started without use_sim_time, so it stamped transforms with wall-clock time while Gazebo and the rest of the stack ran on sim time. I set use_sim_time to True for that node.
