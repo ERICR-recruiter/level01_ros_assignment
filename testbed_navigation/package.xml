@@ -9,7 +9,7 @@
     BT navigator, behaviors, velocity smoother, collision monitor), each with its own
     launch file and lifecycle manager. Does not use nav2_bringup.
   </description>
-  <maintainer email="narendhrankrishnasamy@gmail.com">Narendhran</maintainer>
+  <maintainer email="narendhrankrishnasamy@gmail.com">K NARENDHRAN</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

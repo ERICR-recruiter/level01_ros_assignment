@@ -1,4 +1,4 @@
-# Level 1: ROS2 Navigation Assignment - Narendhran Krishnasamy
+# Level 1: ROS2 Navigation Assignment - K NARENDHRAN
 
 ## Submission
 
