@@ -1,0 +1,26 @@
+1. File: testbed_description/CMakeLists.txt (last line)
+   Bug: "ament_package" was missing its parentheses, causing a CMake parse
+        error and stopping the whole workspace build
+   Fix: changed to "ament_package()"
+
+2. File: testbed_bringup/maps/testbed_world.yaml (line 1)
+   Bug: image pointed to "wrong_path_testbed_world.pgm", which does not exist
+   Fix: changed to "testbed_world.pgm"
+
+3. File: testbed_description/urdf/testbed.gazebo (line 40)
+   Bug: stray ">" after </initial_orientation_as_reference> (malformed XML)
+   Fix: removed the extra ">"
+
+4. File: testbed_description/urdf/testbed.gazebo (lidar <range><max>)
+   Bug: lidar max range was 1.5 m, too short for the map and AMCL
+   Fix: increased to 12.0 m
+
+5. File: testbed_description/launch/robot_description.launch.py
+   Bug: robot_state_publisher did not set use_sim_time, causing wall/sim
+        time mismatch and TF "timestamp earlier than cache" warnings
+   Fix: added {'use_sim_time': True} to its parameters
+
+6. File: testbed_bringup/CMakeLists.txt (install block)
+   Bug: only "launch" was installed, so the maps folder (testbed_world.yaml/.pgm)
+        was missing from the install space and the map could not be loaded
+   Fix: added "maps" to install(DIRECTORY ...)
