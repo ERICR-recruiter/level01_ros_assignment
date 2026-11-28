@@ -1,9 +1,0 @@
-/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo/CMakeFiles/uninstall.dir
-/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo/CMakeFiles/testbed_gazebo_uninstall.dir
-/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo/CMakeFiles/test.dir
-/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo/CMakeFiles/edit_cache.dir
-/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo/CMakeFiles/rebuild_cache.dir
-/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo/CMakeFiles/list_install_components.dir
-/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo/CMakeFiles/install.dir
-/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo/CMakeFiles/install/local.dir
-/home/vikk/assignment_ws/src/level01_ros_assignment/build/testbed_gazebo/CMakeFiles/install/strip.dir
