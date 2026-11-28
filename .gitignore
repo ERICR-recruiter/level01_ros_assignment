@@ -1,0 +1,23 @@
+ew file:   testbed_navigation/log/build_2026-11-25_20-15-43/testbed_navigation/streams.log
+	new file:   testbed_navigation/log/latest
+	new file:   testbed_navigation/log/latest_build
+	new file:   testbed_navigation/maps/testbed_world.pgm
+	new file:   testbed_navigation/maps/testbed_world.yaml
+	new file:   testbed_navigation/package.xml
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	"signment\""
+
+asus@asus:~/level01_ros_assignment$ 
+# ROS 2 generated files
+build/
+install/
+log/
+**/build/
+**/install/
+**/log/
+
+# Python
+__pycache__/
+*.pyc
