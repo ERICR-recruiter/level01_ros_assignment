@@ -1,0 +1,141 @@
+ BUGS_FIXED.md                              |  32 [32m+[m
+ testbed_bringup/CMakeLists.txt             |   3 [32m+[m[31m-[m
+ testbed_bringup/maps/testbed_world.yaml    |   4 [32m+[m[31m-[m
+ testbed_description/CMakeLists.txt         |   2 [32m+[m[31m-[m
+ .../launch/robot_description.launch.py     |  58 [32m+[m[31m-[m
+ testbed_description/rviz/full_bringup.rviz |  91 [32m+[m[31m-[m
+ testbed_description/urdf/testbed.gazebo    |   2 [32m+[m[31m-[m
+ .../urdf/testbed.gazebo.backup             | 160 [32m+++[m
+ .../urdf/testbed.gazebo.gzsim.backup       | 184 [32m+++[m
+ .../worlds/testbed_playground.world        |  13 [32m+[m
+ testbed_navigation/CMakeLists.txt          |  11 [32m+[m
+ testbed_navigation/build/.built_by         |   1 [32m+[m
+ testbed_navigation/build/COLCON_IGNORE     |   0
+ .../query/client-colcon-cmake/codemodel-v2 |   0
+ .../codemodel-v2-c83870483c69f1483d0f.json |  70 [32m++[m
+ .../directory-.-ab525c93b2b34a1960fa.json  | 384 [32m+++++++[m
+ .../index-2026-11-25T14-45-44-0903.json    |  54 [32m+[m
+ ...ion_uninstall-d69579a942dd428f570d.json | 112 [32m++[m
+ ...get-uninstall-f220ac35db628979b0a5.json |  95 [32m++[m
+ .../build/testbed_navigation/AMENT_IGNORE  |   0
+ .../testbed_navigation/CMakeCache.txt      | 466 [32m++++++++[m
+ .../CMakeFiles/3.28.3/CMakeCCompiler.cmake |  74 [32m++[m
+ .../3.28.3/CMakeCXXCompiler.cmake          |  85 [32m++[m
+ .../3.28.3/CMakeDetermineCompilerABI_C.bin | Bin [31m0[m -> [32m15968[m bytes
+ .../CMakeDetermineCompilerABI_CXX.bin      | Bin [31m0[m -> [32m15992[m bytes
+ .../CMakeFiles/3.28.3/CMakeSystem.cmake    |  15 [32m+[m
+ .../3.28.3/CompilerIdC/CMakeCCompilerId.c  | 880 [32m+++++++++++++++[m
+ .../CMakeFiles/3.28.3/CompilerIdC/a.out    | Bin [31m0[m -> [32m16088[m bytes
+ .../CompilerIdCXX/CMakeCXXCompilerId.cpp   | 869 [32m++++++++++++++[m
+ .../CMakeFiles/3.28.3/CompilerIdCXX/a.out  | Bin [31m0[m -> [32m16096[m bytes
+ .../CMakeFiles/CMakeConfigureLog.yaml      | 531 [32m+++++++++[m
+ .../CMakeDirectoryInformation.cmake        |  16 [32m+[m
+ .../CMakeFiles/CMakeRuleHashes.txt         |   2 [32m+[m
+ .../CMakeFiles/Makefile.cmake              | 270 [32m+++++[m
+ .../CMakeFiles/Makefile2                   | 139 [32m+++[m
+ .../CMakeFiles/TargetDirectories.txt       |   9 [32m+[m
+ .../CMakeFiles/cmake.check_cache           |   1 [32m+[m
+ .../CMakeFiles/progress.marks              |   1 [32m+[m
+ .../DependInfo.cmake                       |  22 [32m+[m
+ .../build.make                             |  87 [32m++[m
+ .../cmake_clean.cmake                      |   8 [32m+[m
+ .../compiler_depend.make                   |   2 [32m+[m
+ .../compiler_depend.ts                     |   2 [32m+[m
+ .../progress.make                          |   1 [32m+[m
+ .../uninstall.dir/DependInfo.cmake         |  22 [32m+[m
+ .../CMakeFiles/uninstall.dir/build.make    |  83 [32m++[m
+ .../uninstall.dir/cmake_clean.cmake        |   5 [32m+[m
+ .../uninstall.dir/compiler_depend.make     |   2 [32m+[m
+ .../uninstall.dir/compiler_depend.ts       |   2 [32m+[m
+ .../CMakeFiles/uninstall.dir/progress.make |   1 [32m+[m
+ .../CTestConfiguration.ini                 | 106 [32m++[m
+ .../testbed_navigation/CTestCustom.cmake   |   2 [32m+[m
+ .../testbed_navigation/CTestTestfile.cmake |   6 [32m+[m
+ .../build/testbed_navigation/Makefile      | 228 [32m++++[m
+ .../ament_cmake_core/package.cmake         |  14 [32m+[m
+ .../stamps/ament_prefix_path.sh.stamp      |   4 [32m+[m
+ .../nameConfig-version.cmake.in.stamp      |  14 [32m+[m
+ .../stamps/nameConfig.cmake.in.stamp       |  42 [32m+[m
+ .../stamps/package.xml.stamp               |  18 [32m+[m
+ .../stamps/package_xml_2_cmake.py.stamp    | 150 [32m+++[m
+ .../ament_cmake_core/stamps/path.sh.stamp  |   5 [32m+[m
+ .../stamps/templates_2_cmake.py.stamp      | 112 [32m++[m
+ .../testbed_navigationConfig-version.cmake |  14 [32m+[m
+ .../testbed_navigationConfig.cmake         |  42 [32m+[m
+ .../ament_prefix_path.dsv                  |   1 [32m+[m
+ .../local_setup.bash                       |  46 [32m+[m
+ .../local_setup.dsv                        |   2 [32m+[m
+ .../local_setup.sh                         | 184 [32m+++[m
+ .../local_setup.zsh                        |  59 [32m+[m
+ .../package.dsv                            |   4 [32m+[m
+ .../ament_cmake_environment_hooks/path.dsv |   1 [32m+[m
+ .../testbed_navigation                     |   1 [32m+[m
+ .../packages/testbed_navigation            |   0
+ .../parent_prefix_path/testbed_navigation  |   1 [32m+[m
+ .../templates.cmake                        |  14 [32m+[m
+ .../ament_cmake_uninstall_target.cmake     |  57 [32m+[m
+ .../testbed_navigation/cmake_args.last     |   1 [32m+[m
+ .../testbed_navigation/cmake_install.cmake | 120 [32m++[m
+ .../testbed_navigation/colcon_build.rc     |   1 [32m+[m
+ .../colcon_command_prefix_build.sh         |   1 [32m+[m
+ .../colcon_command_prefix_build.sh.env     |  63 [32m++[m
+ .../install_manifest.txt                   |  15 [32m+[m
+ .../config/frames_2026-11-25_21.51.42.gv   |   1 [32m+[m
+ .../config/frames_2026-11-25_21.51.42.pdf  | Bin [31m0[m -> [32m6022[m bytes
+ .../config/frames_2026-11-25_21.52.21.gv   |   1 [32m+[m
+ .../config/frames_2026-11-25_21.52.21.pdf  | Bin [31m0[m -> [32m6022[m bytes
+ .../config/frames_2026-11-26_17.16.10.gv   |   1 [32m+[m
+ .../config/frames_2026-11-26_17.16.10.pdf  | Bin [31m0[m -> [32m6022[m bytes
+ testbed_navigation/config/nav2_params.yaml | 187 [32m+++[m
+ .../install/.colcon_install_layout         |   1 [32m+[m
+ testbed_navigation/install/COLCON_IGNORE   |   0
+ .../install/_local_setup_util_ps1.py       | 406 [32m+++++++[m
+ .../install/_local_setup_util_sh.py        | 406 [32m+++++++[m
+ .../install/local_setup.bash               | 121 [32m++[m
+ testbed_navigation/install/local_setup.ps1 |  55 [32m+[m
+ testbed_navigation/install/local_setup.sh  | 137 [32m+++[m
+ testbed_navigation/install/local_setup.zsh | 134 [32m+++[m
+ testbed_navigation/install/setup.bash      |  37 [32m+[m
+ testbed_navigation/install/setup.ps1       |  32 [32m+[m
+ testbed_navigation/install/setup.sh        |  53 [32m+[m
+ testbed_navigation/install/setup.zsh       |  37 [32m+[m
+ .../testbed_navigation                     |   1 [32m+[m
+ .../packages/testbed_navigation            |   0
+ .../parent_prefix_path/testbed_navigation  |   1 [32m+[m
+ .../packages/testbed_navigation            |   0
+ .../testbed_navigationConfig-version.cmake |  14 [32m+[m
+ .../cmake/testbed_navigationConfig.cmake   |  42 [32m+[m
+ .../environment/ament_prefix_path.dsv      |   1 [32m+[m
+ .../environment/ament_prefix_path.sh       |   4 [32m+[m
+ .../environment/path.dsv                   |   1 [32m+[m
+ .../testbed_navigation/environment/path.sh |   5 [32m+[m
+ .../hook/cmake_prefix_path.dsv             |   1 [32m+[m
+ .../hook/cmake_prefix_path.ps1             |   3 [32m+[m
+ .../hook/cmake_prefix_path.sh              |   3 [32m+[m
+ .../testbed_navigation/local_setup.bash    |  46 [32m+[m
+ .../testbed_navigation/local_setup.dsv     |   2 [32m+[m
+ .../testbed_navigation/local_setup.sh      | 184 [32m+++[m
+ .../testbed_navigation/local_setup.zsh     |  59 [32m+[m
+ .../share/testbed_navigation/package.bash  |  39 [32m+[m
+ .../share/testbed_navigation/package.dsv   |   8 [32m+[m
+ .../share/testbed_navigation/package.ps1   | 116 [32m++[m
+ .../share/testbed_navigation/package.sh    |  87 [32m++[m
+ .../share/testbed_navigation/package.xml   |  18 [32m+[m
+ .../share/testbed_navigation/package.zsh   |  50 [32m+[m
+ .../launch/localization.launch.py          |  62 [32m+[m
+ .../launch/map_loader.launch.py            |  42 [32m+[m
+ .../launch/navigation.launch.py            |  72 [32m++[m
+ testbed_navigation/log/COLCON_IGNORE       |   0
+ .../build_2026-11-25_20-15-43/events.log   |  62 [32m+[m
+ .../logger_all.log                         | 105 [32m++[m
+ .../testbed_navigation/command.log         |   6 [32m+[m
+ .../testbed_navigation/stderr.log          |   0
+ .../testbed_navigation/stdout.log          |  35 [32m+[m
+ .../testbed_navigation/stdout_stderr.log   |  35 [32m+[m
+ .../testbed_navigation/streams.log         |  41 [32m+[m
+ testbed_navigation/log/latest              |   1 [32m+[m
+ testbed_navigation/log/latest_build        |   1 [32m+[m
+ testbed_navigation/maps/testbed_world.pgm  | Bin [31m0[m -> [32m162015[m bytes
+ testbed_navigation/maps/testbed_world.yaml |   7 [32m+[m
+ testbed_navigation/package.xml             |  25 [32m+[m
+ 140 files changed, 8922 insertions(+), 65 deletions(-)

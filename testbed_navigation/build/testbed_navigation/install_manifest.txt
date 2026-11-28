@@ -1,0 +1,15 @@
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/ament_index/resource_index/package_run_dependencies/testbed_navigation
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/ament_index/resource_index/parent_prefix_path/testbed_navigation
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/environment/ament_prefix_path.sh
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/environment/ament_prefix_path.dsv
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/environment/path.sh
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/environment/path.dsv
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/local_setup.bash
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/local_setup.sh
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/local_setup.zsh
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/local_setup.dsv
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/package.dsv
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/ament_index/resource_index/packages/testbed_navigation
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/cmake/testbed_navigationConfig.cmake
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/cmake/testbed_navigationConfig-version.cmake
+/home/asus/assignment_ws/src/testbed_navigation/install/testbed_navigation/share/testbed_navigation/package.xml
